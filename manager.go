@@ -5,18 +5,34 @@ import (
 	"database/sql"
 )
 
-// NewManager creates a new manager for orchestrating migrations.
-func NewManager(provider EngineProvider, migrations *Migrations) *Manager {
-	return &Manager{Provider: provider, Sequence: migrations}
+const (
+	// DefaultMetadataTable is the default name for the table used to store
+	// metadata about migrations.
+	DefaultMetadataTable = "golembic_migrations"
+)
+
+// NewManager creates a new manager for orchestrating migrations. The variadic
+// input `table` can be used
+func NewManager(opts ...ManagerOption) (*Manager, error) {
+	m := &Manager{MetadataTable: DefaultMetadataTable}
+	for _, opt := range opts {
+		err := opt(m)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return m, nil
 }
 
 // Manager orchestrates database operations done via `UpMigration` as well as
 // supporting operations such as creating a table for migration metadata and
 // writing rows into that metadata table during an `UpMigration.`
 type Manager struct {
-	Connection *sql.DB
-	Provider   EngineProvider
-	Sequence   *Migrations
+	MetadataTable string
+	Connection    *sql.DB
+	Provider      EngineProvider
+	Sequence      *Migrations
 }
 
 // EnsureConnection returns a cached database connection (if already set) or
@@ -48,5 +64,5 @@ func (m *Manager) EnsureMigrationsTable(ctx context.Context) error {
 		return err
 	}
 
-	return CreateMigrationsTable(ctx, db, m.Provider)
+	return CreateMigrationsTable(ctx, db, m.Provider, m.MetadataTable)
 }

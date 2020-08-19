@@ -14,9 +14,6 @@ import (
 // metadata table as part of the transaction.
 type UpMigration = func(context.Context, *sql.Tx) error
 
-// Option describes options used to create a new migration.
-type Option = func(*Migration) error
-
 // EngineProvider describes the interface required for a database engine.
 type EngineProvider interface {
 	// QuoteIdentifier quotes an identifier, such as a table name, for usage

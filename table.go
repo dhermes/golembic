@@ -3,24 +3,20 @@ package golembic
 import (
 	"context"
 	"database/sql"
+	"fmt"
 )
 
 const (
-	// DefaultMetadataTableName is the default name for the table used to store
-	// metadata about migrations.
-	DefaultMetadataTableName = "golembic_migrations"
-
-	// TODO: https://github.com/dhermes/golembic/issues/2
 	createMigrationsTableSQL = `
-CREATE TABLE IF NOT EXISTS golembic_migrations (
+CREATE TABLE IF NOT EXISTS %s (
   id SERIAL,
   revision VARCHAR(32) NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 `
 	addPrimaryKeyMigrationsTableSQL = `
-ALTER TABLE golembic_migrations
-  ADD CONSTRAINT pk_golembic_migrations_id PRIMARY KEY (id);
+ALTER TABLE %s
+  ADD CONSTRAINT %s PRIMARY KEY (id);
 `
 )
 
@@ -28,7 +24,7 @@ ALTER TABLE golembic_migrations
 // table used to track migrations. If the table already exists (as detected by
 // `provider.TableExistsSQL()`), this function will not attempt to create a
 // table or any constraints.
-func CreateMigrationsTable(ctx context.Context, db *sql.DB, provider EngineProvider) error {
+func CreateMigrationsTable(ctx context.Context, db *sql.DB, provider EngineProvider, table string) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -37,7 +33,7 @@ func CreateMigrationsTable(ctx context.Context, db *sql.DB, provider EngineProvi
 	defer rollbackAndLog(tx)
 
 	// Early exit if the table exists.
-	exists, err := tableExists(ctx, tx, provider, DefaultMetadataTableName)
+	exists, err := tableExists(ctx, tx, provider, table)
 	if err != nil {
 		return err
 	}
@@ -45,17 +41,30 @@ func CreateMigrationsTable(ctx context.Context, db *sql.DB, provider EngineProvi
 		return nil
 	}
 
-	_, err = tx.ExecContext(ctx, createMigrationsTableSQL)
+	_, err = tx.ExecContext(ctx, createMigrationsSQL(provider, table))
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, addPrimaryKeyMigrationsTableSQL)
+	_, err = tx.ExecContext(ctx, addPrimaryKeyMigrationsSQL(provider, table))
 	if err != nil {
 		return err
 	}
 
 	return tx.Commit()
+}
+
+func createMigrationsSQL(provider EngineProvider, table string) string {
+	return fmt.Sprintf(createMigrationsTableSQL, provider.QuoteIdentifier(table))
+}
+
+func addPrimaryKeyMigrationsSQL(provider EngineProvider, table string) string {
+	constraint := fmt.Sprintf("pk_%s_id", table)
+	return fmt.Sprintf(
+		addPrimaryKeyMigrationsTableSQL,
+		provider.QuoteIdentifier(table),
+		provider.QuoteIdentifier(constraint),
+	)
 }
 
 func tableExists(ctx context.Context, tx *sql.Tx, provider EngineProvider, table string) (bool, error) {

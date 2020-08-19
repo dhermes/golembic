@@ -103,7 +103,11 @@ func main() {
 		postgres.OptPassword(mustEnvVar("DB_ADMIN_PASSWORD")),
 		postgres.OptSSLMode(mustEnvVar("DB_SSLMODE")),
 	)
-	m := golembic.NewManager(provider, migrations)
+	m, err := golembic.NewManager(
+		golembic.OptManagerProvider(provider),
+		golembic.OptManagerSequence(migrations),
+	)
+	mustNil(err)
 	ctx := context.Background()
 	err = m.EnsureMigrationsTable(ctx)
 	mustNil(err)
