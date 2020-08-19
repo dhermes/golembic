@@ -2,6 +2,8 @@
 
 > SQL Schema Management in Go, inspired by `sqlalchemy/alembic`
 
+[![GoDoc][11]][12]
+
 ## Development
 
 ```
@@ -53,3 +55,5 @@ Usage:
 [8]: https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-LOCK-TIMEOUT
 [9]: https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-STATEMENT-TIMEOUT
 [10]: https://www.citusdata.com/blog/2018/02/22/seven-tips-for-dealing-with-postgres-locks/
+[11]: https://godoc.org/github.com/dhermes/golembic?status.svg
+[12]: https://godoc.org/github.com/dhermes/golembic
