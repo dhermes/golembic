@@ -80,6 +80,15 @@ func OptLockTimeout(d time.Duration) Option {
 	}
 }
 
+// OptStatementTimeout sets the `StatementTimeout` on a `Config`.
+func OptStatementTimeout(d time.Duration) Option {
+	return func(cfg *Config) error {
+		// TODO: https://github.com/dhermes/golembic/issues/5
+		cfg.StatementTimeout = d
+		return nil
+	}
+}
+
 // OptIdleConnections sets the `IdleConnections` on a `Config`.
 func OptIdleConnections(count int) Option {
 	return func(cfg *Config) error {

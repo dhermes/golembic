@@ -21,14 +21,15 @@ var (
 // options.
 func New(opts ...Option) (*SQLProvider, error) {
 	cfg := &Config{
-		Host:            DefaultHost,
-		Port:            DefaultPort,
-		Database:        DefaultDatabase,
-		Schema:          DefaultSchema,
-		LockTimeout:     DefaultLockTimeout,
-		IdleConnections: DefaultIdleConnections,
-		MaxConnections:  DefaultMaxConnections,
-		MaxLifetime:     DefaultMaxLifetime,
+		Host:             DefaultHost,
+		Port:             DefaultPort,
+		Database:         DefaultDatabase,
+		Schema:           DefaultSchema,
+		LockTimeout:      DefaultLockTimeout,
+		StatementTimeout: DefaultStatementTimeout,
+		IdleConnections:  DefaultIdleConnections,
+		MaxConnections:   DefaultMaxConnections,
+		MaxLifetime:      DefaultMaxLifetime,
 	}
 	for _, opt := range opts {
 		err := opt(cfg)
