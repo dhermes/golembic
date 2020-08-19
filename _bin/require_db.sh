@@ -26,9 +26,13 @@ pgIsReady() {
 }
 
 exists "pg_isready"
-# TODO: https://github.com/dhermes/golembic/issues/3
-until pgIsReady
+# Cap at 20 retries.
+for i in {1..20}
 do
+  if pgIsReady
+  then
+    break
+  fi
   echo "Checking if PostgresSQL is ready on ${DB_HOST}:${DB_PORT}"
   sleep "0.1"
 done
