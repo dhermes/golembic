@@ -3,13 +3,13 @@ package golembic
 // Migration represents an individual up / down migration to be applied or
 // rolled back (depending on the context).
 type Migration struct {
-	// Revision is an opaque name that uniquely identifies a migration. It
-	// is required for a migration to be valid.
-	Revision string
 	// Parent is the revision identifier for the migration immediately
 	// preceding this one. If absent, this indicates that this migration is
 	// the "base" or "root" migration.
 	Parent string
+	// Revision is an opaque name that uniquely identifies a migration. It
+	// is required for a migration to be valid.
+	Revision string
 	// Description is a long form description of why the migration is being
 	// performed. It is intended to be used in "describe" scenarios where
 	// a long form "history" of changes is presented.
@@ -37,13 +37,21 @@ func NewMigration(opts ...Option) (*Migration, error) {
 
 // MustNewMigration is the "must" form of `NewMigration()`. It panics if the
 // migration could not be created.
-func MustNewMigration(opts ...Option) *Migration {
+func MustNewMigration(opts ...Option) Migration {
 	m, err := NewMigration(opts...)
 	if err != nil {
 		panic(err)
 	}
 
-	return m
+	return *m
+}
+
+// OptParent sets the parent on a migration.
+func OptParent(parent string) Option {
+	return func(m *Migration) error {
+		m.Parent = parent
+		return nil
+	}
 }
 
 // OptRevision sets the revision on a migration.
@@ -54,14 +62,6 @@ func OptRevision(revision string) Option {
 		}
 
 		m.Revision = revision
-		return nil
-	}
-}
-
-// OptParent sets the parent on a migration.
-func OptParent(parent string) Option {
-	return func(m *Migration) error {
-		m.Parent = parent
 		return nil
 	}
 }

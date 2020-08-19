@@ -70,3 +70,8 @@ func (m *Migrations) RegisterMany(ms ...Migration) error {
 
 	return nil
 }
+
+// Describe displays all of the registered migrations (with descriptions).
+func (m *Migrations) Describe() string {
+	return fmt.Sprintf("%#v", m)
+}
