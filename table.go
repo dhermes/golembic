@@ -25,10 +25,15 @@ ALTER TABLE golembic_migrations ADD CONSTRAINT pk_golembic_migrations_id PRIMARY
 
 // CreateMigrationsTable invokes SQL statements required to create the metadata
 // table used to track migrations.
-func CreateMigrationsTable(ctx context.Context, tx *sql.Tx) error {
+func CreateMigrationsTable(ctx context.Context, db *sql.DB) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
 	defer rollbackAndLog(tx)
 
-	_, err := tx.ExecContext(ctx, createMigrationsTableSQL)
+	_, err = tx.ExecContext(ctx, createMigrationsTableSQL)
 	if err != nil {
 		return err
 	}

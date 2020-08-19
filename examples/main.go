@@ -130,8 +130,6 @@ func main() {
 	mustNil(err)
 
 	ctx := context.Background()
-	tx, err := db.BeginTx(ctx, nil)
-	mustNil(err)
-	err = golembic.CreateMigrationsTable(ctx, tx)
+	err = golembic.CreateMigrationsTable(ctx, db)
 	mustNil(err)
 }
