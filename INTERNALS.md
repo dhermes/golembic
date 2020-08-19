@@ -50,14 +50,14 @@ golembic=> \dt
 (1 row)
 
 golembic=> \d+ golembic_migrations
-                                                           Table "public.golembic_migrations"
-   Column   |           Type           | Collation | Nullable |                     Default                     | Storage  | Stats target | Description
-------------+--------------------------+-----------+----------+-------------------------------------------------+----------+--------------+-------------
- id         | integer                  |           | not null | nextval('golembic_migrations_id_seq'::regclass) | plain    |              |
- revision   | character varying(32)    |           | not null |                                                 | extended |              |
- created_at | timestamp with time zone |           |          | CURRENT_TIMESTAMP                               | plain    |              |
+                                            Table "public.golembic_migrations"
+   Column   |           Type           | Collation | Nullable |      Default      | Storage  | Stats target | Description
+------------+--------------------------+-----------+----------+-------------------+----------+--------------+-------------
+ parent     | character varying(32)    |           |          |                   | extended |              |
+ revision   | character varying(32)    |           | not null |                   | extended |              |
+ created_at | timestamp with time zone |           |          | CURRENT_TIMESTAMP | plain    |              |
 Indexes:
-    "pk_golembic_migrations_id" PRIMARY KEY, btree (id)
+    "pk_golembic_migrations_revision" PRIMARY KEY, btree (revision)
 
 golembic=> SELECT * FROM golembic_migrations;
  id | revision | created_at

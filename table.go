@@ -9,14 +9,14 @@ import (
 const (
 	createMigrationsTableSQL = `
 CREATE TABLE IF NOT EXISTS %s (
-  id SERIAL,
+  parent VARCHAR(32),
   revision VARCHAR(32) NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 `
 	addPrimaryKeyMigrationsTableSQL = `
 ALTER TABLE %s
-  ADD CONSTRAINT %s PRIMARY KEY (id);
+  ADD CONSTRAINT %s PRIMARY KEY (revision);
 `
 )
 
@@ -59,7 +59,7 @@ func createMigrationsSQL(provider EngineProvider, table string) string {
 }
 
 func addPrimaryKeyMigrationsSQL(provider EngineProvider, table string) string {
-	constraint := fmt.Sprintf("pk_%s_id", table)
+	constraint := fmt.Sprintf("pk_%s_revision", table)
 	return fmt.Sprintf(
 		addPrimaryKeyMigrationsTableSQL,
 		provider.QuoteIdentifier(table),
