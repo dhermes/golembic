@@ -18,17 +18,3 @@ func OptUpFromSQL(statement string) Option {
 		return nil
 	}
 }
-
-// OptDownFromSQL returns an option that sets the `down` function to execute an
-// SQL statement.
-func OptDownFromSQL(statement string) Option {
-	down := func(ctx context.Context, tx *sql.Tx) error {
-		_, err := tx.ExecContext(ctx, statement)
-		return err
-	}
-
-	return func(m *Migration) error {
-		m.Down = down
-		return nil
-	}
-}

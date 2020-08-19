@@ -1,7 +1,7 @@
 package golembic
 
-// Migration represents an individual up / down migration to be applied or
-// rolled back (depending on the context).
+// Migration represents an individual migration to be applied; typically as
+// a set of SQL statements.
 type Migration struct {
 	// Parent is the revision identifier for the migration immediately
 	// preceding this one. If absent, this indicates that this migration is
@@ -17,9 +17,6 @@ type Migration struct {
 	// Up is the function to be executed when a migration is being applied. It
 	// is required for a migration to be valid.
 	Up UpMigration
-	// Down is the function to be executed when a migration is being rolled
-	// back. It is required for a migration to be valid.
-	Down DownMigration
 }
 
 // NewMigration creates a new migration from a variadic slice of options.
@@ -82,18 +79,6 @@ func OptUp(up UpMigration) Option {
 		}
 
 		m.Up = up
-		return nil
-	}
-}
-
-// OptDown sets the `down` function on a migration.
-func OptDown(down DownMigration) Option {
-	return func(m *Migration) error {
-		if down == nil {
-			return ErrNilInterface
-		}
-
-		m.Down = down
 		return nil
 	}
 }

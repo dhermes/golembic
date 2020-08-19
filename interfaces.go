@@ -7,13 +7,12 @@ import (
 
 // UpMigration defines a function interface that must be satisfied by
 // up / forward migrations. The expectation as that the migration runs SQL
-// statements within the transaction but this is not required.
+// statements within the transaction but this is not required. The SQL
+// transaction will be started **before** `UpMigration` is invoked and will
+// be committed **after** the `UpMigration` exits without error. In addition to
+// the contents of `UpMigration`, a row will be written to the migrations
+// metadata table as part of the transaction.
 type UpMigration = func(context.Context, *sql.Tx) error
-
-// DownMigration defines a function interface that must be satisfied by
-// down / reverse / rollback migrations. The expectation as that the migration
-// runs SQL statements within the transaction but this is not required.
-type DownMigration = func(context.Context, *sql.Tx) error
 
 // Option describes options used to create a new migration.
 type Option = func(*Migration) error

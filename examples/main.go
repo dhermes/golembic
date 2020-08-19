@@ -21,9 +21,6 @@ CREATE TABLE users (
   email   varchar(40)
 );
 `),
-		golembic.OptDownFromSQL(`
-DROP TABLE IF EXISTS users;
-`),
 	)
 
 	migrations, err := golembic.NewSequence(root)
@@ -38,9 +35,6 @@ DROP TABLE IF EXISTS users;
 			golembic.OptUpFromSQL(`
 ALTER TABLE users ADD COLUMN city varchar(100);
 `),
-			golembic.OptDownFromSQL(`
-ALTER TABLE users DROP COLUMN IF EXISTS city;
-`),
 		),
 		golembic.MustNewMigration(
 			golembic.OptParent("dce8812d7b6f"),
@@ -48,9 +42,6 @@ ALTER TABLE users DROP COLUMN IF EXISTS city;
 			golembic.OptDescription("Add index on user emails"),
 			golembic.OptUpFromSQL(`
 CREATE UNIQUE INDEX CONCURRENTLY uq_users_email ON users (email);
-`),
-			golembic.OptDownFromSQL(`
-DROP INDEX IF EXISTS uq_users_email;
 `),
 		),
 		golembic.MustNewMigration(
@@ -64,9 +55,6 @@ CREATE TABLE books (
   author  varchar(40)
 );
 `),
-			golembic.OptDownFromSQL(`
-DROP TABLE IF EXISTS books;
-`),
 		),
 		golembic.MustNewMigration(
 			golembic.OptParent("e2d4eecb1841"),
@@ -78,9 +66,6 @@ CREATE TABLE movies (
   name      varchar(40),
   director  varchar(40)
 );
-`),
-			golembic.OptDownFromSQL(`
-DROP TABLE IF EXISTS movies;
 `),
 		),
 	)

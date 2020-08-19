@@ -6,7 +6,7 @@
 //   be verified to avoid merge conflicts causing "branching"
 //
 // - The "current" state of the world will be tracked in a `migrations` table
-//   containing an audit log of history of all migrations.
+//   containing all migrations that have been applied.
 //
 // - A series of migrations should be easy to use both in a script or as part
 //   of a larger piece of Go code
@@ -14,7 +14,11 @@
 // - Avoid all import time side effects caused either by importing a package that
 //   uses `init()` or by requiring migrations files to use `init()`
 //
-// The design allows for running "arbitrary" code inside `Up` and `Down` migrations
+// - Down migrations are not supported. The idea being that the risk of data loss
+//   from a down migration is not worth it and that writing down migrations can
+//   be more challening than writing up migrations.
+//
+// The design allows for running "arbitrary" code inside migrations
 // so that even non-SQL tasks can be tracked as a "run-once" migration.
 //
 // The name is a portmanteau of Go (the programming language) and `alembic`, the
