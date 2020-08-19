@@ -21,10 +21,13 @@ var (
 // options.
 func New(opts ...Option) (*SQLProvider, error) {
 	cfg := &Config{
-		Host:     DefaultHost,
-		Port:     DefaultPort,
-		Database: DefaultDatabase,
-		Schema:   DefaultSchema,
+		Host:            DefaultHost,
+		Port:            DefaultPort,
+		Database:        DefaultDatabase,
+		Schema:          DefaultSchema,
+		IdleConnections: DefaultIdleConnections,
+		MaxConnections:  DefaultMaxConnections,
+		MaxLifetime:     DefaultMaxLifetime,
 	}
 	for _, opt := range opts {
 		err := opt(cfg)
@@ -57,7 +60,15 @@ func (sp *SQLProvider) QuoteLiteral(literal string) string {
 func (sp *SQLProvider) Open() (*sql.DB, error) {
 	// NOTE: This requires that the `postgres` driver has been registered with
 	//       the `sql` package.
-	return sql.Open("postgres", sp.Config.GetConnectionString())
+	db, err := sql.Open("postgres", sp.Config.GetConnectionString())
+	if err != nil {
+		return nil, err
+	}
+
+	db.SetConnMaxLifetime(sp.Config.MaxLifetime)
+	db.SetMaxIdleConns(sp.Config.IdleConnections)
+	db.SetMaxOpenConns(sp.Config.MaxConnections)
+	return db, nil
 }
 
 // TableExistsSQL returns a SQL query that can be used to determine if a

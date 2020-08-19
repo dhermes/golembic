@@ -3,6 +3,7 @@ package postgres
 import (
 	"net/url"
 	"strconv"
+	"time"
 )
 
 const (
@@ -16,6 +17,16 @@ const (
 	DefaultDatabase = "postgres"
 	// DefaultSchema is the default schema to connect to
 	DefaultSchema = "public"
+
+	// DefaultIdleConnections is the default number of idle connections.
+	DefaultIdleConnections = 16
+	// DefaultMaxConnections is the default maximum number of connections.
+	DefaultMaxConnections = 32
+	// DefaultMaxLifetime is the default maximum lifetime of driver connections.
+	//
+	// If max lifetime <= 0, connections are not closed due to a connection's age.
+	// See: https://github.com/golang/go/blob/go1.15/src/database/sql/sql.go#L940
+	DefaultMaxLifetime = time.Duration(0)
 )
 
 // Config is a set of connection config options.
@@ -38,6 +49,13 @@ type Config struct {
 	ConnectTimeout int
 	// SSLMode is the SSL mode for the connection.
 	SSLMode string
+
+	// IdleConnections is the number of idle connections.
+	IdleConnections int
+	// MaxConnections is the maximum number of connections.
+	MaxConnections int
+	// MaxLifetime is the maximum time a connection can be open.
+	MaxLifetime time.Duration
 }
 
 // GetConnectionString creates a PostgreSQL connection string from the config.
