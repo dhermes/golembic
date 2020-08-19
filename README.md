@@ -2,6 +2,24 @@
 
 > SQL Schema Management in Go, inspired by `sqlalchemy/alembic`
 
+## Development
+
+```
+$ make
+Makefile for `golembic` project
+
+Usage:
+   make vet                    Run `go vet` over source tree
+   make start-docker-db        Starts a PostgreSQL database running in a Docker container
+   make superuser-migration    Run superuser migration
+   make run-migrations         Run all migrations
+   make start-db               Run start-docker-db, and migration target(s)
+   make stop-db                Stops the PostgreSQL database running in a Docker container
+   make require-db             Determine if PostgreSQL database is running; fail if not
+   make psql-db                Connects to currently running PostgreSQL DB via `psql`
+
+```
+
 ## Resources and Inspiration
 
 -   `alembic` [tutorial][1]
