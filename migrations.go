@@ -73,3 +73,16 @@ func (m *Migrations) Register(migration Migration) error {
 	m.sequence[migration.Revision] = migration
 	return nil
 }
+
+// RegisterMany attempts to register multiple migrations (in order) with an
+// existing sequence
+func (m *Migrations) RegisterMany(ms ...Migration) error {
+	for _, migration := range ms {
+		err := m.Register(migration)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
