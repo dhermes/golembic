@@ -86,16 +86,13 @@ func mustEnvVar(key string) string {
 
 func mustNil(err error) {
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
 
 func main() {
 	migrations, err := allMigrations()
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	mustNil(err)
 	fmt.Println(migrations.Describe())
 
 	provider, err := postgres.New(
@@ -106,9 +103,8 @@ func main() {
 		postgres.OptPassword(mustEnvVar("DB_ADMIN_PASSWORD")),
 		postgres.OptSSLMode(mustEnvVar("DB_SSLMODE")),
 	)
-	mustNil(err)
-
+	m := golembic.NewManager(provider, migrations)
 	ctx := context.Background()
-	err = golembic.CreateMigrationsTable(ctx, provider)
+	err = m.EnsureMigrationsTable(ctx)
 	mustNil(err)
 }

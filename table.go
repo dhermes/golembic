@@ -28,9 +28,7 @@ ALTER TABLE golembic_migrations
 // table used to track migrations. If the table already exists (as detected by
 // `provider.TableExistsSQL()`), this function will not attempt to create a
 // table or any constraints.
-func CreateMigrationsTable(ctx context.Context, provider EngineProvider) error {
-	db, err := provider.Open()
-
+func CreateMigrationsTable(ctx context.Context, db *sql.DB, provider EngineProvider) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
