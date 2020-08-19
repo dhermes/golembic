@@ -15,6 +15,7 @@ Usage:
    make run-migrations         Run all migrations
    make start-db               Run start-docker-db, and migration target(s)
    make stop-db                Stops the PostgreSQL database running in a Docker container
+   make restart-db             Stops the PostgreSQL database (if running) and starts a fresh Docker container
    make require-db             Determine if PostgreSQL database is running; fail if not
    make psql-db                Connects to currently running PostgreSQL DB via `psql`
    make run-examples-main      Run `./examples/main.go`

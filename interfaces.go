@@ -24,6 +24,10 @@ type EngineProvider interface {
 	QuoteLiteral(literal string) string
 	// Open creates a database connection for the engine provider.
 	Open() (*sql.DB, error)
+	// SetTxTimeouts sets timeouts on a transaction to ensure that a migration
+	// doesn't get stuck or cause the application to get blocked while
+	// migrations are running.
+	SetTxTimeouts(context.Context, *sql.Tx) error
 	// TableExistsSQL returns a SQL query that can be used to determine if a
 	// table exists.
 	TableExistsSQL(table string) string

@@ -29,8 +29,14 @@ func CreateMigrationsTable(ctx context.Context, db *sql.DB, provider EngineProvi
 	if err != nil {
 		return err
 	}
-
 	defer rollbackAndLog(tx)
+
+	// Make sure to "guard" against long locks by setting timeouts within the
+	// transaction before doing any work.
+	err = provider.SetTxTimeouts(ctx, tx)
+	if err != nil {
+		return err
+	}
 
 	// Early exit if the table exists.
 	exists, err := tableExists(ctx, tx, provider, table)

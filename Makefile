@@ -9,6 +9,7 @@ help:
 	@echo '   make run-migrations         Run all migrations'
 	@echo '   make start-db               Run start-docker-db, and migration target(s)'
 	@echo '   make stop-db                Stops the PostgreSQL database running in a Docker container'
+	@echo '   make restart-db             Stops the PostgreSQL database (if running) and starts a fresh Docker container'
 	@echo '   make require-db             Determine if PostgreSQL database is running; fail if not'
 	@echo '   make psql-db                Connects to currently running PostgreSQL DB via `psql`'
 	@echo '   make run-examples-main      Run `./examples/main.go`'
@@ -74,6 +75,9 @@ start-db: start-docker-db run-migrations
 stop-db:
 	@DB_CONTAINER_NAME=$(DB_CONTAINER_NAME) \
 	  ./_bin/stop_db.sh
+
+.PHONY: restart-db
+restart-db: stop-db start-db
 
 .PHONY: require-db
 require-db:
