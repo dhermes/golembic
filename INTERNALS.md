@@ -53,16 +53,34 @@ golembic=> \d+ golembic_migrations
                                             Table "public.golembic_migrations"
    Column   |           Type           | Collation | Nullable |      Default      | Storage  | Stats target | Description
 ------------+--------------------------+-----------+----------+-------------------+----------+--------------+-------------
- parent     | character varying(32)    |           |          |                   | extended |              |
  revision   | character varying(32)    |           | not null |                   | extended |              |
+ parent     | character varying(32)    |           |          |                   | extended |              |
  created_at | timestamp with time zone |           |          | CURRENT_TIMESTAMP | plain    |              |
 Indexes:
     "pk_golembic_migrations_revision" PRIMARY KEY, btree (revision)
+Foreign-key constraints:
+    "fk_golembic_migrations_parent" FOREIGN KEY (parent) REFERENCES golembic_migrations(revision)
+Referenced by:
+    TABLE "golembic_migrations" CONSTRAINT "fk_golembic_migrations_parent" FOREIGN KEY (parent) REFERENCES golembic_migrations(revision)
 
 golembic=> SELECT * FROM golembic_migrations;
- id | revision | created_at
-----+----------+------------
+ revision | parent | created_at
+----------+--------+------------
 (0 rows)
 
 golembic=> \q
+```
+
+## Stop the Database
+
+```
+$ docker ps
+CONTAINER ID        IMAGE                  COMMAND                  CREATED              STATUS              PORTS                     NAMES
+1e0a6fa6f080        postgres:10.6-alpine   "docker-entrypoint.s…"   About a minute ago   Up About a minute   0.0.0.0:18426->5432/tcp   dev-postgres-golembic
+$ make stop-db
+Container dev-postgres-golembic stopped.
+$ docker ps
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+$ make stop-db
+Container dev-postgres-golembic is not currently running.
 ```

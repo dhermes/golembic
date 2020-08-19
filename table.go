@@ -8,15 +8,20 @@ import (
 
 const (
 	createMigrationsTableSQL = `
-CREATE TABLE IF NOT EXISTS %s (
-  parent VARCHAR(32),
+CREATE TABLE IF NOT EXISTS %[1]s (
   revision VARCHAR(32) NOT NULL,
+  parent VARCHAR(32),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 `
 	addPrimaryKeyMigrationsTableSQL = `
-ALTER TABLE %s
-  ADD CONSTRAINT %s PRIMARY KEY (revision);
+ALTER TABLE %[1]s
+  ADD CONSTRAINT %[2]s PRIMARY KEY (revision);
+`
+	addForeignKeyMigrationsTableSQL = `
+ALTER TABLE %[1]s
+  ADD CONSTRAINT %[2]s FOREIGN KEY (parent)
+  REFERENCES %[1]s(revision);
 `
 )
 
@@ -57,6 +62,11 @@ func CreateMigrationsTable(ctx context.Context, db *sql.DB, provider EngineProvi
 		return err
 	}
 
+	_, err = tx.ExecContext(ctx, addForeignKeyMigrationsSQL(provider, table))
+	if err != nil {
+		return err
+	}
+
 	return tx.Commit()
 }
 
@@ -68,6 +78,15 @@ func addPrimaryKeyMigrationsSQL(provider EngineProvider, table string) string {
 	constraint := fmt.Sprintf("pk_%s_revision", table)
 	return fmt.Sprintf(
 		addPrimaryKeyMigrationsTableSQL,
+		provider.QuoteIdentifier(table),
+		provider.QuoteIdentifier(constraint),
+	)
+}
+
+func addForeignKeyMigrationsSQL(provider EngineProvider, table string) string {
+	constraint := fmt.Sprintf("fk_%s_parent", table)
+	return fmt.Sprintf(
+		addForeignKeyMigrationsTableSQL,
 		provider.QuoteIdentifier(table),
 		provider.QuoteIdentifier(constraint),
 	)
