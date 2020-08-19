@@ -25,7 +25,9 @@ ALTER TABLE golembic_migrations
 )
 
 // CreateMigrationsTable invokes SQL statements required to create the metadata
-// table used to track migrations.
+// table used to track migrations. If the table already exists (as detected by
+// `provider.TableExistsSQL()`), this function will not attempt to create a
+// table or any constraints.
 func CreateMigrationsTable(ctx context.Context, provider EngineProvider) error {
 	db, err := provider.Open()
 
