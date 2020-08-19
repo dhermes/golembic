@@ -14,6 +14,8 @@ requireEnvVar "DB_NAME"
 requireEnvVar "DB_ADMIN_USER"
 requireEnvVar "DB_ADMIN_PASSWORD"
 
+# NOTE: This assumes that `DB_ADMIN_USER` / `DB_SUPERUSER_USER` do not need
+#       to be quoted.
 CREATE_ROLE=$(cat <<EOM
 CREATE ROLE ${DB_ADMIN_USER}
   WITH ENCRYPTED PASSWORD '${DB_ADMIN_PASSWORD}'
@@ -24,6 +26,8 @@ GRANT ${DB_ADMIN_USER} TO ${DB_SUPERUSER_USER};
 EOM
 )
 
+# NOTE: This assumes that `DB_NAME` / `DB_ADMIN_USER` / `DB_SUPERUSER_USER` do
+#       not need to be quoted.
 CREATE_DATABASE=$(cat <<EOM
 CREATE DATABASE ${DB_NAME}
   OWNER ${DB_ADMIN_USER}
@@ -37,6 +41,8 @@ CREATE DATABASE ${DB_NAME}
 EOM
 )
 
+# NOTE: This assumes that `DB_ADMIN_USER` / `DB_SUPERUSER_USER` do not need to
+#       be quoted.
 REVOKE_ROLE=$(cat <<EOM
 REVOKE ${DB_ADMIN_USER} FROM ${DB_SUPERUSER_USER};
 EOM
