@@ -25,6 +25,7 @@ func New(opts ...Option) (*SQLProvider, error) {
 		Port:            DefaultPort,
 		Database:        DefaultDatabase,
 		Schema:          DefaultSchema,
+		LockTimeout:     DefaultLockTimeout,
 		IdleConnections: DefaultIdleConnections,
 		MaxConnections:  DefaultMaxConnections,
 		MaxLifetime:     DefaultMaxLifetime,

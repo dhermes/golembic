@@ -18,6 +18,9 @@ const (
 	// DefaultSchema is the default schema to connect to
 	DefaultSchema = "public"
 
+	// DefaultLockTimeout is the default timeout to use when attempting to
+	// acquire a lock.
+	DefaultLockTimeout = 4 * time.Second
 	// DefaultIdleConnections is the default number of idle connections.
 	DefaultIdleConnections = 16
 	// DefaultMaxConnections is the default maximum number of connections.
@@ -50,6 +53,8 @@ type Config struct {
 	// SSLMode is the SSL mode for the connection.
 	SSLMode string
 
+	// LockTimeout is the timeout to use when attempting to acquire a lock.
+	LockTimeout time.Duration
 	// IdleConnections is the number of idle connections.
 	IdleConnections int
 	// MaxConnections is the maximum number of connections.

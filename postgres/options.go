@@ -1,5 +1,9 @@
 package postgres
 
+import (
+	"time"
+)
+
 // Option describes options used to create a new config for a SQL provider.
 type Option = func(*Config) error
 
@@ -63,6 +67,42 @@ func OptConnectTimeout(timeout int) Option {
 func OptSSLMode(sslMode string) Option {
 	return func(cfg *Config) error {
 		cfg.SSLMode = sslMode
+		return nil
+	}
+}
+
+// OptLockTimeout sets the `LockTimeout` on a `Config`.
+func OptLockTimeout(d time.Duration) Option {
+	return func(cfg *Config) error {
+		// TODO: https://github.com/dhermes/golembic/issues/5
+		cfg.LockTimeout = d
+		return nil
+	}
+}
+
+// OptIdleConnections sets the `IdleConnections` on a `Config`.
+func OptIdleConnections(count int) Option {
+	return func(cfg *Config) error {
+		// TODO: https://github.com/dhermes/golembic/issues/5
+		cfg.IdleConnections = count
+		return nil
+	}
+}
+
+// OptMaxConnections sets the `MaxConnections` on a `Config`.
+func OptMaxConnections(count int) Option {
+	return func(cfg *Config) error {
+		// TODO: https://github.com/dhermes/golembic/issues/5
+		cfg.MaxConnections = count
+		return nil
+	}
+}
+
+// OptMaxLifetime sets the `MaxLifetime` on a `Config`.
+func OptMaxLifetime(d time.Duration) Option {
+	return func(cfg *Config) error {
+		// TODO: https://github.com/dhermes/golembic/issues/5
+		cfg.MaxLifetime = d
 		return nil
 	}
 }
