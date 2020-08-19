@@ -7,9 +7,9 @@ source "$(dirname ${0})/require_env_var.sh"
 
 requireEnvVar "DB_HOST"
 requireEnvVar "DB_PORT"
-requireEnvVar "DB_SUPERUSER_NAME"
-requireEnvVar "DB_SUPERUSER_USER"
-requireEnvVar "DB_SUPERUSER_PASSWORD"
+requireEnvVar "DB_NAME"
+requireEnvVar "DB_ADMIN_USER"
+requireEnvVar "DB_ADMIN_PASSWORD"
 
 ##########################################################
 ## Don't exit until `pg_isready` returns 0 in container ##
@@ -17,9 +17,9 @@ requireEnvVar "DB_SUPERUSER_PASSWORD"
 
 # NOTE: This is used strictly for the status code to determine readiness.
 pgIsReady() {
-  PGPASSWORD="${DB_SUPERUSER_PASSWORD}" pg_isready \
-    --dbname "${DB_SUPERUSER_NAME}" \
-    --username "${DB_SUPERUSER_USER}" \
+  PGPASSWORD="${DB_ADMIN_PASSWORD}" pg_isready \
+    --dbname "${DB_NAME}" \
+    --username "${DB_ADMIN_USER}" \
     --host "${DB_HOST}" \
     --port "${DB_PORT}" \
     > /dev/null 2>&1
