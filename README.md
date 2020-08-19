@@ -17,6 +17,7 @@ Usage:
    make stop-db                Stops the PostgreSQL database running in a Docker container
    make require-db             Determine if PostgreSQL database is running; fail if not
    make psql-db                Connects to currently running PostgreSQL DB via `psql`
+   make run-examples-main      Run `./examples/main.go`
 
 ```
 

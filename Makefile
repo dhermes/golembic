@@ -11,6 +11,7 @@ help:
 	@echo '   make stop-db                Stops the PostgreSQL database running in a Docker container'
 	@echo '   make require-db             Determine if PostgreSQL database is running; fail if not'
 	@echo '   make psql-db                Connects to currently running PostgreSQL DB via `psql`'
+	@echo '   make run-examples-main      Run `./examples/main.go`'
 	@echo ''
 
 ################################################################################
@@ -25,6 +26,7 @@ endif
 ################################################################################
 DB_HOST ?= 127.0.0.1
 DB_PORT ?= 18426
+DB_SSLMODE ?= disable
 DB_CONTAINER_NAME ?= dev-postgres-golembic
 
 DB_SUPERUSER_NAME ?= superuser_db
@@ -90,3 +92,13 @@ psql-db: require-db
 	  --dbname $(DB_NAME) \
 	  --port $(DB_PORT) \
 	  --host $(DB_HOST)
+
+.PHONY: run-examples-main
+run-examples-main: require-db
+	@DB_HOST=$(DB_HOST) \
+	  DB_PORT=$(DB_PORT) \
+	  DB_SSLMODE=$(DB_SSLMODE) \
+	  DB_NAME=$(DB_NAME) \
+	  DB_ADMIN_USER=$(DB_ADMIN_USER) \
+	  DB_ADMIN_PASSWORD=$(DB_ADMIN_PASSWORD) \
+	  go run ./examples/main.go

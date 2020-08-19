@@ -1,10 +1,16 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"log"
+	"os"
+
+	_ "github.com/lib/pq"
 
 	"github.com/dhermes/golembic"
+	"github.com/dhermes/golembic/postgres"
 )
 
 func allMigrations() (*golembic.Migrations, error) {
@@ -88,6 +94,20 @@ DROP TABLE IF EXISTS movies;
 	return migrations, nil
 }
 
+func mustEnvVar(key string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		log.Fatalf("Environment variable missing: %q", key)
+	}
+	return value
+}
+
+func mustNil(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
 func main() {
 	migrations, err := allMigrations()
 	if err != nil {
@@ -95,4 +115,23 @@ func main() {
 	}
 
 	fmt.Println(migrations.Describe())
+
+	cfg := postgres.Config{
+		Host:     mustEnvVar("DB_HOST"),
+		Port:     mustEnvVar("DB_PORT"),
+		Database: mustEnvVar("DB_NAME"),
+		Username: mustEnvVar("DB_ADMIN_USER"),
+		Password: mustEnvVar("DB_ADMIN_PASSWORD"),
+		SSLMode:  mustEnvVar("DB_SSLMODE"),
+	}
+	db, err := sql.Open("postgres", cfg.GetConnectionString())
+	mustNil(err)
+	err = db.Ping()
+	mustNil(err)
+
+	ctx := context.Background()
+	tx, err := db.BeginTx(ctx, nil)
+	mustNil(err)
+	err = golembic.CreateMigrationsTable(ctx, tx)
+	mustNil(err)
 }
