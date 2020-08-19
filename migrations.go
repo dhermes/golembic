@@ -2,6 +2,7 @@ package golembic
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 )
 
@@ -71,7 +72,87 @@ func (m *Migrations) RegisterMany(ms ...Migration) error {
 	return nil
 }
 
+// findRoot does a linear scan of every migration in the sequence and returns
+// the revision of the root migration. In the "general" case such a scan would
+// be expensive, but the number of migrations should always be a small number.
+//
+// NOTE: This does not verify or enforce the invariant that there must be
+// exactly one migration without a parent. This invariant is enforced by the
+// exported methods such as `Register()` and `RegisterMany()` and the constructor
+// `NewSequence()`.
+func (m *Migrations) findRoot() string {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	for key, migration := range m.sequence {
+		if migration.Parent == "" {
+			return key
+		}
+	}
+
+	return ""
+}
+
+// ordered produces the revisions in the sequence, in order.
+//
+// NOTE: This does not verify or enforce the invariant that there must be
+// exactly one migration without a parent. This invariant is enforced by the
+// exported methods such as `Register()` and `RegisterMany()` and the constructor
+// `NewSequence()`.
+func (m *Migrations) ordered() []string {
+	root := m.findRoot()
+
+	m.lock.Lock()
+	defer m.lock.Unlock()
+	result := []string{root}
+	// Find the unique revision (without validation) that points at the
+	// current `parent`.
+	parent := root
+	for i := 0; i < len(m.sequence)-1; i++ {
+		for _, migration := range m.sequence {
+			if migration.Parent != parent {
+				continue
+			}
+
+			result = append(result, migration.Revision)
+			parent = migration.Revision
+			break
+		}
+	}
+
+	return result
+}
+
+type describeMetadata struct {
+	Revision    string
+	Description string
+}
+
 // Describe displays all of the registered migrations (with descriptions).
 func (m *Migrations) Describe() string {
-	return fmt.Sprintf("%#v", m)
+	revisions := m.ordered()
+	lines := []string{}
+
+	m.lock.Lock()
+	defer m.lock.Unlock()
+	dms := []describeMetadata{}
+	revisionWidth := 0
+	for _, revision := range revisions {
+		migration := m.sequence[revision]
+		dms = append(dms, describeMetadata{Revision: revision, Description: migration.Description})
+		if len(revision) > revisionWidth {
+			revisionWidth = len(revision)
+		}
+	}
+
+	indexWidth := len(fmt.Sprintf("%d", len(dms)-1))
+	format := ("%" + fmt.Sprintf("%d", indexWidth) + "d " +
+		"| %" + fmt.Sprintf("%d", revisionWidth) + "s " +
+		"| %s")
+	for i, dm := range dms {
+		line := fmt.Sprintf(format, i, dm.Revision, dm.Description)
+		lines = append(lines, line)
+	}
+
+	return strings.Join(lines, "\n")
 }

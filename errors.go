@@ -14,10 +14,10 @@ var (
 	// ErrNoParent is the error returned when attempting to register a migration
 	// with no parent.
 	ErrNoParent = errors.New("Cannot register a migration with no parent")
-	// ErrAlreadyRegistered is the error return when a migration has already been
+	// ErrAlreadyRegistered is the error returned when a migration has already been
 	// registered.
 	ErrAlreadyRegistered = errors.New("Migration has already been registered")
-	// ErrNilInterface is the error return when a value satisfying an interface
+	// ErrNilInterface is the error returned when a value satisfying an interface
 	// is nil in a context where it is not allowed.
 	ErrNilInterface = errors.New("Value satisfying interface was nil")
 )
