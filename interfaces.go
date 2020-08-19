@@ -13,3 +13,6 @@ type UpMigration = func(*sql.Tx) error
 // down / reverse / rollback migrations. The expectation as that the migration
 // runs SQL statements within the transaction but this is not required.
 type DownMigration = func(*sql.Tx) error
+
+// Option describes options used to create a new migration.
+type Option = func(*Migration) error

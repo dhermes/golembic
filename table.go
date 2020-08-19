@@ -3,7 +3,6 @@ package golembic
 import (
 	"context"
 	"database/sql"
-	"log"
 )
 
 const (
@@ -23,16 +22,6 @@ CREATE TABLE golembic_migrations (
 ALTER TABLE golembic_migrations ADD CONSTRAINT pk_golembic_migrations_id PRIMARY KEY (id);
 `
 )
-
-func rollbackAndLog(tx *sql.Tx) {
-	err := tx.Rollback()
-	if err == nil || err == sql.ErrTxDone {
-		return
-	}
-
-	// TODO: https://github.com/dhermes/golembic/issues/1
-	log.Println(err)
-}
 
 // CreateMigrationsTable invokes SQL statements required to create the metadata
 // table used to track migrations.

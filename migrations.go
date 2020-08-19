@@ -1,24 +1,8 @@
 package golembic
 
 import (
-	"errors"
 	"fmt"
 	"sync"
-)
-
-var (
-	// ErrNotRoot is the error returned when attempting to start a sequence of
-	// migration with a non-root migration.
-	ErrNotRoot = errors.New("Root migration cannot have a parent")
-	// ErrMissingRevision is the error returned when attempting to register a migration
-	// with no revision.
-	ErrMissingRevision = errors.New("Cannot register a migration with no revision")
-	// ErrNoParent is the error returned when attempting to register a migration
-	// with no parent.
-	ErrNoParent = errors.New("Cannot register a migration with no parent")
-	// ErrAlreadyRegistered is the error return when a migration has already been
-	// registered.
-	ErrAlreadyRegistered = errors.New("Migration has already been registered")
 )
 
 // Migrations represents a sequence of migrations to be applied.
