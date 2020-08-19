@@ -11,6 +11,9 @@
 // - A series of migrations should be easy to use both in a script or as part
 //   of a larger piece of Go code
 //
+// - Avoid all import time side effects caused either by importing a package that
+//   uses `init()` or by requiring migrations files to use `init()`
+//
 // The design allows for running "arbitrary" code inside `Up` and `Down` migrations
 // so that even non-SQL tasks can be tracked as a "run-once" migration.
 //
