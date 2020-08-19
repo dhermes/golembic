@@ -12,26 +12,38 @@ const (
 
 	// TODO: https://github.com/dhermes/golembic/issues/2
 	createMigrationsTableSQL = `
-CREATE TABLE golembic_migrations (
-    id SERIAL,
-    revision VARCHAR(32) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS golembic_migrations (
+  id SERIAL,
+  revision VARCHAR(32) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 `
 	addPrimaryKeyMigrationsTableSQL = `
-ALTER TABLE golembic_migrations ADD CONSTRAINT pk_golembic_migrations_id PRIMARY KEY (id);
+ALTER TABLE golembic_migrations
+  ADD CONSTRAINT pk_golembic_migrations_id PRIMARY KEY (id);
 `
 )
 
 // CreateMigrationsTable invokes SQL statements required to create the metadata
 // table used to track migrations.
-func CreateMigrationsTable(ctx context.Context, db *sql.DB) error {
+func CreateMigrationsTable(ctx context.Context, provider EngineProvider) error {
+	db, err := provider.Open()
+
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 
 	defer rollbackAndLog(tx)
+
+	// Early exit if the table exists.
+	exists, err := tableExists(ctx, tx, provider, DefaultMetadataTableName)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return nil
+	}
 
 	_, err = tx.ExecContext(ctx, createMigrationsTableSQL)
 	if err != nil {
@@ -44,4 +56,20 @@ func CreateMigrationsTable(ctx context.Context, db *sql.DB) error {
 	}
 
 	return tx.Commit()
+}
+
+func tableExists(ctx context.Context, tx *sql.Tx, provider EngineProvider, table string) (bool, error) {
+	query := provider.TableExistsSQL(table)
+	rows, err := tx.QueryContext(ctx, query)
+	if err != nil {
+		return false, err
+	}
+
+	anyRows := rows.Next()
+	err = rows.Err()
+	if err != nil {
+		return false, err
+	}
+
+	return anyRows, rows.Close()
 }

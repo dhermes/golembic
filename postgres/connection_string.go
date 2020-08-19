@@ -14,6 +14,8 @@ const (
 	// DefaultDatabase is the default database to connect to, we use
 	// `postgres` to not pollute the template databases.
 	DefaultDatabase = "postgres"
+	// DefaultSchema is the default schema to connect to
+	DefaultSchema = "public"
 )
 
 // Config is a set of connection config options.
@@ -34,32 +36,8 @@ type Config struct {
 	Password string
 	// ConnectTimeout is the connection timeout in seconds.
 	ConnectTimeout int
-	// SSLMode is the sslmode for the connection.
+	// SSLMode is the SSL mode for the connection.
 	SSLMode string
-}
-
-// HostOrDefault returns the postgres host for the connection or a default.
-func (c Config) HostOrDefault() string {
-	if c.Host != "" {
-		return c.Host
-	}
-	return DefaultHost
-}
-
-// PortOrDefault returns the port for a connection if it is not the standard postgres port.
-func (c Config) PortOrDefault() string {
-	if c.Port != "" {
-		return c.Port
-	}
-	return DefaultPort
-}
-
-// DatabaseOrDefault returns the connection database or a default.
-func (c Config) DatabaseOrDefault(inherited ...string) string {
-	if c.Database != "" {
-		return c.Database
-	}
-	return DefaultDatabase
 }
 
 // GetConnectionString creates a PostgreSQL connection string from the config.
@@ -70,16 +48,15 @@ func (c Config) GetConnectionString() string {
 		return c.ConnectionString
 	}
 
-	host := c.HostOrDefault()
-	port := c.PortOrDefault()
-	if port != "" {
-		host = host + ":" + port
+	host := c.Host
+	if c.Port != "" {
+		host = host + ":" + c.Port
 	}
 
 	u := &url.URL{
 		Scheme: "postgres",
 		Host:   host,
-		Path:   c.DatabaseOrDefault(),
+		Path:   c.Database,
 	}
 
 	if len(c.Username) > 0 {

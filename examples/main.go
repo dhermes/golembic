@@ -2,12 +2,9 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
-
-	_ "github.com/lib/pq"
 
 	"github.com/dhermes/golembic"
 	"github.com/dhermes/golembic/postgres"
@@ -116,20 +113,17 @@ func main() {
 
 	fmt.Println(migrations.Describe())
 
-	cfg := postgres.Config{
-		Host:     mustEnvVar("DB_HOST"),
-		Port:     mustEnvVar("DB_PORT"),
-		Database: mustEnvVar("DB_NAME"),
-		Username: mustEnvVar("DB_ADMIN_USER"),
-		Password: mustEnvVar("DB_ADMIN_PASSWORD"),
-		SSLMode:  mustEnvVar("DB_SSLMODE"),
-	}
-	db, err := sql.Open("postgres", cfg.GetConnectionString())
-	mustNil(err)
-	err = db.Ping()
+	provider, err := postgres.New(
+		postgres.OptHost(mustEnvVar("DB_HOST")),
+		postgres.OptPort(mustEnvVar("DB_PORT")),
+		postgres.OptDatabase(mustEnvVar("DB_NAME")),
+		postgres.OptUsername(mustEnvVar("DB_ADMIN_USER")),
+		postgres.OptPassword(mustEnvVar("DB_ADMIN_PASSWORD")),
+		postgres.OptSSLMode(mustEnvVar("DB_SSLMODE")),
+	)
 	mustNil(err)
 
 	ctx := context.Background()
-	err = golembic.CreateMigrationsTable(ctx, db)
+	err = golembic.CreateMigrationsTable(ctx, provider)
 	mustNil(err)
 }
