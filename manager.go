@@ -33,14 +33,20 @@ func NewManager(opts ...ManagerOption) (*Manager, error) {
 // writing rows into that metadata table during an `UpMigration.`
 type Manager struct {
 	MetadataTable string
-	Connection    *sql.DB
+	Connection    *sql.Conn
 	Provider      EngineProvider
 	Sequence      *Migrations
 }
 
 // EnsureConnection returns a cached database connection (if already set) or
-// creates and validates a new one.
-func (m *Manager) EnsureConnection() (*sql.DB, error) {
+// creates a new one, validates the connection can ping the DB and sets timeouts
+// via `Provider.SetConnTimeouts()`.
+//
+// We use a `sql.Conn` vs. a `sql.DB` because we can guarantee that connection
+// timeouts are set on a connection whereas a `sql.DB` may use a different
+// connection from the pool. Though `sql.Conn` is **not** concurrency safe,
+// this isn't a problem for us because migrations should run in series.
+func (m *Manager) EnsureConnection(ctx context.Context) (*sql.Conn, error) {
 	if m.Connection != nil {
 		return m.Connection, nil
 	}
@@ -50,24 +56,34 @@ func (m *Manager) EnsureConnection() (*sql.DB, error) {
 		return nil, err
 	}
 
-	err = db.Ping()
+	conn, err := db.Conn(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	m.Connection = db
+	err = conn.PingContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = m.Provider.SetConnTimeouts(ctx, conn)
+	if err != nil {
+		return nil, err
+	}
+
+	m.Connection = conn
 	return m.Connection, nil
 }
 
 // EnsureMigrationsTable checks that the migrations metadata table exists
 // and creates it if not.
 func (m *Manager) EnsureMigrationsTable(ctx context.Context) error {
-	db, err := m.EnsureConnection()
+	conn, err := m.EnsureConnection(ctx)
 	if err != nil {
 		return err
 	}
 
-	return CreateMigrationsTable(ctx, db, m.Provider, m.MetadataTable)
+	return CreateMigrationsTable(ctx, conn, m.Provider, m.MetadataTable)
 }
 
 // InsertMigration inserts a migration into the migrations metadata table.
@@ -94,12 +110,12 @@ func (m *Manager) ApplyMigration(ctx context.Context, migration Migration) error
 	// TODO: https://github.com/dhermes/golembic/issues/1
 	log.Printf("Applying %s: %s\n", migration.Revision, migration.Description)
 
-	db, err := m.EnsureConnection()
+	conn, err := m.EnsureConnection(ctx)
 	if err != nil {
 		return err
 	}
 
-	tx, err := db.BeginTx(ctx, nil)
+	tx, err := conn.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -247,12 +263,12 @@ func (m *Manager) betweenOrUntil(latest string, revision string) ([]Migration, e
 // NOTE: This assumes, but does not check, that the migrations metadata table
 // exists.
 func (m *Manager) Latest(ctx context.Context) (string, time.Time, error) {
-	db, err := m.EnsureConnection()
+	conn, err := m.EnsureConnection(ctx)
 	if err != nil {
 		return "", time.Time{}, err
 	}
 
-	tx, err := db.BeginTx(ctx, nil)
+	tx, err := conn.BeginTx(ctx, nil)
 	if err != nil {
 		return "", time.Time{}, err
 	}
@@ -323,12 +339,12 @@ func (m *Manager) Verify(ctx context.Context) error {
 		return err
 	}
 
-	db, err := m.EnsureConnection()
+	conn, err := m.EnsureConnection(ctx)
 	if err != nil {
 		return err
 	}
 
-	tx, err := db.BeginTx(ctx, nil)
+	tx, err := conn.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}

@@ -22,10 +22,10 @@ type Migration struct {
 	// Up is the function to be executed when a migration is being applied. It
 	// is required for a migration to be valid.
 	Up UpMigration
-	// UpNonTx is the non-transactional form of `Up`. This should be used in
+	// UpConn is the non-transactional form of `Up`. This should be used in
 	// rare situations where a migration cannot run inside a transaction, e.g.
 	// a `CREATE UNIQUE INDEX CONCURRENTLY` statement.
-	UpNonTx UpMigrationNonTx
+	UpConn UpMigrationConn
 	// CreatedAt is intended to be used for migrations retrieved via a SQL
 	// query to the migrations metadata table.
 	CreatedAt time.Time

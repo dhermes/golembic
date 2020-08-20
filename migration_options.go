@@ -74,41 +74,41 @@ func OptUpFromFile(filename string) MigrationOption {
 	return OptUpFromSQL(string(statement))
 }
 
-// OptUpNonTx sets the non-transactional `up` function on a migration.
-func OptUpNonTx(up UpMigrationNonTx) MigrationOption {
+// OptUpConn sets the non-transactional `up` function on a migration.
+func OptUpConn(up UpMigrationConn) MigrationOption {
 	return func(m *Migration) error {
 		if up == nil {
 			return ErrNilInterface
 		}
 
-		m.UpNonTx = up
+		m.UpConn = up
 		return nil
 	}
 }
 
-// OptUpNonTxFromSQL returns an option that sets the non-transctional `up`
+// OptUpConnFromSQL returns an option that sets the non-transctional `up`
 // function to execute a SQL statement.
-func OptUpNonTxFromSQL(statement string) MigrationOption {
-	up := func(ctx context.Context, db *sql.DB) error {
-		_, err := db.ExecContext(ctx, statement)
+func OptUpConnFromSQL(statement string) MigrationOption {
+	up := func(ctx context.Context, conn *sql.Conn) error {
+		_, err := conn.ExecContext(ctx, statement)
 		return err
 	}
 
 	return func(m *Migration) error {
-		m.UpNonTx = up
+		m.UpConn = up
 		return nil
 	}
 }
 
-// OptUpNonTxFromFile returns an option that sets the non-transctional `up`
+// OptUpConnFromFile returns an option that sets the non-transctional `up`
 // function to execute a SQL statement that is stored in a file.
-func OptUpNonTxFromFile(filename string) MigrationOption {
+func OptUpConnFromFile(filename string) MigrationOption {
 	statement, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return OptAlwaysError(err)
 	}
 
-	return OptUpNonTxFromSQL(string(statement))
+	return OptUpConnFromSQL(string(statement))
 }
 
 // OptAlwaysError returns an option that always returns an error.

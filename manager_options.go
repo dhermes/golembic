@@ -16,9 +16,9 @@ func OptManagerMetadataTable(table string) ManagerOption {
 }
 
 // OptManagerConnection sets the connection on a manager.
-func OptManagerConnection(connection *sql.DB) ManagerOption {
+func OptManagerConnection(conn *sql.Conn) ManagerOption {
 	return func(m *Manager) error {
-		m.Connection = connection
+		m.Connection = conn
 		return nil
 	}
 }

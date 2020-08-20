@@ -17,10 +17,13 @@ import (
 // interface should be used.
 type UpMigration = func(context.Context, *sql.Tx) error
 
-// UpMigrationNonTx defines a function interface to be used for up / forward
+// UpMigrationConn defines a function interface to be used for up / forward
 // migrations. This is the non-transactional form of `UpMigration` and
-// should only be used in rare situations.
-type UpMigrationNonTx = func(context.Context, *sql.DB) error
+// should only be used in rare situations. Note that the second argument is
+// a `Conn` (vs. a `DB`). A DB is concurrency-safe because it represents a
+// connection pool. However, we pass in a **single** connection because we
+// need to guarantee that
+type UpMigrationConn = func(context.Context, *sql.Conn) error
 
 // EngineProvider describes the interface required for a database engine.
 type EngineProvider interface {

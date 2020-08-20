@@ -29,8 +29,8 @@ ALTER TABLE %[1]s
 // table used to track migrations. If the table already exists (as detected by
 // `provider.TableExistsSQL()`), this function will not attempt to create a
 // table or any constraints.
-func CreateMigrationsTable(ctx context.Context, db *sql.DB, provider EngineProvider, table string) error {
-	tx, err := db.BeginTx(ctx, nil)
+func CreateMigrationsTable(ctx context.Context, conn *sql.Conn, provider EngineProvider, table string) error {
+	tx, err := conn.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
