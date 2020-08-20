@@ -5,14 +5,22 @@ import (
 	"database/sql"
 )
 
-// UpMigration defines a function interface that must be satisfied by
-// up / forward migrations. The expectation as that the migration runs SQL
-// statements within the transaction but this is not required. The SQL
-// transaction will be started **before** `UpMigration` is invoked and will
-// be committed **after** the `UpMigration` exits without error. In addition to
-// the contents of `UpMigration`, a row will be written to the migrations
-// metadata table as part of the transaction.
+// UpMigration defines a function interface to be used for up / forward
+// migrations. The SQL transaction will be started **before** `UpMigration`
+// is invoked and will be committed **after** the `UpMigration` exits without
+// error. In addition to the contents of `UpMigration`, a row will be written
+// to the migrations metadata table as part of the transaction.
+//
+// The expectation is that the migration runs SQL statements within the
+// transaction. If a migration cannot run inside a transaction, e.g. a
+// `CREATE UNIQUE INDEX CONCURRENTLY` statement, then the `UpMigration`
+// interface should be used.
 type UpMigration = func(context.Context, *sql.Tx) error
+
+// UpMigrationNonTx defines a function interface to be used for up / forward
+// migrations. This is the non-transactional form of `UpMigration` and
+// should only be used in rare situations.
+type UpMigrationNonTx = func(context.Context, *sql.DB) error
 
 // EngineProvider describes the interface required for a database engine.
 type EngineProvider interface {
