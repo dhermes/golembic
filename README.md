@@ -4,6 +4,64 @@
 
 [![GoDoc][11]][12]
 
+## Usage
+
+## `up`
+
+> **NOTE**: If `GOLEMBIC_CMD` is not provided, the default is `up`.
+
+```
+$ make restart-db
+$ make run-examples-main GOLEMBIC_CMD=up
+2020/08/20 00:46:14 Applying c9b52448285b: Create users table
+2020/08/20 00:46:14 Applying dce8812d7b6f: Add city to users
+2020/08/20 00:46:14 Applying 0501ccd1d98c: Add index on user emails
+2020/08/20 00:46:14 Applying e2d4eecb1841: Create books table
+2020/08/20 00:46:14 Applying 432f690fcbda: Create movies table
+```
+
+After creation, the next run does nothing
+
+```
+$ make run-examples-main GOLEMBIC_CMD=up
+```
+
+If we manually delete one, the last migration will get run
+
+```
+$ make psql-db
+...
+golembic=> DELETE FROM golembic_migrations WHERE revision = '432f690fcbda';
+DELETE 1
+golembic=> DROP TABLE movies;
+DROP TABLE
+golembic=> \q
+$
+$
+$ make run-examples-main GOLEMBIC_CMD=up
+2020/08/20 00:49:06 Applying 432f690fcbda: Create movies table
+```
+
+## `describe`
+
+```
+$ make run-examples-main GOLEMBIC_CMD=describe
+0 | c9b52448285b | Create users table
+1 | dce8812d7b6f | Add city to users
+2 | 0501ccd1d98c | Add index on user emails
+3 | e2d4eecb1841 | Create books table
+4 | 432f690fcbda | Create movies table
+```
+
+## Invalid Command
+
+```
+$ make run-examples-main GOLEMBIC_CMD=baz
+2020/08/20 00:51:59 Invalid command: "baz"
+exit status 1
+make: *** [run-examples-main] Error 1
+```
+
 ## Development
 
 ```

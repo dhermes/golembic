@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 )
 
 const (
@@ -89,6 +90,9 @@ func (m *Manager) InsertMigration(ctx context.Context, tx *sql.Tx, migration Mig
 
 // ApplyMigration creates a transaction that runs the "Up" migration.
 func (m *Manager) ApplyMigration(ctx context.Context, migration Migration) error {
+	// TODO: https://github.com/dhermes/golembic/issues/1
+	log.Printf("Applying %s: %s\n", migration.Revision, migration.Description)
+
 	db, err := m.EnsureConnection()
 	if err != nil {
 		return err
@@ -120,8 +124,8 @@ func (m *Manager) ApplyMigration(ctx context.Context, migration Migration) error
 	return tx.Commit()
 }
 
-// Apply applies all migrations.
-func (m *Manager) Apply(ctx context.Context) error {
+// Up applies all migrations that have not yet been applied.
+func (m *Manager) Up(ctx context.Context) error {
 	err := m.EnsureMigrationsTable(ctx)
 	if err != nil {
 		return err

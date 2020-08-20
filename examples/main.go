@@ -96,7 +96,6 @@ func mustNil(err error) {
 func main() {
 	migrations, err := allMigrations()
 	mustNil(err)
-	fmt.Println(migrations.Describe())
 
 	provider, err := postgres.New(
 		postgres.OptHost(mustEnvVar("DB_HOST")),
@@ -112,7 +111,16 @@ func main() {
 	)
 	mustNil(err)
 
-	ctx := context.Background()
-	err = m.Apply(ctx)
-	mustNil(err)
+	cmd := mustEnvVar("GOLEMBIC_CMD")
+	switch cmd {
+	case "up":
+		ctx := context.Background()
+		err = m.Up(ctx)
+		mustNil(err)
+	case "describe":
+		fmt.Println(migrations.Describe())
+	default:
+		err = fmt.Errorf("Invalid command: %q", cmd)
+		mustNil(err)
+	}
 }

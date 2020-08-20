@@ -38,6 +38,8 @@ DB_NAME ?= golembic
 DB_ADMIN_USER ?= golembic_admin
 DB_ADMIN_PASSWORD ?= testpassword_admin
 
+GOLEMBIC_CMD ?= up
+
 .PHONY: vet
 vet:
 	@echo ">> vetting"
@@ -105,4 +107,5 @@ run-examples-main: require-db
 	  DB_NAME=$(DB_NAME) \
 	  DB_ADMIN_USER=$(DB_ADMIN_USER) \
 	  DB_ADMIN_PASSWORD=$(DB_ADMIN_PASSWORD) \
+	  GOLEMBIC_CMD=$(GOLEMBIC_CMD) \
 	  go run ./examples/main.go
