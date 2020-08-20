@@ -58,6 +58,9 @@ golembic=> \d+ golembic_migrations
  created_at | timestamp with time zone |           |          | CURRENT_TIMESTAMP | plain    |              |
 Indexes:
     "pk_golembic_migrations_revision" PRIMARY KEY, btree (revision)
+    "uq_golembic_migrations_parent" UNIQUE CONSTRAINT, btree (parent)
+Check constraints:
+    "chk_golembic_migrations_parent_neq_revision" CHECK (parent::text <> revision::text)
 Foreign-key constraints:
     "fk_golembic_migrations_parent" FOREIGN KEY (parent) REFERENCES golembic_migrations(revision)
 Referenced by:

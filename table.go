@@ -13,15 +13,15 @@ CREATE TABLE IF NOT EXISTS %[1]s (
   parent VARCHAR(32),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-`
-	addPrimaryKeyMigrationsTableSQL = `
 ALTER TABLE %[1]s
   ADD CONSTRAINT %[2]s PRIMARY KEY (revision);
-`
-	addForeignKeyMigrationsTableSQL = `
 ALTER TABLE %[1]s
-  ADD CONSTRAINT %[2]s FOREIGN KEY (parent)
+  ADD CONSTRAINT %[3]s FOREIGN KEY (parent)
   REFERENCES %[1]s(revision);
+ALTER TABLE %[1]s
+  ADD CONSTRAINT %[4]s UNIQUE (parent);
+ALTER TABLE %[1]s
+  ADD CONSTRAINT %[5]s CHECK (parent != revision);
 `
 )
 
@@ -57,38 +57,21 @@ func CreateMigrationsTable(ctx context.Context, db *sql.DB, provider EngineProvi
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, addPrimaryKeyMigrationsSQL(provider, table))
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.ExecContext(ctx, addForeignKeyMigrationsSQL(provider, table))
-	if err != nil {
-		return err
-	}
-
 	return tx.Commit()
 }
 
 func createMigrationsSQL(provider EngineProvider, table string) string {
-	return fmt.Sprintf(createMigrationsTableSQL, provider.QuoteIdentifier(table))
-}
-
-func addPrimaryKeyMigrationsSQL(provider EngineProvider, table string) string {
-	constraint := fmt.Sprintf("pk_%s_revision", table)
+	pkConstraint := fmt.Sprintf("pk_%s_revision", table)
+	fkConstraint := fmt.Sprintf("fk_%s_parent", table)
+	uqConstraint := fmt.Sprintf("uq_%s_parent", table)
+	chkConstraint := fmt.Sprintf("chk_%s_parent_neq_revision", table)
 	return fmt.Sprintf(
-		addPrimaryKeyMigrationsTableSQL,
+		createMigrationsTableSQL,
 		provider.QuoteIdentifier(table),
-		provider.QuoteIdentifier(constraint),
-	)
-}
-
-func addForeignKeyMigrationsSQL(provider EngineProvider, table string) string {
-	constraint := fmt.Sprintf("fk_%s_parent", table)
-	return fmt.Sprintf(
-		addForeignKeyMigrationsTableSQL,
-		provider.QuoteIdentifier(table),
-		provider.QuoteIdentifier(constraint),
+		provider.QuoteIdentifier(pkConstraint),
+		provider.QuoteIdentifier(fkConstraint),
+		provider.QuoteIdentifier(uqConstraint),
+		provider.QuoteIdentifier(chkConstraint),
 	)
 }
 
