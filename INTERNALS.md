@@ -159,7 +159,7 @@ And see how these migrations are tracked
 
 ```
 $ make run-examples-main GOLEMBIC_CMD=version
-2020/08/20 10:02:18 432f690fcbda: Create movies table
+2020/08/20 10:02:18 432f690fcbda: Create movies table (applied 2020-08-20 15:00:54.308867 +0000 UTC)
 $
 $ make psql-db
 ...

@@ -1,5 +1,9 @@
 package golembic
 
+import (
+	"time"
+)
+
 // Migration represents an individual migration to be applied; typically as
 // a set of SQL statements.
 type Migration struct {
@@ -17,6 +21,9 @@ type Migration struct {
 	// Up is the function to be executed when a migration is being applied. It
 	// is required for a migration to be valid.
 	Up UpMigration
+	// CreatedAt is intended to be used for migrations retrieved via a SQL
+	// query to the migrations metadata table.
+	CreatedAt time.Time
 }
 
 // NewMigration creates a new migration from a variadic slice of options.

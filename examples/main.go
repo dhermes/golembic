@@ -158,7 +158,10 @@ func main() {
 		if migration == nil {
 			log.Println("No migrations have been run")
 		} else {
-			log.Printf("%s: %s\n", migration.Revision, migration.Description)
+			log.Printf(
+				"%s: %s (applied %s)\n",
+				migration.Revision, migration.Description, migration.CreatedAt,
+			)
 		}
 	case "describe":
 		fmt.Println(migrations.Describe())

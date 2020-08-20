@@ -170,7 +170,7 @@ make: *** [run-examples-main] Error 1
 $ make restart-db
 ...
 $ make run-examples-main GOLEMBIC_CMD=version
-2020/08/20 10:10:19 No migrations have been run
+2020/08/20 10:37:05 No migrations have been run
 ```
 
 Then run **all** of the migrations and check the version
@@ -179,7 +179,7 @@ Then run **all** of the migrations and check the version
 $ make run-examples-main GOLEMBIC_CMD=up
 ...
 $ make run-examples-main GOLEMBIC_CMD=version
-2020/08/20 10:10:34 432f690fcbda: Create movies table
+2020/08/20 10:37:22 432f690fcbda: Create movies table (applied 2020-08-20 15:37:18.740333 +0000 UTC)
 ```
 
 ### `describe`

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 )
 
 // readAllInt performs a SQL query and reads all rows into an `int` slice,
@@ -35,28 +36,29 @@ func readAllInt(ctx context.Context, tx *sql.Tx, query string, args ...interface
 
 // migrationFromQuery is intended to be used to construct a metadata row
 // from a pair of values read off of a `sql.Rows`.
-func migrationFromQuery(parent sql.NullString, revision string) Migration {
+func migrationFromQuery(parent sql.NullString, revision string, createdAt time.Time) Migration {
 	if parent.Valid {
-		return Migration{Parent: parent.String, Revision: revision}
+		return Migration{Parent: parent.String, Revision: revision, CreatedAt: createdAt}
 	}
 
 	// Handle NULL.
-	return Migration{Revision: revision}
+	return Migration{Revision: revision, CreatedAt: createdAt}
 }
 
 // readAllMigration performs a SQL query and reads all rows into a
-// `Migration` slice, under the assumption that two columns -- parent and
-// revision -- are being returned for the query (in that order). For example,
-// the query
+// `Migration` slice, under the assumption that three columns -- parent,
+// revision and created_at -- are being returned for the query (in that order).
+// For example, the query
 //
-//   SELECT parent, revision FROM golembic_migrations;
+//   SELECT parent, revision, created_at FROM golembic_migrations;
 //
 // would satisfy this. A more "focused" query would return the latest migration
 // applied
 //
 //   SELECT
 //       parent,
-//       revision
+//       revision,
+//       created_at
 //   FROM
 //       golembic_migrations
 //   ORDER BY
@@ -76,11 +78,12 @@ func readAllMigration(ctx context.Context, tx *sql.Tx, query string, args ...int
 	for rows.Next() {
 		var parent sql.NullString
 		var revision string
-		err = rows.Scan(&parent, &revision)
+		var createdAt time.Time
+		err = rows.Scan(&parent, &revision, &createdAt)
 		if err != nil {
 			return
 		}
-		result = append(result, migrationFromQuery(parent, revision))
+		result = append(result, migrationFromQuery(parent, revision, createdAt))
 	}
 
 	return
