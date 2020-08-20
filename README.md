@@ -67,7 +67,7 @@ $ make run-examples-main GOLEMBIC_CMD=up-one
 2020/08/20 01:07:20 No migrations to run; latest revision: 432f690fcbda
 ```
 
-## `up-one`
+## `up-to`
 
 ```
 $ make restart-db
