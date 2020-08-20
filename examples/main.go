@@ -163,8 +163,12 @@ func main() {
 				migration.Revision, migration.Description, migration.CreatedAt,
 			)
 		}
+	case "verify":
+		ctx := context.Background()
+		err := m.Verify(ctx)
+		mustNil(err)
 	case "describe":
-		fmt.Println(migrations.Describe())
+		migrations.Describe()
 	default:
 		err = fmt.Errorf("Invalid command: %q", cmd)
 		mustNil(err)

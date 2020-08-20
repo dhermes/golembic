@@ -2,7 +2,7 @@ package golembic
 
 import (
 	"fmt"
-	"strings"
+	"log"
 	"sync"
 )
 
@@ -232,9 +232,8 @@ type describeMetadata struct {
 }
 
 // Describe displays all of the registered migrations (with descriptions).
-func (m *Migrations) Describe() string {
+func (m *Migrations) Describe() {
 	revisions := m.Revisions()
-	lines := []string{}
 
 	m.lock.Lock()
 	defer m.lock.Unlock()
@@ -249,15 +248,13 @@ func (m *Migrations) Describe() string {
 	}
 
 	indexWidth := len(fmt.Sprintf("%d", len(dms)-1))
-	format := ("%" + fmt.Sprintf("%d", indexWidth) + "d " +
+	format := (":: " +
+		"%" + fmt.Sprintf("%d", indexWidth) + "d " +
 		"| %" + fmt.Sprintf("%d", revisionWidth) + "s " +
 		"| %s")
 	for i, dm := range dms {
-		line := fmt.Sprintf(format, i, dm.Revision, dm.Description)
-		lines = append(lines, line)
+		log.Printf(format, i, dm.Revision, dm.Description)
 	}
-
-	return strings.Join(lines, "\n")
 }
 
 // Get retrieves a revision from the sequence, if present. If not, returns

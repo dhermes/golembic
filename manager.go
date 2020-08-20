@@ -315,6 +315,85 @@ func (m *Manager) Version(ctx context.Context) (*Migration, error) {
 	return withCreated, nil
 }
 
+// Verify checks that the rows in the migrations metadata table match the
+// sequence.
+func (m *Manager) Verify(ctx context.Context) error {
+	err := m.EnsureMigrationsTable(ctx)
+	if err != nil {
+		return err
+	}
+
+	db, err := m.EnsureConnection()
+	if err != nil {
+		return err
+	}
+
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer rollbackAndLog(tx)
+
+	// Make sure to "guard" against long locks by setting timeouts within the
+	// transaction before doing any work.
+	err = m.Provider.SetTxTimeouts(ctx, tx)
+	if err != nil {
+		return err
+	}
+
+	// TODO: All of the code above gets copy-pasted quite a bit; try to
+	//       re-factor to make it easier for re-use (e.g. `StartTx()`). It
+	//       is a wee bit delicate because of the need to `defer` in this block
+	//       vs. an invoked method or function.
+	query := fmt.Sprintf(
+		"SELECT parent, revision, created_at FROM %s ORDER BY created_at ASC;",
+		m.Provider.QuoteIdentifier(m.MetadataTable),
+	)
+	rows, err := readAllMigration(ctx, tx, query)
+	if err != nil {
+		return err
+	}
+
+	all := m.Sequence.All()
+	if len(rows) > len(all) {
+		err := fmt.Errorf(
+			"%w; sequence has %d migrations but %d are stored in the table",
+			ErrMigrationMismatch, len(all), len(rows),
+		)
+		return err
+	}
+
+	// Do a first pass for correctness.
+	for i, row := range rows {
+		expected := all[i]
+		if !row.Like(expected) {
+			err := fmt.Errorf(
+				"%w; stored migration %d: %q does not match migration %q in sequence",
+				ErrMigrationMismatch, i, row.Compact(), expected.Compact(),
+			)
+			return err
+		}
+	}
+
+	// Do a second pass for display purposes.
+	for i, fromAll := range all {
+		if i < len(rows) {
+			row := rows[i]
+			log.Printf(
+				":: %d | %s | %s (applied %s)\n",
+				i, fromAll.Revision, fromAll.Description, row.CreatedAt,
+			)
+		} else {
+			log.Printf(
+				":: %d | %s | %s (not yet applied)\n",
+				i, fromAll.Revision, fromAll.Description,
+			)
+		}
+	}
+
+	return nil
+}
+
 // IsApplied checks if a migration has already been applied.
 //
 // NOTE: This assumes, but does not check, that the migrations metadata table

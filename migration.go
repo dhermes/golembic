@@ -1,6 +1,7 @@
 package golembic
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -48,4 +49,18 @@ func MustNewMigration(opts ...MigrationOption) Migration {
 	}
 
 	return *m
+}
+
+// Like is "almost" an equality check, it compares the `Parent` and `Revision`.
+func (m Migration) Like(other Migration) bool {
+	return m.Parent == other.Parent && m.Revision == other.Revision
+}
+
+// Compact gives a "limited" representation of the migration
+func (m Migration) Compact() string {
+	if m.Parent == "" {
+		return fmt.Sprintf("%s:NULL", m.Revision)
+	}
+
+	return fmt.Sprintf("%s:%s", m.Revision, m.Parent)
 }

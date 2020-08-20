@@ -182,17 +182,118 @@ $ make run-examples-main GOLEMBIC_CMD=version
 2020/08/20 10:37:22 432f690fcbda: Create movies table (applied 2020-08-20 15:37:18.740333 +0000 UTC)
 ```
 
+### `verify`
+
+```
+$ make restart-db
+...
+$ make run-examples-main GOLEMBIC_CMD=verify
+2020/08/20 11:04:10 :: 0 | c9b52448285b | Create users table (not yet applied)
+2020/08/20 11:04:10 :: 1 | f1be62155239 | Seed data in users table (not yet applied)
+2020/08/20 11:04:10 :: 2 | dce8812d7b6f | Add city column to users table (not yet applied)
+2020/08/20 11:04:10 :: 3 | 0430566018cc | Rename the root user (not yet applied)
+2020/08/20 11:04:10 :: 4 | 0501ccd1d98c | Add index on user emails (not yet applied)
+2020/08/20 11:04:10 :: 5 | e2d4eecb1841 | Create books table (not yet applied)
+2020/08/20 11:04:10 :: 6 | 432f690fcbda | Create movies table (not yet applied)
+$
+$
+$ make run-examples-main GOLEMBIC_CMD=up-one
+2020/08/20 11:04:21 Applying c9b52448285b: Create users table
+$ make run-examples-main GOLEMBIC_CMD=verify
+2020/08/20 11:04:25 :: 0 | c9b52448285b | Create users table (applied 2020-08-20 16:04:21.869794 +0000 UTC)
+2020/08/20 11:04:25 :: 1 | f1be62155239 | Seed data in users table (not yet applied)
+2020/08/20 11:04:25 :: 2 | dce8812d7b6f | Add city column to users table (not yet applied)
+2020/08/20 11:04:25 :: 3 | 0430566018cc | Rename the root user (not yet applied)
+2020/08/20 11:04:25 :: 4 | 0501ccd1d98c | Add index on user emails (not yet applied)
+2020/08/20 11:04:25 :: 5 | e2d4eecb1841 | Create books table (not yet applied)
+2020/08/20 11:04:25 :: 6 | 432f690fcbda | Create movies table (not yet applied)
+$
+$
+$ make run-examples-main GOLEMBIC_CMD=up-one
+2020/08/20 11:04:30 Applying f1be62155239: Seed data in users table
+$ make run-examples-main GOLEMBIC_CMD=verify
+2020/08/20 11:04:32 :: 0 | c9b52448285b | Create users table (applied 2020-08-20 16:04:21.869794 +0000 UTC)
+2020/08/20 11:04:32 :: 1 | f1be62155239 | Seed data in users table (applied 2020-08-20 16:04:30.783097 +0000 UTC)
+2020/08/20 11:04:32 :: 2 | dce8812d7b6f | Add city column to users table (not yet applied)
+2020/08/20 11:04:32 :: 3 | 0430566018cc | Rename the root user (not yet applied)
+2020/08/20 11:04:32 :: 4 | 0501ccd1d98c | Add index on user emails (not yet applied)
+2020/08/20 11:04:32 :: 5 | e2d4eecb1841 | Create books table (not yet applied)
+2020/08/20 11:04:32 :: 6 | 432f690fcbda | Create movies table (not yet applied)
+$
+$
+$ make run-examples-main GOLEMBIC_CMD=up
+2020/08/20 11:04:36 Applying dce8812d7b6f: Add city column to users table
+2020/08/20 11:04:36 Applying 0430566018cc: Rename the root user
+2020/08/20 11:04:36 Applying 0501ccd1d98c: Add index on user emails
+2020/08/20 11:04:36 Applying e2d4eecb1841: Create books table
+2020/08/20 11:04:36 Applying 432f690fcbda: Create movies table
+$ make run-examples-main GOLEMBIC_CMD=verify
+2020/08/20 11:04:38 :: 0 | c9b52448285b | Create users table (applied 2020-08-20 16:04:21.869794 +0000 UTC)
+2020/08/20 11:04:38 :: 1 | f1be62155239 | Seed data in users table (applied 2020-08-20 16:04:30.783097 +0000 UTC)
+2020/08/20 11:04:38 :: 2 | dce8812d7b6f | Add city column to users table (applied 2020-08-20 16:04:36.121622 +0000 UTC)
+2020/08/20 11:04:38 :: 3 | 0430566018cc | Rename the root user (applied 2020-08-20 16:04:36.129109 +0000 UTC)
+2020/08/20 11:04:38 :: 4 | 0501ccd1d98c | Add index on user emails (applied 2020-08-20 16:04:36.136544 +0000 UTC)
+2020/08/20 11:04:38 :: 5 | e2d4eecb1841 | Create books table (applied 2020-08-20 16:04:36.144876 +0000 UTC)
+2020/08/20 11:04:38 :: 6 | 432f690fcbda | Create movies table (applied 2020-08-20 16:04:36.152191 +0000 UTC)
+```
+
+We can artificially introduce a "new" migration and see failure to verify
+
+```
+$ make psql-db
+...
+golembic=> INSERT INTO golembic_migrations (parent, revision) VALUES ('432f690fcbda', 'not-in-sequence');
+INSERT 0 1
+golembic=> \q
+$
+$ make run-examples-main GOLEMBIC_CMD=verify
+2020/08/20 11:07:12 Migration stored in SQL doesn't match sequence; sequence has 7 migrations but 8 are stored in the table
+exit status 1
+make: *** [run-examples-main] Error 1
+```
+
+Similarly, if we can introduce an unknown entry "in sequence"
+
+```
+$ make psql-db
+...
+golembic=> DELETE FROM golembic_migrations WHERE revision = 'not-in-sequence';
+DELETE 1
+golembic=> DELETE FROM golembic_migrations WHERE revision = '432f690fcbda';
+DELETE 1
+golembic=> INSERT INTO golembic_migrations (parent, revision) VALUES ('e2d4eecb1841', 'not-in-sequence');
+INSERT 0 1
+golembic=> \q
+$
+$ make run-examples-main GOLEMBIC_CMD=verify
+2020/08/20 11:12:12 Migration stored in SQL doesn't match sequence; stored migration 6: "not-in-sequence:e2d4eecb1841" does not match migration "432f690fcbda:e2d4eecb1841" in sequence
+exit status 1
+make: *** [run-examples-main] Error 1
+```
+
+Luckily more painful cases such as one migration being deleted "in the middle"
+are protected by the constraints on the table:
+
+```
+$ make psql-db
+...
+golembic=> DELETE FROM golembic_migrations WHERE revision = '0430566018cc';
+ERROR:  update or delete on table "golembic_migrations" violates foreign key constraint "fk_golembic_migrations_parent" on table "golembic_migrations"
+DETAIL:  Key (revision)=(0430566018cc) is still referenced from table "golembic_migrations".
+golembic=> \q
+```
+
 ### `describe`
 
 ```
 $ make run-examples-main GOLEMBIC_CMD=describe
-0 | c9b52448285b | Create users table
-1 | f1be62155239 | Seed data in users table
-2 | dce8812d7b6f | Add city column to users table
-3 | 0430566018cc | Rename the root user
-4 | 0501ccd1d98c | Add index on user emails
-5 | e2d4eecb1841 | Create books table
-6 | 432f690fcbda | Create movies table
+2020/08/20 11:02:35 :: 0 | c9b52448285b | Create users table
+2020/08/20 11:02:35 :: 1 | f1be62155239 | Seed data in users table
+2020/08/20 11:02:35 :: 2 | dce8812d7b6f | Add city column to users table
+2020/08/20 11:02:35 :: 3 | 0430566018cc | Rename the root user
+2020/08/20 11:02:35 :: 4 | 0501ccd1d98c | Add index on user emails
+2020/08/20 11:02:35 :: 5 | e2d4eecb1841 | Create books table
+2020/08/20 11:02:35 :: 6 | 432f690fcbda | Create movies table
 ```
 
 ### Invalid Command
