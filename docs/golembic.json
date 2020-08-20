@@ -1,0 +1,1000 @@
+{
+  "type": "package",
+  "doc": "Package golembic is intended to provide tooling for managing SQL migrations in Go.\n\nThe underlying principles of golembic are as follows:\n\n- Migrations should follow a straight line (from some root); this line should\nbe verified to avoid merge conflicts causing \"branching\"\n\n- The \"current\" state of the world will be tracked in a `migrations` table\ncontaining all migrations that have been applied.\n\n- A series of migrations should be easy to use both in a script or as part\nof a larger piece of Go code\n\n- Avoid all import time side effects caused either by importing a package that\nuses `init()` or by requiring migrations files to use `init()`\n\n- Down migrations are not supported. The idea being that the risk of data loss\nfrom a down migration is not worth it and that writing down migrations can\nbe more challening than writing up migrations.\n\nThe design allows for running \"arbitrary\" code inside migrations\nso that even non-SQL tasks can be tracked as a \"run-once\" migration.\n\nThe name is a portmanteau of Go (the programming language) and `alembic`, the\nPython migrations package. The name `alembic` itself is motivated by the\nfoundational ORM SQLAlchemy (an alembic is a distilling apparatus used by\nalchemists).\n",
+  "name": "golembic",
+  "importPath": ".",
+  "imports": [
+    "context",
+    "database/sql",
+    "errors",
+    "fmt",
+    "log",
+    "strings",
+    "sync"
+  ],
+  "filenames": [
+    "doc.go",
+    "errors.go",
+    "interfaces.go",
+    "manager.go",
+    "manager_options.go",
+    "migration.go",
+    "migration_options.go",
+    "migrations.go",
+    "sql.go",
+    "table.go"
+  ],
+  "notes": {},
+  "bugs": null,
+  "consts": [
+    {
+      "packageName": "golembic",
+      "packageImportPath": ".",
+      "doc": "",
+      "names": [
+        "DefaultMetadataTable"
+      ],
+      "type": "const",
+      "filename": "manager.go",
+      "line": 10
+    }
+  ],
+  "types": [
+    {
+      "packageName": "golembic",
+      "packageImportPath": ".",
+      "doc": "EngineProvider describes the interface required for a database engine.\n",
+      "name": "EngineProvider",
+      "type": "type",
+      "filename": "",
+      "line": 0,
+      "consts": [],
+      "vars": [],
+      "funcs": [],
+      "methods": []
+    },
+    {
+      "packageName": "golembic",
+      "packageImportPath": ".",
+      "doc": "Manager orchestrates database operations done via `UpMigration` as well as\nsupporting operations such as creating a table for migration metadata and\nwriting rows into that metadata table during an `UpMigration.`\n",
+      "name": "Manager",
+      "type": "type",
+      "filename": "",
+      "line": 0,
+      "consts": [],
+      "vars": [],
+      "funcs": [
+        {
+          "doc": "NewManager creates a new manager for orchestrating migrations. The variadic\ninput `table` can be used\n",
+          "name": "NewManager",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "manager.go",
+          "line": 18,
+          "parameters": [
+            {
+              "type": "...ManagerOption",
+              "name": "opts"
+            }
+          ],
+          "results": [
+            {
+              "type": "*Manager",
+              "name": ""
+            },
+            {
+              "type": "error",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        }
+      ],
+      "methods": [
+        {
+          "doc": "ApplyMigration creates a transaction that runs the \"Up\" migration.\n",
+          "name": "ApplyMigration",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "manager.go",
+          "line": 92,
+          "parameters": [
+            {
+              "type": "context.Context",
+              "name": "ctx"
+            },
+            {
+              "type": "Migration",
+              "name": "migration"
+            }
+          ],
+          "results": [
+            {
+              "type": "error",
+              "name": ""
+            }
+          ],
+          "recv": "*Manager",
+          "orig": "*Manager"
+        },
+        {
+          "doc": "EnsureConnection returns a cached database connection (if already set) or\ncreates and validates a new one.\n",
+          "name": "EnsureConnection",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "manager.go",
+          "line": 42,
+          "parameters": [],
+          "results": [
+            {
+              "type": "*sql.DB",
+              "name": ""
+            },
+            {
+              "type": "error",
+              "name": ""
+            }
+          ],
+          "recv": "*Manager",
+          "orig": "*Manager"
+        },
+        {
+          "doc": "EnsureMigrationsTable checks that the migrations metadata table exists\nand creates it if not.\n",
+          "name": "EnsureMigrationsTable",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "manager.go",
+          "line": 63,
+          "parameters": [
+            {
+              "type": "context.Context",
+              "name": "ctx"
+            }
+          ],
+          "results": [
+            {
+              "type": "error",
+              "name": ""
+            }
+          ],
+          "recv": "*Manager",
+          "orig": "*Manager"
+        },
+        {
+          "doc": "InsertMigration inserts a migration into the migrations metadata table.\n",
+          "name": "InsertMigration",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "manager.go",
+          "line": 73,
+          "parameters": [
+            {
+              "type": "context.Context",
+              "name": "ctx"
+            },
+            {
+              "type": "*sql.Tx",
+              "name": "tx"
+            },
+            {
+              "type": "Migration",
+              "name": "migration"
+            }
+          ],
+          "results": [
+            {
+              "type": "error",
+              "name": ""
+            }
+          ],
+          "recv": "*Manager",
+          "orig": "*Manager"
+        },
+        {
+          "doc": "IsApplied checks if a migration has already been applied.\n\nNOTE: This assumes, but does not check, that the migrations metadata table\nexists.\n",
+          "name": "IsApplied",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "manager.go",
+          "line": 314,
+          "parameters": [
+            {
+              "type": "context.Context",
+              "name": "ctx"
+            },
+            {
+              "type": "*sql.Tx",
+              "name": "tx"
+            },
+            {
+              "type": "Migration",
+              "name": "migration"
+            }
+          ],
+          "results": [
+            {
+              "type": "bool",
+              "name": ""
+            },
+            {
+              "type": "error",
+              "name": ""
+            }
+          ],
+          "recv": "*Manager",
+          "orig": "*Manager"
+        },
+        {
+          "doc": "Latest determines the most recently applied migration.\n\nNOTE: This assumes, but does not check, that the migrations metadata table\nexists.\n",
+          "name": "Latest",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "manager.go",
+          "line": 247,
+          "parameters": [
+            {
+              "type": "context.Context",
+              "name": "ctx"
+            }
+          ],
+          "results": [
+            {
+              "type": "string",
+              "name": ""
+            },
+            {
+              "type": "error",
+              "name": ""
+            }
+          ],
+          "recv": "*Manager",
+          "orig": "*Manager"
+        },
+        {
+          "doc": "Up applies all migrations that have not yet been applied.\n",
+          "name": "Up",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "manager.go",
+          "line": 128,
+          "parameters": [
+            {
+              "type": "context.Context",
+              "name": "ctx"
+            }
+          ],
+          "results": [
+            {
+              "type": "error",
+              "name": ""
+            }
+          ],
+          "recv": "*Manager",
+          "orig": "*Manager"
+        },
+        {
+          "doc": "UpOne applies the **next** migration that has yet been applied, if any.\n",
+          "name": "UpOne",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "manager.go",
+          "line": 171,
+          "parameters": [
+            {
+              "type": "context.Context",
+              "name": "ctx"
+            }
+          ],
+          "results": [
+            {
+              "type": "error",
+              "name": ""
+            }
+          ],
+          "recv": "*Manager",
+          "orig": "*Manager"
+        },
+        {
+          "doc": "UpTo applies all migrations that have yet to be applied up to (and\nincluding) `revision`, if any.\n",
+          "name": "UpTo",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "manager.go",
+          "line": 201,
+          "parameters": [
+            {
+              "type": "context.Context",
+              "name": "ctx"
+            },
+            {
+              "type": "string",
+              "name": "revision"
+            }
+          ],
+          "results": [
+            {
+              "type": "error",
+              "name": ""
+            }
+          ],
+          "recv": "*Manager",
+          "orig": "*Manager"
+        },
+        {
+          "doc": "Version returns the migration that corresponds to the version that was\nmost recently applied.\n",
+          "name": "Version",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "manager.go",
+          "line": 286,
+          "parameters": [
+            {
+              "type": "context.Context",
+              "name": "ctx"
+            }
+          ],
+          "results": [
+            {
+              "type": "*Migration",
+              "name": ""
+            },
+            {
+              "type": "error",
+              "name": ""
+            }
+          ],
+          "recv": "*Manager",
+          "orig": "*Manager"
+        }
+      ]
+    },
+    {
+      "packageName": "golembic",
+      "packageImportPath": ".",
+      "doc": "ManagerOption describes options used to create a new manager.\n",
+      "name": "ManagerOption",
+      "type": "type",
+      "filename": "",
+      "line": 0,
+      "consts": [],
+      "vars": [],
+      "funcs": [
+        {
+          "doc": "OptManagerConnection sets the connection on a manager.\n",
+          "name": "OptManagerConnection",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "manager_options.go",
+          "line": 19,
+          "parameters": [
+            {
+              "type": "*sql.DB",
+              "name": "connection"
+            }
+          ],
+          "results": [
+            {
+              "type": "ManagerOption",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        },
+        {
+          "doc": "OptManagerMetadataTable sets the metadata table name on a manager.\n",
+          "name": "OptManagerMetadataTable",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "manager_options.go",
+          "line": 11,
+          "parameters": [
+            {
+              "type": "string",
+              "name": "table"
+            }
+          ],
+          "results": [
+            {
+              "type": "ManagerOption",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        },
+        {
+          "doc": "OptManagerProvider sets the provider on a manager.\n",
+          "name": "OptManagerProvider",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "manager_options.go",
+          "line": 27,
+          "parameters": [
+            {
+              "type": "EngineProvider",
+              "name": "provider"
+            }
+          ],
+          "results": [
+            {
+              "type": "ManagerOption",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        },
+        {
+          "doc": "OptManagerSequence sets the migrations sequence on a manager.\n",
+          "name": "OptManagerSequence",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "manager_options.go",
+          "line": 35,
+          "parameters": [
+            {
+              "type": "*Migrations",
+              "name": "migrations"
+            }
+          ],
+          "results": [
+            {
+              "type": "ManagerOption",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        }
+      ],
+      "methods": []
+    },
+    {
+      "packageName": "golembic",
+      "packageImportPath": ".",
+      "doc": "Migration represents an individual migration to be applied; typically as\na set of SQL statements.\n",
+      "name": "Migration",
+      "type": "type",
+      "filename": "",
+      "line": 0,
+      "consts": [],
+      "vars": [],
+      "funcs": [
+        {
+          "doc": "MustNewMigration is the \"must\" form of `NewMigration()`. It panics if the\nmigration could not be created.\n",
+          "name": "MustNewMigration",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "migration.go",
+          "line": 37,
+          "parameters": [
+            {
+              "type": "...MigrationOption",
+              "name": "opts"
+            }
+          ],
+          "results": [
+            {
+              "type": "Migration",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        },
+        {
+          "doc": "NewMigration creates a new migration from a variadic slice of options.\n",
+          "name": "NewMigration",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "migration.go",
+          "line": 23,
+          "parameters": [
+            {
+              "type": "...MigrationOption",
+              "name": "opts"
+            }
+          ],
+          "results": [
+            {
+              "type": "*Migration",
+              "name": ""
+            },
+            {
+              "type": "error",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        }
+      ],
+      "methods": []
+    },
+    {
+      "packageName": "golembic",
+      "packageImportPath": ".",
+      "doc": "MigrationOption describes options used to create a new migration.\n",
+      "name": "MigrationOption",
+      "type": "type",
+      "filename": "",
+      "line": 0,
+      "consts": [],
+      "vars": [],
+      "funcs": [
+        {
+          "doc": "OptDescription sets the description on a migration.\n",
+          "name": "OptDescription",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "migration_options.go",
+          "line": 32,
+          "parameters": [
+            {
+              "type": "string",
+              "name": "description"
+            }
+          ],
+          "results": [
+            {
+              "type": "MigrationOption",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        },
+        {
+          "doc": "OptParent sets the parent on a migration.\n",
+          "name": "OptParent",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "migration_options.go",
+          "line": 12,
+          "parameters": [
+            {
+              "type": "string",
+              "name": "parent"
+            }
+          ],
+          "results": [
+            {
+              "type": "MigrationOption",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        },
+        {
+          "doc": "OptRevision sets the revision on a migration.\n",
+          "name": "OptRevision",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "migration_options.go",
+          "line": 20,
+          "parameters": [
+            {
+              "type": "string",
+              "name": "revision"
+            }
+          ],
+          "results": [
+            {
+              "type": "MigrationOption",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        },
+        {
+          "doc": "OptUp sets the `up` function on a migration.\n",
+          "name": "OptUp",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "migration_options.go",
+          "line": 40,
+          "parameters": [
+            {
+              "type": "UpMigration",
+              "name": "up"
+            }
+          ],
+          "results": [
+            {
+              "type": "MigrationOption",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        },
+        {
+          "doc": "OptUpFromSQL returns an option that sets the `up` function to execute an\nSQL statement.\n",
+          "name": "OptUpFromSQL",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "migration_options.go",
+          "line": 53,
+          "parameters": [
+            {
+              "type": "string",
+              "name": "statement"
+            }
+          ],
+          "results": [
+            {
+              "type": "MigrationOption",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        }
+      ],
+      "methods": []
+    },
+    {
+      "packageName": "golembic",
+      "packageImportPath": ".",
+      "doc": "Migrations represents a sequence of migrations to be applied.\n",
+      "name": "Migrations",
+      "type": "type",
+      "filename": "",
+      "line": 0,
+      "consts": [],
+      "vars": [],
+      "funcs": [
+        {
+          "doc": "NewSequence creates a new sequence of migrations rooted in a single\nbase / root migration.\n",
+          "name": "NewSequence",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "migrations.go",
+          "line": 17,
+          "parameters": [
+            {
+              "type": "Migration",
+              "name": "root"
+            }
+          ],
+          "results": [
+            {
+              "type": "*Migrations",
+              "name": ""
+            },
+            {
+              "type": "error",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        }
+      ],
+      "methods": [
+        {
+          "doc": "All produces the migrations in the sequence, in order.\n\nNOTE: This does not verify or enforce the invariant that there must be\nexactly one migration without a parent. This invariant is enforced by the\nexported methods such as `Register()` and `RegisterMany()` and the constructor\n`NewSequence()`.\n",
+          "name": "All",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "migrations.go",
+          "line": 102,
+          "parameters": [],
+          "results": [
+            {
+              "type": "[]Migration",
+              "name": ""
+            }
+          ],
+          "recv": "*Migrations",
+          "orig": "*Migrations"
+        },
+        {
+          "doc": "Between returns the migrations that occur between two revisions.\n\nThis can be seen as a combination of `Since()` and `Until()`.\n",
+          "name": "Between",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "migrations.go",
+          "line": 184,
+          "parameters": [
+            {
+              "type": "string",
+              "name": "since"
+            },
+            {
+              "type": "string",
+              "name": "until"
+            }
+          ],
+          "results": [
+            {
+              "type": "[]Migration",
+              "name": ""
+            },
+            {
+              "type": "error",
+              "name": ""
+            }
+          ],
+          "recv": "*Migrations",
+          "orig": "*Migrations"
+        },
+        {
+          "doc": "Describe displays all of the registered migrations (with descriptions).\n",
+          "name": "Describe",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "migrations.go",
+          "line": 235,
+          "parameters": [],
+          "results": [
+            {
+              "type": "string",
+              "name": ""
+            }
+          ],
+          "recv": "*Migrations",
+          "orig": "*Migrations"
+        },
+        {
+          "doc": "Get retrieves a revision from the sequence, if present. If not, returns\n`nil`.\n",
+          "name": "Get",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "migrations.go",
+          "line": 265,
+          "parameters": [
+            {
+              "type": "string",
+              "name": "revision"
+            }
+          ],
+          "results": [
+            {
+              "type": "*Migration",
+              "name": ""
+            }
+          ],
+          "recv": "*Migrations",
+          "orig": "*Migrations"
+        },
+        {
+          "doc": "Register adds a new migration to an existing sequence of migrations, if\npossible. The new migration must have a parent and have a valid revision\nthat is not already registered.\n",
+          "name": "Register",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "migrations.go",
+          "line": 42,
+          "parameters": [
+            {
+              "type": "Migration",
+              "name": "migration"
+            }
+          ],
+          "results": [
+            {
+              "type": "error",
+              "name": ""
+            }
+          ],
+          "recv": "*Migrations",
+          "orig": "*Migrations"
+        },
+        {
+          "doc": "RegisterMany attempts to register multiple migrations (in order) with an\nexisting sequence\n",
+          "name": "RegisterMany",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "migrations.go",
+          "line": 64,
+          "parameters": [
+            {
+              "type": "...Migration",
+              "name": "ms"
+            }
+          ],
+          "results": [
+            {
+              "type": "error",
+              "name": ""
+            }
+          ],
+          "recv": "*Migrations",
+          "orig": "*Migrations"
+        },
+        {
+          "doc": "Revisions produces the revisions in the sequence, in order.\n\nThis utilizes `All()` and just extracts the revisions.\n",
+          "name": "Revisions",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "migrations.go",
+          "line": 221,
+          "parameters": [],
+          "results": [
+            {
+              "type": "[]string",
+              "name": ""
+            }
+          ],
+          "recv": "*Migrations",
+          "orig": "*Migrations"
+        },
+        {
+          "doc": "Root does a linear scan of every migration in the sequence and returns\nthe root migration. In the \"general\" case such a scan would be expensive, but\nthe number of migrations should always be a small number.\n\nNOTE: This does not verify or enforce the invariant that there must be\nexactly one migration without a parent. This invariant is enforced by the\nexported methods such as `Register()` and `RegisterMany()` and the constructor\n`NewSequence()`.\n",
+          "name": "Root",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "migrations.go",
+          "line": 83,
+          "parameters": [],
+          "results": [
+            {
+              "type": "Migration",
+              "name": ""
+            }
+          ],
+          "recv": "*Migrations",
+          "orig": "*Migrations"
+        },
+        {
+          "doc": "Since returns the migrations that occur **after** `revision`.\n\nThis utilizes `All()` and returns all migrations after the one that\nmatches `revision`. If none match, an error will be returned. If\n`revision` is the **last** migration, the migrations returned will be an\nempty slice.\n",
+          "name": "Since",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "migrations.go",
+          "line": 132,
+          "parameters": [
+            {
+              "type": "string",
+              "name": "revision"
+            }
+          ],
+          "results": [
+            {
+              "type": "[]Migration",
+              "name": ""
+            },
+            {
+              "type": "error",
+              "name": ""
+            }
+          ],
+          "recv": "*Migrations",
+          "orig": "*Migrations"
+        },
+        {
+          "doc": "Until returns the migrations that occur **before** `revision`.\n\nThis utilizes `All()` and returns all migrations up to and including the one\nthat matches `revision`. If none match, an error will be returned.\n",
+          "name": "Until",
+          "packageName": "golembic",
+          "packageImportPath": ".",
+          "type": "func",
+          "filename": "migrations.go",
+          "line": 160,
+          "parameters": [
+            {
+              "type": "string",
+              "name": "revision"
+            }
+          ],
+          "results": [
+            {
+              "type": "[]Migration",
+              "name": ""
+            },
+            {
+              "type": "error",
+              "name": ""
+            }
+          ],
+          "recv": "*Migrations",
+          "orig": "*Migrations"
+        }
+      ]
+    },
+    {
+      "packageName": "golembic",
+      "packageImportPath": ".",
+      "doc": "UpMigration defines a function interface that must be satisfied by\nup / forward migrations. The expectation as that the migration runs SQL\nstatements within the transaction but this is not required. The SQL\ntransaction will be started **before** `UpMigration` is invoked and will\nbe committed **after** the `UpMigration` exits without error. In addition to\nthe contents of `UpMigration`, a row will be written to the migrations\nmetadata table as part of the transaction.\n",
+      "name": "UpMigration",
+      "type": "type",
+      "filename": "",
+      "line": 0,
+      "consts": [],
+      "vars": [],
+      "funcs": [],
+      "methods": []
+    }
+  ],
+  "vars": [
+    {
+      "packageName": "golembic",
+      "packageImportPath": ".",
+      "doc": "",
+      "names": [
+        "ErrNotRoot",
+        "ErrMissingRevision",
+        "ErrNoParent",
+        "ErrAlreadyRegistered",
+        "ErrNilInterface",
+        "ErrMigrationNotRegistered",
+        "ErrMigrationMismatch"
+      ],
+      "type": "var",
+      "filename": "errors.go",
+      "line": 7
+    }
+  ],
+  "funcs": [
+    {
+      "doc": "CreateMigrationsTable invokes SQL statements required to create the metadata\ntable used to track migrations. If the table already exists (as detected by\n`provider.TableExistsSQL()`), this function will not attempt to create a\ntable or any constraints.\n",
+      "name": "CreateMigrationsTable",
+      "packageName": "golembic",
+      "packageImportPath": ".",
+      "type": "func",
+      "filename": "table.go",
+      "line": 32,
+      "parameters": [
+        {
+          "type": "context.Context",
+          "name": "ctx"
+        },
+        {
+          "type": "*sql.DB",
+          "name": "db"
+        },
+        {
+          "type": "EngineProvider",
+          "name": "provider"
+        },
+        {
+          "type": "string",
+          "name": "table"
+        }
+      ],
+      "results": [
+        {
+          "type": "error",
+          "name": ""
+        }
+      ],
+      "recv": "",
+      "orig": ""
+    }
+  ]
+}

@@ -1,0 +1,563 @@
+{
+  "type": "package",
+  "doc": "Package postgres provides PostgreSQL helpers for golembic.\n",
+  "name": "postgres",
+  "importPath": "./postgres/",
+  "imports": [
+    "context",
+    "database/sql",
+    "errors",
+    "fmt",
+    "github.com/dhermes/golembic",
+    "github.com/lib/pq",
+    "net/url",
+    "strconv",
+    "time"
+  ],
+  "filenames": [
+    "postgres/config.go",
+    "postgres/doc.go",
+    "postgres/errors.go",
+    "postgres/options.go",
+    "postgres/provider.go"
+  ],
+  "notes": {},
+  "bugs": null,
+  "consts": [
+    {
+      "packageName": "postgres",
+      "packageImportPath": "./postgres/",
+      "doc": "",
+      "names": [
+        "DefaultHost",
+        "DefaultPort",
+        "DefaultDatabase",
+        "DefaultSchema",
+        "DefaultLockTimeout",
+        "DefaultStatementTimeout",
+        "DefaultIdleConnections",
+        "DefaultMaxConnections",
+        "DefaultMaxLifetime"
+      ],
+      "type": "const",
+      "filename": "postgres/config.go",
+      "line": 9
+    }
+  ],
+  "types": [
+    {
+      "packageName": "postgres",
+      "packageImportPath": "./postgres/",
+      "doc": "Config is a set of connection config options.\n",
+      "name": "Config",
+      "type": "type",
+      "filename": "",
+      "line": 0,
+      "consts": [],
+      "vars": [],
+      "funcs": [],
+      "methods": [
+        {
+          "doc": "GetConnectionString creates a PostgreSQL connection string from the config.\nIf `ConnectionString` is already cached on the `Config`, it will be returned\nimmediately.\n",
+          "name": "GetConnectionString",
+          "packageName": "postgres",
+          "packageImportPath": "./postgres/",
+          "type": "func",
+          "filename": "postgres/config.go",
+          "line": 74,
+          "parameters": [],
+          "results": [
+            {
+              "type": "string",
+              "name": ""
+            }
+          ],
+          "recv": "Config",
+          "orig": "Config"
+        }
+      ]
+    },
+    {
+      "packageName": "postgres",
+      "packageImportPath": "./postgres/",
+      "doc": "Option describes options used to create a new config for a SQL provider.\n",
+      "name": "Option",
+      "type": "type",
+      "filename": "",
+      "line": 0,
+      "consts": [],
+      "vars": [],
+      "funcs": [
+        {
+          "doc": "OptConnectTimeout sets the `ConnectTimeout` on a `Config`.\n",
+          "name": "OptConnectTimeout",
+          "packageName": "postgres",
+          "packageImportPath": "./postgres/",
+          "type": "func",
+          "filename": "postgres/options.go",
+          "line": 59,
+          "parameters": [
+            {
+              "type": "int",
+              "name": "timeout"
+            }
+          ],
+          "results": [
+            {
+              "type": "Option",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        },
+        {
+          "doc": "OptDatabase sets the `Database` on a `Config`.\n",
+          "name": "OptDatabase",
+          "packageName": "postgres",
+          "packageImportPath": "./postgres/",
+          "type": "func",
+          "filename": "postgres/options.go",
+          "line": 27,
+          "parameters": [
+            {
+              "type": "string",
+              "name": "database"
+            }
+          ],
+          "results": [
+            {
+              "type": "Option",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        },
+        {
+          "doc": "OptHost sets the `Host` on a `Config`.\n",
+          "name": "OptHost",
+          "packageName": "postgres",
+          "packageImportPath": "./postgres/",
+          "type": "func",
+          "filename": "postgres/options.go",
+          "line": 11,
+          "parameters": [
+            {
+              "type": "string",
+              "name": "host"
+            }
+          ],
+          "results": [
+            {
+              "type": "Option",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        },
+        {
+          "doc": "OptIdleConnections sets the `IdleConnections` on a `Config`.\n",
+          "name": "OptIdleConnections",
+          "packageName": "postgres",
+          "packageImportPath": "./postgres/",
+          "type": "func",
+          "filename": "postgres/options.go",
+          "line": 93,
+          "parameters": [
+            {
+              "type": "int",
+              "name": "count"
+            }
+          ],
+          "results": [
+            {
+              "type": "Option",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        },
+        {
+          "doc": "OptLockTimeout sets the `LockTimeout` on a `Config`.\n",
+          "name": "OptLockTimeout",
+          "packageName": "postgres",
+          "packageImportPath": "./postgres/",
+          "type": "func",
+          "filename": "postgres/options.go",
+          "line": 75,
+          "parameters": [
+            {
+              "type": "time.Duration",
+              "name": "d"
+            }
+          ],
+          "results": [
+            {
+              "type": "Option",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        },
+        {
+          "doc": "OptMaxConnections sets the `MaxConnections` on a `Config`.\n",
+          "name": "OptMaxConnections",
+          "packageName": "postgres",
+          "packageImportPath": "./postgres/",
+          "type": "func",
+          "filename": "postgres/options.go",
+          "line": 102,
+          "parameters": [
+            {
+              "type": "int",
+              "name": "count"
+            }
+          ],
+          "results": [
+            {
+              "type": "Option",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        },
+        {
+          "doc": "OptMaxLifetime sets the `MaxLifetime` on a `Config`.\n",
+          "name": "OptMaxLifetime",
+          "packageName": "postgres",
+          "packageImportPath": "./postgres/",
+          "type": "func",
+          "filename": "postgres/options.go",
+          "line": 111,
+          "parameters": [
+            {
+              "type": "time.Duration",
+              "name": "d"
+            }
+          ],
+          "results": [
+            {
+              "type": "Option",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        },
+        {
+          "doc": "OptPassword sets the `Password` on a `Config`.\n",
+          "name": "OptPassword",
+          "packageName": "postgres",
+          "packageImportPath": "./postgres/",
+          "type": "func",
+          "filename": "postgres/options.go",
+          "line": 51,
+          "parameters": [
+            {
+              "type": "string",
+              "name": "password"
+            }
+          ],
+          "results": [
+            {
+              "type": "Option",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        },
+        {
+          "doc": "OptPort sets the `Port` on a `Config`.\n",
+          "name": "OptPort",
+          "packageName": "postgres",
+          "packageImportPath": "./postgres/",
+          "type": "func",
+          "filename": "postgres/options.go",
+          "line": 19,
+          "parameters": [
+            {
+              "type": "string",
+              "name": "port"
+            }
+          ],
+          "results": [
+            {
+              "type": "Option",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        },
+        {
+          "doc": "OptSSLMode sets the `SSLMode` on a `Config`.\n",
+          "name": "OptSSLMode",
+          "packageName": "postgres",
+          "packageImportPath": "./postgres/",
+          "type": "func",
+          "filename": "postgres/options.go",
+          "line": 67,
+          "parameters": [
+            {
+              "type": "string",
+              "name": "sslMode"
+            }
+          ],
+          "results": [
+            {
+              "type": "Option",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        },
+        {
+          "doc": "OptSchema sets the `Schema` on a `Config`.\n",
+          "name": "OptSchema",
+          "packageName": "postgres",
+          "packageImportPath": "./postgres/",
+          "type": "func",
+          "filename": "postgres/options.go",
+          "line": 35,
+          "parameters": [
+            {
+              "type": "string",
+              "name": "schema"
+            }
+          ],
+          "results": [
+            {
+              "type": "Option",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        },
+        {
+          "doc": "OptStatementTimeout sets the `StatementTimeout` on a `Config`.\n",
+          "name": "OptStatementTimeout",
+          "packageName": "postgres",
+          "packageImportPath": "./postgres/",
+          "type": "func",
+          "filename": "postgres/options.go",
+          "line": 84,
+          "parameters": [
+            {
+              "type": "time.Duration",
+              "name": "d"
+            }
+          ],
+          "results": [
+            {
+              "type": "Option",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        },
+        {
+          "doc": "OptUsername sets the `Username` on a `Config`.\n",
+          "name": "OptUsername",
+          "packageName": "postgres",
+          "packageImportPath": "./postgres/",
+          "type": "func",
+          "filename": "postgres/options.go",
+          "line": 43,
+          "parameters": [
+            {
+              "type": "string",
+              "name": "username"
+            }
+          ],
+          "results": [
+            {
+              "type": "Option",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        }
+      ],
+      "methods": []
+    },
+    {
+      "packageName": "postgres",
+      "packageImportPath": "./postgres/",
+      "doc": "SQLProvider is a PostgreSQL-specific database engine provider.\n",
+      "name": "SQLProvider",
+      "type": "type",
+      "filename": "",
+      "line": 0,
+      "consts": [],
+      "vars": [],
+      "funcs": [
+        {
+          "doc": "New creates a PostgreSQL-specific database engine provider from some\noptions.\n",
+          "name": "New",
+          "packageName": "postgres",
+          "packageImportPath": "./postgres/",
+          "type": "func",
+          "filename": "postgres/provider.go",
+          "line": 24,
+          "parameters": [
+            {
+              "type": "...Option",
+              "name": "opts"
+            }
+          ],
+          "results": [
+            {
+              "type": "*SQLProvider",
+              "name": ""
+            },
+            {
+              "type": "error",
+              "name": ""
+            }
+          ],
+          "recv": "",
+          "orig": ""
+        }
+      ],
+      "methods": [
+        {
+          "doc": "Open creates a database connection to a PostgreSQL instance.\n",
+          "name": "Open",
+          "packageName": "postgres",
+          "packageImportPath": "./postgres/",
+          "type": "func",
+          "filename": "postgres/provider.go",
+          "line": 64,
+          "parameters": [],
+          "results": [
+            {
+              "type": "*sql.DB",
+              "name": ""
+            },
+            {
+              "type": "error",
+              "name": ""
+            }
+          ],
+          "recv": "*SQLProvider",
+          "orig": "*SQLProvider"
+        },
+        {
+          "doc": "QuoteIdentifier quotes an identifier, such as a table name, for usage\nin a query.\n",
+          "name": "QuoteIdentifier",
+          "packageName": "postgres",
+          "packageImportPath": "./postgres/",
+          "type": "func",
+          "filename": "postgres/provider.go",
+          "line": 53,
+          "parameters": [
+            {
+              "type": "string",
+              "name": "name"
+            }
+          ],
+          "results": [
+            {
+              "type": "string",
+              "name": ""
+            }
+          ],
+          "recv": "*SQLProvider",
+          "orig": "*SQLProvider"
+        },
+        {
+          "doc": "QuoteLiteral quotes a literal, such as `2023-01-05 15:00:00Z`, for usage\nin a query.\n",
+          "name": "QuoteLiteral",
+          "packageName": "postgres",
+          "packageImportPath": "./postgres/",
+          "type": "func",
+          "filename": "postgres/provider.go",
+          "line": 59,
+          "parameters": [
+            {
+              "type": "string",
+              "name": "literal"
+            }
+          ],
+          "results": [
+            {
+              "type": "string",
+              "name": ""
+            }
+          ],
+          "recv": "*SQLProvider",
+          "orig": "*SQLProvider"
+        },
+        {
+          "doc": "SetTxTimeouts sets timeouts on a transaction to ensure that a migration\ndoesn't get stuck or cause the application to get blocked while migrations\nare running.\n",
+          "name": "SetTxTimeouts",
+          "packageName": "postgres",
+          "packageImportPath": "./postgres/",
+          "type": "func",
+          "filename": "postgres/provider.go",
+          "line": 90,
+          "parameters": [
+            {
+              "type": "context.Context",
+              "name": "ctx"
+            },
+            {
+              "type": "*sql.Tx",
+              "name": "tx"
+            }
+          ],
+          "results": [
+            {
+              "type": "error",
+              "name": ""
+            }
+          ],
+          "recv": "*SQLProvider",
+          "orig": "*SQLProvider"
+        },
+        {
+          "doc": "TableExistsSQL returns a SQL query that can be used to determine if a\ntable exists.\n",
+          "name": "TableExistsSQL",
+          "packageName": "postgres",
+          "packageImportPath": "./postgres/",
+          "type": "func",
+          "filename": "postgres/provider.go",
+          "line": 80,
+          "parameters": [],
+          "results": [
+            {
+              "type": "string",
+              "name": ""
+            }
+          ],
+          "recv": "*SQLProvider",
+          "orig": "*SQLProvider"
+        }
+      ]
+    }
+  ],
+  "vars": [
+    {
+      "packageName": "postgres",
+      "packageImportPath": "./postgres/",
+      "doc": "",
+      "names": [
+        "ErrNotMilliseconds"
+      ],
+      "type": "var",
+      "filename": "postgres/errors.go",
+      "line": 7
+    }
+  ],
+  "funcs": []
+}
