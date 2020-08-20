@@ -159,6 +159,35 @@ func (m *Manager) sinceOrAll(revision string) ([]Migration, error) {
 	return m.Sequence.Since(revision)
 }
 
+// UpOne applies the **next** migration that has yet been applied, if any.
+func (m *Manager) UpOne(ctx context.Context) error {
+	err := m.EnsureMigrationsTable(ctx)
+	if err != nil {
+		return err
+	}
+
+	revision, err := m.Latest(ctx)
+	if err != nil {
+		return err
+	}
+
+	migrations, err := m.sinceOrAll(revision)
+	if err != nil {
+		return err
+	}
+	// TODO: Re-factor the above into a helper that is common to `Up` and
+	//       `UpOne`.
+
+	if len(migrations) == 0 {
+		// TODO: https://github.com/dhermes/golembic/issues/1
+		log.Printf("No migrations to run; latest revision: %s\n", revision)
+		return nil
+	}
+
+	migration := migrations[0]
+	return m.ApplyMigration(ctx, migration)
+}
+
 // Latest determines the most recently applied migration.
 //
 // NOTE: This assumes, but does not check, that the migrations metadata table

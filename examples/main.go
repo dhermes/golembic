@@ -117,6 +117,10 @@ func main() {
 		ctx := context.Background()
 		err = m.Up(ctx)
 		mustNil(err)
+	case "up-one":
+		ctx := context.Background()
+		err = m.UpOne(ctx)
+		mustNil(err)
 	case "version":
 		ctx := context.Background()
 		migration, err := m.Version(ctx)

@@ -12,6 +12,7 @@
 
 ```
 $ make restart-db
+...
 $ make run-examples-main GOLEMBIC_CMD=up
 2020/08/20 00:46:14 Applying c9b52448285b: Create users table
 2020/08/20 00:46:14 Applying dce8812d7b6f: Add city to users
@@ -40,6 +41,30 @@ $
 $
 $ make run-examples-main GOLEMBIC_CMD=up
 2020/08/20 00:49:06 Applying 432f690fcbda: Create movies table
+```
+
+## `up-one`
+
+```
+$ make restart-db
+...
+$ make run-examples-main GOLEMBIC_CMD=up-one
+2020/08/20 01:07:09 Applying c9b52448285b: Create users table
+$
+$ make run-examples-main GOLEMBIC_CMD=up-one
+2020/08/20 01:07:11 Applying dce8812d7b6f: Add city to users
+$
+$ make run-examples-main GOLEMBIC_CMD=up-one
+2020/08/20 01:07:13 Applying 0501ccd1d98c: Add index on user emails
+$
+$ make run-examples-main GOLEMBIC_CMD=up-one
+2020/08/20 01:07:15 Applying e2d4eecb1841: Create books table
+$
+$ make run-examples-main GOLEMBIC_CMD=up-one
+2020/08/20 01:07:18 Applying 432f690fcbda: Create movies table
+$
+$ make run-examples-main GOLEMBIC_CMD=up-one
+2020/08/20 01:07:20 No migrations to run; latest revision: 432f690fcbda
 ```
 
 ## `version`
