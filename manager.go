@@ -68,6 +68,25 @@ func (m *Manager) EnsureMigrationsTable(ctx context.Context) error {
 	return CreateMigrationsTable(ctx, db, m.Provider, m.MetadataTable)
 }
 
+// InsertMigration inserts a migration into the migrations metadata table.
+func (m *Manager) InsertMigration(ctx context.Context, tx *sql.Tx, migration Migration) error {
+	if migration.Parent == "" {
+		statement := fmt.Sprintf(
+			"INSERT INTO %s (parent, revision) VALUES (NULL, $1);",
+			m.Provider.QuoteIdentifier(m.MetadataTable),
+		)
+		_, err := tx.ExecContext(ctx, statement, migration.Revision)
+		return err
+	}
+
+	statement := fmt.Sprintf(
+		"INSERT INTO %s (parent, revision) VALUES ($1, $2);",
+		m.Provider.QuoteIdentifier(m.MetadataTable),
+	)
+	_, err := tx.ExecContext(ctx, statement, migration.Parent, migration.Revision)
+	return err
+}
+
 // IsApplied checks if a migration has already been applied.
 //
 // NOTE: This assumes, but does not check, that the migrations metadata table
