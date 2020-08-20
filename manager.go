@@ -127,7 +127,17 @@ func (m *Manager) Apply(ctx context.Context) error {
 		return err
 	}
 
-	for _, migration := range m.Sequence.All() {
+	revision, err := m.Latest(ctx)
+	if err != nil {
+		return err
+	}
+
+	migrations, err := m.sinceOrAll(revision)
+	if err != nil {
+		return err
+	}
+
+	for _, migration := range migrations {
 		err = m.ApplyMigration(ctx, migration)
 		if err != nil {
 			return err
@@ -135,6 +145,55 @@ func (m *Manager) Apply(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (m *Manager) sinceOrAll(revision string) ([]Migration, error) {
+	if revision == "" {
+		return m.Sequence.All(), nil
+	}
+
+	return m.Sequence.Since(revision)
+}
+
+// Latest determines the most recently applied migration.
+//
+// NOTE: This assumes, but does not check, that the migrations metadata table
+// exists.
+func (m *Manager) Latest(ctx context.Context) (string, error) {
+	db, err := m.EnsureConnection()
+	if err != nil {
+		return "", err
+	}
+
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return "", err
+	}
+	defer rollbackAndLog(tx)
+
+	// Make sure to "guard" against long locks by setting timeouts within the
+	// transaction before doing any work.
+	err = m.Provider.SetTxTimeouts(ctx, tx)
+	if err != nil {
+		return "", err
+	}
+
+	query := fmt.Sprintf(
+		"SELECT parent, revision FROM %s ORDER BY created_at DESC LIMIT 1;",
+		m.Provider.QuoteIdentifier(m.MetadataTable),
+	)
+	rows, err := readAllMigration(ctx, tx, query)
+	if err != nil {
+		return "", err
+	}
+
+	if len(rows) == 0 {
+		return "", nil
+	}
+
+	// NOTE: Here we trust that the query is sufficient to guarantee that
+	//       `len(rows) == 1`.
+	return rows[0].Revision, nil
 }
 
 // IsApplied checks if a migration has already been applied.

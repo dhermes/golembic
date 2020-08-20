@@ -123,7 +123,39 @@ func (m *Migrations) All() []Migration {
 	return result
 }
 
+// Since returns the migrations that occur **after** `revision`. The
+//
+// This utilizes `All()` and returns all migrations after the one that
+// matches `revision`. If none match, an error will be returned. If
+// `revision` is the **last** migration, the migrations returned will be an
+// empty slice.
+func (m *Migrations) Since(revision string) ([]Migration, error) {
+	all := m.All()
+	found := false
+
+	result := []Migration{}
+	for _, migration := range all {
+		if found {
+			result = append(result, migration)
+			continue
+		}
+
+		if migration.Revision == revision {
+			found = true
+		}
+	}
+
+	if !found {
+		err := fmt.Errorf("%w; revision: %q", ErrMigrationNotRegistered, revision)
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // Revisions produces the revisions in the sequence, in order.
+//
+// This utilizes `All()` and just extracts the revisions.
 func (m *Migrations) Revisions() []string {
 	result := []string{}
 	for _, migration := range m.All() {

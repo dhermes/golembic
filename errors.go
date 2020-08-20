@@ -20,6 +20,9 @@ var (
 	// ErrNilInterface is the error returned when a value satisfying an interface
 	// is nil in a context where it is not allowed.
 	ErrNilInterface = errors.New("Value satisfying interface was nil")
+	// ErrMigrationNotRegistered is the error returned when no migration has been
+	// registered for a given revision.
+	ErrMigrationNotRegistered = errors.New("No migration registered for revision")
 	// ErrMigrationMismatch is the error returned when the migration stored in
 	// SQL does not match the registered migration.
 	ErrMigrationMismatch = errors.New("Migration stored in SQL doesn't match sequence")
