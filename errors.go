@@ -20,4 +20,7 @@ var (
 	// ErrNilInterface is the error returned when a value satisfying an interface
 	// is nil in a context where it is not allowed.
 	ErrNilInterface = errors.New("Value satisfying interface was nil")
+	// ErrMissingMigration is the error returned when no migration has been
+	// registered for a given revision.
+	ErrMissingMigration = errors.New("No migration for revision")
 )

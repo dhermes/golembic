@@ -156,3 +156,17 @@ func (m *Migrations) Describe() string {
 
 	return strings.Join(lines, "\n")
 }
+
+// Get retrieves a revision from the sequence, if present. If not, returns
+// `nil`.
+func (m *Migrations) Get(revision string) *Migration {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	migration, ok := m.sequence[revision]
+	if ok {
+		return &migration
+	}
+
+	return nil
+}
