@@ -26,4 +26,7 @@ var (
 	// ErrMigrationMismatch is the error returned when the migration stored in
 	// SQL does not match the registered migration.
 	ErrMigrationMismatch = errors.New("Migration stored in SQL doesn't match sequence")
+	// ErrCannotInvokeUp is the error returned when a migration cannot invoke the
+	// up function (e.g. if it is `nil`).
+	ErrCannotInvokeUp = errors.New("Cannot invoke up function for a migration")
 )

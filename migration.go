@@ -1,6 +1,8 @@
 package golembic
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"time"
 )
@@ -67,4 +69,24 @@ func (m Migration) Compact() string {
 	}
 
 	return fmt.Sprintf("%s:%s", m.Revision, m.Parent)
+}
+
+// InvokeUp dispatches to `Up` or `UpConn`, depending on which is set. If both
+// or neither is set, that is considered an error.
+func (m Migration) InvokeUp(ctx context.Context, conn *sql.Conn, tx *sql.Tx) error {
+	// Handle the `UpConn` case first.
+	if m.UpConn != nil {
+		if m.Up != nil {
+			return fmt.Errorf("%w; both Up and UpConn are set", ErrCannotInvokeUp)
+		}
+
+		return m.UpConn(ctx, conn)
+	}
+
+	// If neither `UpConn` nor `Up` is set, we can't invoke anything.
+	if m.Up == nil {
+		return fmt.Errorf("%w; neither Up nor UpConn are set", ErrCannotInvokeUp)
+	}
+
+	return m.Up(ctx, tx)
 }

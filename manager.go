@@ -128,7 +128,7 @@ func (m *Manager) ApplyMigration(ctx context.Context, migration Migration) error
 		return err
 	}
 
-	err = migration.Up(ctx, tx)
+	err = migration.InvokeUp(ctx, conn, tx)
 	if err != nil {
 		return err
 	}
