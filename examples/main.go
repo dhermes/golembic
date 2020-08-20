@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/dhermes/golembic"
@@ -12,16 +13,11 @@ import (
 )
 
 func allMigrations() (*golembic.Migrations, error) {
+	sqlDir := mustEnvVar("GOLEMBIC_SQL_DIR")
 	root := golembic.MustNewMigration(
 		golembic.OptRevision("c9b52448285b"),
 		golembic.OptDescription("Create users table"),
-		golembic.OptUpFromSQL(`
-CREATE TABLE users (
-  user_id INTEGER UNIQUE,
-  name    VARCHAR(40),
-  email   VARCHAR(40)
-);
-`),
+		golembic.OptUpFromFile(filepath.Join(sqlDir, "0001_create_users_table.sql")),
 	)
 
 	migrations, err := golembic.NewSequence(root)
@@ -31,16 +27,25 @@ CREATE TABLE users (
 	err = migrations.RegisterMany(
 		golembic.MustNewMigration(
 			golembic.OptParent("c9b52448285b"),
+			golembic.OptRevision("f1be62155239"),
+			golembic.OptDescription("Seed data in users table"),
+			golembic.OptUpFromFile(filepath.Join(sqlDir, "0002_seed_users_table.sql")),
+		),
+		golembic.MustNewMigration(
+			golembic.OptParent("f1be62155239"),
 			golembic.OptRevision("dce8812d7b6f"),
-			golembic.OptDescription("Add city to users"),
-			golembic.OptUpFromSQL(`
-ALTER TABLE users
-  ADD COLUMN city VARCHAR(100);
-`),
+			golembic.OptDescription("Add city column to users table"),
+			golembic.OptUpFromFile(filepath.Join(sqlDir, "0003_add_users_city_column.sql")),
+		),
+		golembic.MustNewMigration(
+			golembic.OptParent("dce8812d7b6f"),
+			golembic.OptRevision("0430566018cc"),
+			golembic.OptDescription("Rename the root user"),
+			golembic.OptUpFromFile(filepath.Join(sqlDir, "0004_rename_root.sql")),
 		),
 		// https://github.com/dhermes/golembic/issues/10
 		golembic.MustNewMigration(
-			golembic.OptParent("dce8812d7b6f"),
+			golembic.OptParent("0430566018cc"),
 			golembic.OptRevision("0501ccd1d98c"),
 			golembic.OptDescription("Add index on user emails"),
 			golembic.OptUpFromSQL(`
@@ -52,25 +57,13 @@ ALTER TABLE users
 			golembic.OptParent("0501ccd1d98c"),
 			golembic.OptRevision("e2d4eecb1841"),
 			golembic.OptDescription("Create books table"),
-			golembic.OptUpFromSQL(`
-CREATE TABLE books (
-  user_id INTEGER,
-  name    VARCHAR(40),
-  author  VARCHAR(40)
-);
-`),
+			golembic.OptUpFromFile(filepath.Join(sqlDir, "0006_create_books_table.sql")),
 		),
 		golembic.MustNewMigration(
 			golembic.OptParent("e2d4eecb1841"),
 			golembic.OptRevision("432f690fcbda"),
 			golembic.OptDescription("Create movies table"),
-			golembic.OptUpFromSQL(`
-CREATE TABLE movies (
-  user_id  INTEGER,
-  name     VARCHAR(40),
-  director VARCHAR(40)
-);
-`),
+			golembic.OptUpFromFile(filepath.Join(sqlDir, "0007_create_movies_table.sql")),
 		),
 	)
 	if err != nil {

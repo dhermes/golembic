@@ -39,6 +39,7 @@ DB_ADMIN_USER ?= golembic_admin
 DB_ADMIN_PASSWORD ?= testpassword_admin
 
 GOLEMBIC_CMD ?= up
+GOLEMBIC_SQL_DIR ?= $(shell pwd)/examples/sql
 
 .PHONY: vet
 vet:
@@ -108,4 +109,5 @@ run-examples-main: require-db
 	  DB_ADMIN_USER=$(DB_ADMIN_USER) \
 	  DB_ADMIN_PASSWORD=$(DB_ADMIN_PASSWORD) \
 	  GOLEMBIC_CMD=$(GOLEMBIC_CMD) \
+	  GOLEMBIC_SQL_DIR=$(GOLEMBIC_SQL_DIR) \
 	  go run ./examples/main.go

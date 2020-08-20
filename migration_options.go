@@ -3,6 +3,7 @@ package golembic
 import (
 	"context"
 	"database/sql"
+	"io/ioutil"
 )
 
 // MigrationOption describes options used to create a new migration.
@@ -48,7 +49,7 @@ func OptUp(up UpMigration) MigrationOption {
 	}
 }
 
-// OptUpFromSQL returns an option that sets the `up` function to execute an
+// OptUpFromSQL returns an option that sets the `up` function to execute a
 // SQL statement.
 func OptUpFromSQL(statement string) MigrationOption {
 	up := func(ctx context.Context, tx *sql.Tx) error {
@@ -59,5 +60,23 @@ func OptUpFromSQL(statement string) MigrationOption {
 	return func(m *Migration) error {
 		m.Up = up
 		return nil
+	}
+}
+
+// OptUpFromFile returns an option that sets the `up` function to execute a
+// SQL statement that is stored in a file.
+func OptUpFromFile(filename string) MigrationOption {
+	statement, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return OptAlwaysError(err)
+	}
+
+	return OptUpFromSQL(string(statement))
+}
+
+// OptAlwaysError returns an option that always returns an error.
+func OptAlwaysError(err error) MigrationOption {
+	return func(m *Migration) error {
+		return err
 	}
 }
