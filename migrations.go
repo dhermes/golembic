@@ -123,7 +123,7 @@ func (m *Migrations) All() []Migration {
 	return result
 }
 
-// Since returns the migrations that occur **after** `revision`. The
+// Since returns the migrations that occur **after** `revision`.
 //
 // This utilizes `All()` and returns all migrations after the one that
 // matches `revision`. If none match, an error will be returned. If
@@ -147,6 +147,68 @@ func (m *Migrations) Since(revision string) ([]Migration, error) {
 
 	if !found {
 		err := fmt.Errorf("%w; revision: %q", ErrMigrationNotRegistered, revision)
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// Until returns the migrations that occur **before** `revision`.
+//
+// This utilizes `All()` and returns all migrations up to and including the one
+// that matches `revision`. If none match, an error will be returned.
+func (m *Migrations) Until(revision string) ([]Migration, error) {
+	all := m.All()
+	found := false
+
+	result := []Migration{}
+	for _, migration := range all {
+		result = append(result, migration)
+		if migration.Revision == revision {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		err := fmt.Errorf("%w; revision: %q", ErrMigrationNotRegistered, revision)
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// Between returns the migrations that occur between two revisions.
+//
+// This can be seen as a combination of `Since()` and `Until()`.
+func (m *Migrations) Between(since, until string) ([]Migration, error) {
+	all := m.All()
+	foundSince := false
+	foundUntil := false
+
+	result := []Migration{}
+	for _, migration := range all {
+		if foundSince {
+			result = append(result, migration)
+		}
+
+		if migration.Revision == since {
+			foundSince = true
+		}
+
+		if migration.Revision == until {
+			foundUntil = true
+			break
+		}
+	}
+
+	if !foundSince {
+		err := fmt.Errorf("%w; revision: %q", ErrMigrationNotRegistered, since)
+		return nil, err
+	}
+
+	if !foundUntil {
+		err := fmt.Errorf("%w; revision: %q", ErrMigrationNotRegistered, until)
 		return nil, err
 	}
 

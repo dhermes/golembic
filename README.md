@@ -67,6 +67,32 @@ $ make run-examples-main GOLEMBIC_CMD=up-one
 2020/08/20 01:07:20 No migrations to run; latest revision: 432f690fcbda
 ```
 
+## `up-one`
+
+```
+$ make restart-db
+...
+$ make run-examples-main GOLEMBIC_CMD=up-to:dce8812d7b6f
+2020/08/20 01:30:25 Applying c9b52448285b: Create users table
+2020/08/20 01:30:25 Applying dce8812d7b6f: Add city to users
+$
+$ make run-examples-main GOLEMBIC_CMD=up-to:e2d4eecb1841
+2020/08/20 01:30:36 Applying 0501ccd1d98c: Add index on user emails
+2020/08/20 01:30:36 Applying e2d4eecb1841: Create books table
+$
+$ # TODO: Fix the way this is searched / the interval is determined
+$ make run-examples-main GOLEMBIC_CMD=up-to:0501ccd1d98c
+2020/08/20 01:30:48 No migration registered for revision; revision: "e2d4eecb1841"
+exit status 1
+make: *** [run-examples-main] Error 1
+$
+$ make run-examples-main GOLEMBIC_CMD=up-to:432f690fcbda
+2020/08/20 01:31:30 Applying 432f690fcbda: Create movies table
+$
+$ make run-examples-main GOLEMBIC_CMD=up-to:432f690fcbda
+2020/08/20 01:31:38 No migrations to run; latest revision: 432f690fcbda
+```
+
 ## `version`
 
 ```

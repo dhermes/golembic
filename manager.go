@@ -131,16 +131,24 @@ func (m *Manager) Up(ctx context.Context) error {
 		return err
 	}
 
-	revision, err := m.Latest(ctx)
+	latest, err := m.Latest(ctx)
 	if err != nil {
 		return err
 	}
 
-	migrations, err := m.sinceOrAll(revision)
+	migrations, err := m.sinceOrAll(latest)
 	if err != nil {
 		return err
 	}
 
+	if len(migrations) == 0 {
+		// TODO: https://github.com/dhermes/golembic/issues/1
+		log.Printf("No migrations to run; latest revision: %s\n", latest)
+		return nil
+	}
+
+	// TODO: Re-factor the above into a helper that is common to `Up`, `UpOne`
+	//       and `UpTo`.
 	for _, migration := range migrations {
 		err = m.ApplyMigration(ctx, migration)
 		if err != nil {
@@ -166,26 +174,70 @@ func (m *Manager) UpOne(ctx context.Context) error {
 		return err
 	}
 
-	revision, err := m.Latest(ctx)
+	latest, err := m.Latest(ctx)
 	if err != nil {
 		return err
 	}
 
-	migrations, err := m.sinceOrAll(revision)
+	migrations, err := m.sinceOrAll(latest)
 	if err != nil {
 		return err
 	}
-	// TODO: Re-factor the above into a helper that is common to `Up` and
-	//       `UpOne`.
 
 	if len(migrations) == 0 {
 		// TODO: https://github.com/dhermes/golembic/issues/1
-		log.Printf("No migrations to run; latest revision: %s\n", revision)
+		log.Printf("No migrations to run; latest revision: %s\n", latest)
 		return nil
 	}
 
+	// TODO: Re-factor the above into a helper that is common to `Up`, `UpOne`
+	//       and `UpTo`.
 	migration := migrations[0]
 	return m.ApplyMigration(ctx, migration)
+}
+
+// UpTo applies all migrations that have yet to be applied up to (and
+// including) `revision`, if any.
+func (m *Manager) UpTo(ctx context.Context, revision string) error {
+	err := m.EnsureMigrationsTable(ctx)
+	if err != nil {
+		return err
+	}
+
+	latest, err := m.Latest(ctx)
+	if err != nil {
+		return err
+	}
+
+	migrations, err := m.betweenOrUntil(latest, revision)
+	if err != nil {
+		return err
+	}
+
+	if len(migrations) == 0 {
+		// TODO: https://github.com/dhermes/golembic/issues/1
+		log.Printf("No migrations to run; latest revision: %s\n", latest)
+		return nil
+	}
+
+	// TODO: Re-factor the above into a helper that is common to `Up`, `UpOne`
+	//       and `UpTo`.
+	for _, migration := range migrations {
+		err = m.ApplyMigration(ctx, migration)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Manager) betweenOrUntil(latest string, revision string) ([]Migration, error) {
+	if latest == "" {
+		return m.Sequence.Until(revision)
+	}
+
+	return m.Sequence.Between(latest, revision)
 }
 
 // Latest determines the most recently applied migration.

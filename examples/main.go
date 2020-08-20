@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/dhermes/golembic"
 	"github.com/dhermes/golembic/postgres"
@@ -93,6 +94,25 @@ func mustNil(err error) {
 	}
 }
 
+type cmdMetadata struct {
+	UpToRevision string
+}
+
+func golembicCommand() (string, cmdMetadata) {
+	cmdWith := mustEnvVar("GOLEMBIC_CMD")
+	parts := strings.SplitN(cmdWith, ":", 2)
+	cmd := parts[0]
+	if len(parts) == 1 {
+		return cmd, cmdMetadata{}
+	}
+
+	metadata := cmdMetadata{}
+	if cmd == "up-to" {
+		metadata.UpToRevision = parts[1]
+	}
+	return cmd, metadata
+}
+
 func main() {
 	migrations, err := allMigrations()
 	mustNil(err)
@@ -111,7 +131,7 @@ func main() {
 	)
 	mustNil(err)
 
-	cmd := mustEnvVar("GOLEMBIC_CMD")
+	cmd, metadata := golembicCommand()
 	switch cmd {
 	case "up":
 		ctx := context.Background()
@@ -120,6 +140,10 @@ func main() {
 	case "up-one":
 		ctx := context.Background()
 		err = m.UpOne(ctx)
+		mustNil(err)
+	case "up-to":
+		ctx := context.Background()
+		err = m.UpTo(ctx, metadata.UpToRevision)
 		mustNil(err)
 	case "version":
 		ctx := context.Background()
