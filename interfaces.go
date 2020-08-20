@@ -32,6 +32,10 @@ type EngineProvider interface {
 	QuoteLiteral(literal string) string
 	// Open creates a database connection for the engine provider.
 	Open() (*sql.DB, error)
+	// SetConnTimeouts sets timeouts on a database connection to ensure that a
+	// migration doesn't get stuck or cause the application to get blocked while
+	// migrations are running.
+	SetConnTimeouts(context.Context, *sql.Conn) error
 	// SetTxTimeouts sets timeouts on a transaction to ensure that a migration
 	// doesn't get stuck or cause the application to get blocked while
 	// migrations are running.
