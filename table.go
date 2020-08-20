@@ -9,8 +9,8 @@ import (
 const (
 	createMigrationsTableSQL = `
 CREATE TABLE IF NOT EXISTS %[1]s (
-  revision VARCHAR(32) NOT NULL,
-  parent VARCHAR(32),
+  revision   VARCHAR(32) NOT NULL,
+  parent     VARCHAR(32),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 ALTER TABLE %[1]s

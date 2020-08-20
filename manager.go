@@ -87,6 +87,56 @@ func (m *Manager) InsertMigration(ctx context.Context, tx *sql.Tx, migration Mig
 	return err
 }
 
+// ApplyMigration creates a transaction that runs the "Up" migration.
+func (m *Manager) ApplyMigration(ctx context.Context, migration Migration) error {
+	db, err := m.EnsureConnection()
+	if err != nil {
+		return err
+	}
+
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer rollbackAndLog(tx)
+
+	// Make sure to "guard" against long locks by setting timeouts within the
+	// transaction before doing any work.
+	err = m.Provider.SetTxTimeouts(ctx, tx)
+	if err != nil {
+		return err
+	}
+
+	err = migration.Up(ctx, tx)
+	if err != nil {
+		return err
+	}
+
+	err = m.InsertMigration(ctx, tx, migration)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+// Apply applies all migrations.
+func (m *Manager) Apply(ctx context.Context) error {
+	err := m.EnsureMigrationsTable(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, migration := range m.Sequence.All() {
+		err = m.ApplyMigration(ctx, migration)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // IsApplied checks if a migration has already been applied.
 //
 // NOTE: This assumes, but does not check, that the migrations metadata table

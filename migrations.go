@@ -73,53 +73,62 @@ func (m *Migrations) RegisterMany(ms ...Migration) error {
 }
 
 // Root does a linear scan of every migration in the sequence and returns
-// the revision of the root migration. In the "general" case such a scan would
-// be expensive, but the number of migrations should always be a small number.
+// the root migration. In the "general" case such a scan would be expensive, but
+// the number of migrations should always be a small number.
 //
 // NOTE: This does not verify or enforce the invariant that there must be
 // exactly one migration without a parent. This invariant is enforced by the
 // exported methods such as `Register()` and `RegisterMany()` and the constructor
 // `NewSequence()`.
-func (m *Migrations) Root() string {
+func (m *Migrations) Root() Migration {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	for key, migration := range m.sequence {
+	for _, migration := range m.sequence {
 		if migration.Parent == "" {
-			return key
+			return migration
 		}
 	}
 
-	return ""
+	return Migration{}
 }
 
-// Revisions produces the revisions in the sequence, in order.
+// All produces the migrations in the sequence, in order.
 //
 // NOTE: This does not verify or enforce the invariant that there must be
 // exactly one migration without a parent. This invariant is enforced by the
 // exported methods such as `Register()` and `RegisterMany()` and the constructor
 // `NewSequence()`.
-func (m *Migrations) Revisions() []string {
+func (m *Migrations) All() []Migration {
 	root := m.Root()
 
 	m.lock.Lock()
 	defer m.lock.Unlock()
-	result := []string{root}
+	result := []Migration{root}
 	// Find the unique revision (without validation) that points at the
 	// current `parent`.
-	parent := root
+	parent := root.Revision
 	for i := 0; i < len(m.sequence)-1; i++ {
 		for _, migration := range m.sequence {
 			if migration.Parent != parent {
 				continue
 			}
 
-			result = append(result, migration.Revision)
+			result = append(result, migration)
 			parent = migration.Revision
 			break
 		}
 	}
 
+	return result
+}
+
+// Revisions produces the revisions in the sequence, in order.
+func (m *Migrations) Revisions() []string {
+	result := []string{}
+	for _, migration := range m.All() {
+		result = append(result, migration.Revision)
+	}
 	return result
 }
 

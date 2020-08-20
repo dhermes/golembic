@@ -16,9 +16,9 @@ func allMigrations() (*golembic.Migrations, error) {
 		golembic.OptDescription("Create users table"),
 		golembic.OptUpFromSQL(`
 CREATE TABLE users (
-  user_id integer unique,
-  name    varchar(40),
-  email   varchar(40)
+  user_id INTEGER UNIQUE,
+  name    VARCHAR(40),
+  email   VARCHAR(40)
 );
 `),
 	)
@@ -33,7 +33,8 @@ CREATE TABLE users (
 			golembic.OptRevision("dce8812d7b6f"),
 			golembic.OptDescription("Add city to users"),
 			golembic.OptUpFromSQL(`
-ALTER TABLE users ADD COLUMN city varchar(100);
+ALTER TABLE users
+  ADD COLUMN city VARCHAR(100);
 `),
 		),
 		golembic.MustNewMigration(
@@ -50,9 +51,9 @@ CREATE UNIQUE INDEX CONCURRENTLY uq_users_email ON users (email);
 			golembic.OptDescription("Create books table"),
 			golembic.OptUpFromSQL(`
 CREATE TABLE books (
-  user_id integer,
-  name    varchar(40),
-  author  varchar(40)
+  user_id INTEGER,
+  name    VARCHAR(40),
+  author  VARCHAR(40)
 );
 `),
 		),
@@ -62,9 +63,9 @@ CREATE TABLE books (
 			golembic.OptDescription("Create movies table"),
 			golembic.OptUpFromSQL(`
 CREATE TABLE movies (
-  user_id   integer,
-  name      varchar(40),
-  director  varchar(40)
+  user_id  INTEGER,
+  name     VARCHAR(40),
+  director VARCHAR(40)
 );
 `),
 		),
@@ -108,7 +109,8 @@ func main() {
 		golembic.OptManagerSequence(migrations),
 	)
 	mustNil(err)
+
 	ctx := context.Background()
-	err = m.EnsureMigrationsTable(ctx)
+	err = m.Apply(ctx)
 	mustNil(err)
 }

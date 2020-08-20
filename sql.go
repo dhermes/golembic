@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 )
 
 // readAllInt performs a SQL query and reads all rows into an `int` slice,
@@ -99,4 +100,19 @@ func rowsClose(rows *sql.Rows, err error) error {
 	}
 
 	return fmt.Errorf("%w; failed to close rows: %v", err, closeErr)
+}
+
+// rollbackAndLog rolls back a transaction and logs any unexpected error. This
+// is intended to be run in a `defer` where no larger error handling can be
+// done.
+//
+// TODO: https://github.com/dhermes/golembic/issues/9
+func rollbackAndLog(tx *sql.Tx) {
+	err := tx.Rollback()
+	if err == nil || err == sql.ErrTxDone {
+		return
+	}
+
+	// TODO: https://github.com/dhermes/golembic/issues/1
+	log.Println(err)
 }
