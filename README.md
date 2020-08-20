@@ -6,7 +6,7 @@
 
 ## Usage
 
-## `up`
+### `up`
 
 > **NOTE**: If `GOLEMBIC_CMD` is not provided, the default is `up`.
 
@@ -43,7 +43,7 @@ $ make run-examples-main GOLEMBIC_CMD=up
 2020/08/20 00:49:06 Applying 432f690fcbda: Create movies table
 ```
 
-## `up-one`
+### `up-one`
 
 ```
 $ make restart-db
@@ -67,7 +67,7 @@ $ make run-examples-main GOLEMBIC_CMD=up-one
 2020/08/20 01:07:20 No migrations to run; latest revision: 432f690fcbda
 ```
 
-## `up-to`
+### `up-to`
 
 ```
 $ make restart-db
@@ -93,7 +93,7 @@ $ make run-examples-main GOLEMBIC_CMD=up-to:432f690fcbda
 2020/08/20 01:31:38 No migrations to run; latest revision: 432f690fcbda
 ```
 
-## `version`
+### `version`
 
 ```
 $ make run-examples-main GOLEMBIC_CMD=version
@@ -109,7 +109,7 @@ $ make run-examples-main GOLEMBIC_CMD=version
 2020/08/20 01:02:37 432f690fcbda: Create movies table
 ```
 
-## `describe`
+### `describe`
 
 ```
 $ make run-examples-main GOLEMBIC_CMD=describe
@@ -120,7 +120,7 @@ $ make run-examples-main GOLEMBIC_CMD=describe
 4 | 432f690fcbda | Create movies table
 ```
 
-## Invalid Command
+### Invalid Command
 
 ```
 $ make run-examples-main GOLEMBIC_CMD=baz
