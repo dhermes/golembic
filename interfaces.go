@@ -29,6 +29,7 @@ type EngineProvider interface {
 	// migrations are running.
 	SetTxTimeouts(context.Context, *sql.Tx) error
 	// TableExistsSQL returns a SQL query that can be used to determine if a
-	// table exists.
-	TableExistsSQL(table string) string
+	// table exists. It is expected to use a clause such as `WHERE tablename = $1`
+	// to filter results.
+	TableExistsSQL() string
 }

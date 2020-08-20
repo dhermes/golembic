@@ -77,10 +77,9 @@ func (sp *SQLProvider) Open() (*sql.DB, error) {
 
 // TableExistsSQL returns a SQL query that can be used to determine if a
 // table exists.
-func (sp *SQLProvider) TableExistsSQL(table string) string {
+func (sp *SQLProvider) TableExistsSQL() string {
 	return fmt.Sprintf(
-		"SELECT 1 FROM pg_catalog.pg_tables WHERE tablename = %s AND schemaname = %s",
-		sp.QuoteLiteral(table),
+		"SELECT 1 FROM pg_catalog.pg_tables WHERE tablename = $1 AND schemaname = %s",
 		sp.QuoteLiteral(sp.Config.Schema),
 	)
 }

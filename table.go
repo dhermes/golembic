@@ -76,8 +76,8 @@ func createMigrationsSQL(provider EngineProvider, table string) string {
 }
 
 func tableExists(ctx context.Context, tx *sql.Tx, provider EngineProvider, table string) (bool, error) {
-	query := provider.TableExistsSQL(table)
-	rows, err := tx.QueryContext(ctx, query)
+	query := provider.TableExistsSQL()
+	rows, err := tx.QueryContext(ctx, query, table)
 	if err != nil {
 		return false, err
 	}
