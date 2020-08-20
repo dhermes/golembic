@@ -43,15 +43,11 @@ func allMigrations() (*golembic.Migrations, error) {
 			golembic.OptDescription("Rename the root user"),
 			golembic.OptUpFromFile(filepath.Join(sqlDir, "0004_rename_root.sql")),
 		),
-		// https://github.com/dhermes/golembic/issues/10
 		golembic.MustNewMigration(
 			golembic.OptParent("0430566018cc"),
 			golembic.OptRevision("0501ccd1d98c"),
-			golembic.OptDescription("Add index on user emails"),
-			golembic.OptUpFromSQL(`
-ALTER TABLE users
-  ADD CONSTRAINT uq_users_email UNIQUE (email);
-`),
+			golembic.OptDescription("Add index on user emails (concurrently)"),
+			golembic.OptUpConnFromFile(filepath.Join(sqlDir, "0005_add_users_email_index_concurrently.sql")),
 		),
 		golembic.MustNewMigration(
 			golembic.OptParent("0501ccd1d98c"),

@@ -25,6 +25,10 @@ type UpMigration = func(context.Context, *sql.Tx) error
 // need to guarantee that
 type UpMigrationConn = func(context.Context, *sql.Conn) error
 
+// NewConnection defines a function interface that can generate a new
+// connection on demand.
+type NewConnection = func(context.Context) (*sql.Conn, error)
+
 // EngineProvider describes the interface required for a database engine.
 type EngineProvider interface {
 	// QuoteIdentifier quotes an identifier, such as a table name, for usage

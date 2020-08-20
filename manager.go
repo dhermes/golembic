@@ -8,6 +8,12 @@ import (
 	"time"
 )
 
+// NOTE: Ensure that
+//       * `Manager.NewConnection` satisfies `NewConnection`.
+var (
+	_ NewConnection = (*Manager)(nil).NewConnection
+)
+
 const (
 	// DefaultMetadataTable is the default name for the table used to store
 	// metadata about migrations.
@@ -28,29 +34,32 @@ func NewManager(opts ...ManagerOption) (*Manager, error) {
 	return m, nil
 }
 
-// Manager orchestrates database operations done via `UpMigration` as well as
+// Manager orchestrates database operations done via `Up` / `UpConn` as well as
 // supporting operations such as creating a table for migration metadata and
-// writing rows into that metadata table during an `UpMigration.`
+// writing rows into that metadata table during a migration.
 type Manager struct {
+	// MetadataTable is the name of the table that stores migration metadata.
+	// The expected default value (`DefaultMetadataTable`) is
+	// "golembic_migrations".
 	MetadataTable string
-	Connection    *sql.Conn
-	Provider      EngineProvider
-	Sequence      *Migrations
+	// Connection is a cache-able connection to the database.
+	//
+	// We use a `sql.Conn` vs. a `sql.DB` because we can guarantee that connection
+	// timeouts are set on a connection whereas a `sql.DB` may use a different
+	// connection from the pool. Though `sql.Conn` is **not** concurrency safe,
+	// this isn't a problem for us because migrations should run in series.
+	Connection *sql.Conn
+	// Provider delegates all actions to an abstract SQL database engine, with
+	// the expectation that the provider also encodes connection information.
+	Provider EngineProvider
+	// Sequence is the collection of registered migrations to be applied,
+	// verified, described, etc. by this manager.
+	Sequence *Migrations
 }
 
-// EnsureConnection returns a cached database connection (if already set) or
-// creates a new one, validates the connection can ping the DB and sets timeouts
-// via `Provider.SetConnTimeouts()`.
-//
-// We use a `sql.Conn` vs. a `sql.DB` because we can guarantee that connection
-// timeouts are set on a connection whereas a `sql.DB` may use a different
-// connection from the pool. Though `sql.Conn` is **not** concurrency safe,
-// this isn't a problem for us because migrations should run in series.
-func (m *Manager) EnsureConnection(ctx context.Context) (*sql.Conn, error) {
-	if m.Connection != nil {
-		return m.Connection, nil
-	}
-
+// NewConnection creates a new database connection, validates the connection
+// can ping the DB and sets timeouts via `Provider.SetConnTimeouts()`.
+func (m *Manager) NewConnection(ctx context.Context) (*sql.Conn, error) {
 	db, err := m.Provider.Open()
 	if err != nil {
 		return nil, err
@@ -67,6 +76,21 @@ func (m *Manager) EnsureConnection(ctx context.Context) (*sql.Conn, error) {
 	}
 
 	err = m.Provider.SetConnTimeouts(ctx, conn)
+	if err != nil {
+		return nil, err
+	}
+
+	return conn, nil
+}
+
+// EnsureConnection returns a cached database connection (if already set) or
+// invokes `NewConnection()` to create a new one.
+func (m *Manager) EnsureConnection(ctx context.Context) (*sql.Conn, error) {
+	if m.Connection != nil {
+		return m.Connection, nil
+	}
+
+	conn, err := m.NewConnection(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +152,7 @@ func (m *Manager) ApplyMigration(ctx context.Context, migration Migration) error
 		return err
 	}
 
-	err = migration.InvokeUp(ctx, conn, tx)
+	err = migration.InvokeUp(ctx, m.NewConnection, tx)
 	if err != nil {
 		return err
 	}

@@ -72,12 +72,21 @@ func (m Migration) Compact() string {
 }
 
 // InvokeUp dispatches to `Up` or `UpConn`, depending on which is set. If both
-// or neither is set, that is considered an error.
-func (m Migration) InvokeUp(ctx context.Context, conn *sql.Conn, tx *sql.Tx) error {
+// or neither is set, that is considered an error. If `UpConn` needs to be invoked,
+// this lazily invokes a helper to create a new connection. It's crucial that
+// this helper sets the relevant timeouts on that connection to make sure
+// migrations don't cause disruptions in application performance due to accidentally
+// holding locks for an extended period.
+func (m Migration) InvokeUp(ctx context.Context, mc NewConnection, tx *sql.Tx) error {
 	// Handle the `UpConn` case first.
 	if m.UpConn != nil {
 		if m.Up != nil {
 			return fmt.Errorf("%w; both Up and UpConn are set", ErrCannotInvokeUp)
+		}
+
+		conn, err := mc(ctx)
+		if err != nil {
+			return err
 		}
 
 		return m.UpConn(ctx, conn)
