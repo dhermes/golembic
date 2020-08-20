@@ -42,6 +42,22 @@ $ make run-examples-main GOLEMBIC_CMD=up
 2020/08/20 00:49:06 Applying 432f690fcbda: Create movies table
 ```
 
+## `version`
+
+```
+$ make run-examples-main GOLEMBIC_CMD=version
+2020/08/20 01:01:54 No migrations have been run
+```
+
+Then run **all** of the migrations and check the version
+
+```
+$ make run-examples-main GOLEMBIC_CMD=up
+...
+$ make run-examples-main GOLEMBIC_CMD=version
+2020/08/20 01:02:37 432f690fcbda: Create movies table
+```
+
 ## `describe`
 
 ```

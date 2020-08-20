@@ -117,6 +117,16 @@ func main() {
 		ctx := context.Background()
 		err = m.Up(ctx)
 		mustNil(err)
+	case "version":
+		ctx := context.Background()
+		migration, err := m.Version(ctx)
+		mustNil(err)
+		// TODO: https://github.com/dhermes/golembic/issues/1
+		if migration == nil {
+			log.Println("No migrations have been run")
+		} else {
+			log.Printf("%s: %s\n", migration.Revision, migration.Description)
+		}
 	case "describe":
 		fmt.Println(migrations.Describe())
 	default:

@@ -200,6 +200,32 @@ func (m *Manager) Latest(ctx context.Context) (string, error) {
 	return rows[0].Revision, nil
 }
 
+// Version returns the migration that corresponds to the version that was
+// most recently applied.
+func (m *Manager) Version(ctx context.Context) (*Migration, error) {
+	err := m.EnsureMigrationsTable(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	revision, err := m.Latest(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if revision == "" {
+		return nil, nil
+	}
+
+	migration := m.Sequence.Get(revision)
+	if migration == nil {
+		err = fmt.Errorf("%w; revision: %q", ErrMigrationNotRegistered, revision)
+		return nil, err
+	}
+
+	return migration, nil
+}
+
 // IsApplied checks if a migration has already been applied.
 //
 // NOTE: This assumes, but does not check, that the migrations metadata table
