@@ -77,16 +77,13 @@ func createMigrationsSQL(provider EngineProvider, table string) string {
 
 func tableExists(ctx context.Context, tx *sql.Tx, provider EngineProvider, table string) (bool, error) {
 	query := provider.TableExistsSQL()
-	rows, err := tx.QueryContext(ctx, query, table)
+	rows, err := readAllInt(ctx, tx, query, table)
 	if err != nil {
 		return false, err
 	}
 
-	anyRows := rows.Next()
-	err = rows.Err()
-	if err != nil {
-		return false, err
-	}
-
-	return anyRows, rows.Close()
+	// NOTE: Here we trust that the query is sufficient to determine existence
+	//       by just having some results. We could go further and check that
+	//       `rows == []int{1}` but we elect not to do so.
+	return len(rows) > 0, nil
 }
