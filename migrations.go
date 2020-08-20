@@ -72,7 +72,7 @@ func (m *Migrations) RegisterMany(ms ...Migration) error {
 	return nil
 }
 
-// findRoot does a linear scan of every migration in the sequence and returns
+// Root does a linear scan of every migration in the sequence and returns
 // the revision of the root migration. In the "general" case such a scan would
 // be expensive, but the number of migrations should always be a small number.
 //
@@ -80,7 +80,7 @@ func (m *Migrations) RegisterMany(ms ...Migration) error {
 // exactly one migration without a parent. This invariant is enforced by the
 // exported methods such as `Register()` and `RegisterMany()` and the constructor
 // `NewSequence()`.
-func (m *Migrations) findRoot() string {
+func (m *Migrations) Root() string {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -93,14 +93,14 @@ func (m *Migrations) findRoot() string {
 	return ""
 }
 
-// ordered produces the revisions in the sequence, in order.
+// Revisions produces the revisions in the sequence, in order.
 //
 // NOTE: This does not verify or enforce the invariant that there must be
 // exactly one migration without a parent. This invariant is enforced by the
 // exported methods such as `Register()` and `RegisterMany()` and the constructor
 // `NewSequence()`.
-func (m *Migrations) ordered() []string {
-	root := m.findRoot()
+func (m *Migrations) Revisions() []string {
+	root := m.Root()
 
 	m.lock.Lock()
 	defer m.lock.Unlock()
@@ -130,7 +130,7 @@ type describeMetadata struct {
 
 // Describe displays all of the registered migrations (with descriptions).
 func (m *Migrations) Describe() string {
-	revisions := m.ordered()
+	revisions := m.Revisions()
 	lines := []string{}
 
 	m.lock.Lock()
