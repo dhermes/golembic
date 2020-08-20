@@ -3,6 +3,7 @@ help:
 	@echo 'Makefile for `golembic` project'
 	@echo ''
 	@echo 'Usage:'
+	@echo '   make dev-deps               Install (or upgrade) development time dependencies'
 	@echo '   make vet                    Run `go vet` over source tree'
 	@echo '   make start-docker-db        Starts a PostgreSQL database running in a Docker container'
 	@echo '   make superuser-migration    Run superuser migration'
@@ -41,10 +42,13 @@ DB_ADMIN_PASSWORD ?= testpassword_admin
 GOLEMBIC_CMD ?= up
 GOLEMBIC_SQL_DIR ?= $(shell pwd)/examples/sql
 
+.PHONY: dev-deps
+dev-deps:
+	go get -v -u github.com/lib/pq
+
 .PHONY: vet
 vet:
-	@echo ">> vetting"
-	@go vet ./...
+	go vet ./...
 
 .PHONY: start-docker-db
 start-docker-db:
