@@ -141,23 +141,17 @@ func (m *Manager) Apply(ctx context.Context) error {
 //
 // NOTE: This assumes, but does not check, that the migrations metadata table
 // exists.
-func (m *Manager) IsApplied(ctx context.Context, tx *sql.Tx, revision string) (bool, error) {
-	migration := m.Sequence.Get(revision)
-	if migration == nil {
-		err := fmt.Errorf("%w; revision: %q", ErrMigrationNotRegistered, revision)
-		return false, err
-	}
-
+func (m *Manager) IsApplied(ctx context.Context, tx *sql.Tx, migration Migration) (bool, error) {
 	query := fmt.Sprintf(
 		"SELECT parent, revision FROM %s WHERE revision = $1;",
 		m.Provider.QuoteIdentifier(m.MetadataTable),
 	)
-	rows, err := readAllMigration(ctx, tx, query, revision)
+	rows, err := readAllMigration(ctx, tx, query, migration.Revision)
 	if err != nil {
 		return false, err
 	}
 
-	return verifyMigration(rows, *migration)
+	return verifyMigration(rows, migration)
 }
 
 func verifyMigration(rows []Migration, migration Migration) (bool, error) {
