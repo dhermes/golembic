@@ -37,12 +37,14 @@ ALTER TABLE users
   ADD COLUMN city VARCHAR(100);
 `),
 		),
+		// https://github.com/dhermes/golembic/issues/10
 		golembic.MustNewMigration(
 			golembic.OptParent("dce8812d7b6f"),
 			golembic.OptRevision("0501ccd1d98c"),
 			golembic.OptDescription("Add index on user emails"),
 			golembic.OptUpFromSQL(`
-CREATE UNIQUE INDEX CONCURRENTLY uq_users_email ON users (email);
+ALTER TABLE users
+  ADD CONSTRAINT uq_users_email UNIQUE (email);
 `),
 		),
 		golembic.MustNewMigration(
