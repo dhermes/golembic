@@ -93,9 +93,72 @@ $ make run-examples-main GOLEMBIC_CMD=up-to:432f690fcbda
 2020/08/20 01:31:38 No migrations to run; latest revision: 432f690fcbda
 ```
 
+### `redo`
+
+First apply all of the migrations
+
+```
+$ make restart-db
+...
+$ make run-examples-main GOLEMBIC_CMD=up
+...
+```
+
+Then try to redo (won't work if the tables are already there)
+
+```
+$ make run-examples-main GOLEMBIC_CMD=redo:432f690fcbda
+2020/08/20 01:37:53 Applying 432f690fcbda: Create movies table
+2020/08/20 01:37:53 pq: relation "movies" already exists
+exit status 1
+make: *** [run-examples-main] Error 1
+```
+
+Manually drop the table, **then** redo
+
+```
+$ make psql-db
+Running psql against port 18426
+...
+golembic=> DROP TABLE movies;
+DROP TABLE
+golembic=> \q
+$
+$ # TODO: Add a flag that changes this to `UPDATE` instead of `INSERT`.
+$ make run-examples-main GOLEMBIC_CMD=redo:432f690fcbda
+2020/08/20 01:38:36 Applying 432f690fcbda: Create movies table
+2020/08/20 01:38:36 pq: duplicate key value violates unique constraint "pk_golembic_migrations_revision"
+exit status 1
+make: *** [run-examples-main] Error 1
+```
+
+Go one step further and actually delete the row (in addition to the table)
+
+```
+$ make psql-db
+...
+golembic=> DELETE FROM golembic_migrations WHERE revision = '432f690fcbda';
+DELETE 1
+golembic=> \q
+$
+$ make run-examples-main GOLEMBIC_CMD=redo:432f690fcbda
+2020/08/20 01:40:36 Applying 432f690fcbda: Create movies table
+```
+
+Failure mode
+
+```
+$ make run-examples-main GOLEMBIC_CMD=redo:sentinel
+2020/08/20 01:41:01 Migration does not exist "sentinel"
+exit status 1
+make: *** [run-examples-main] Error 1
+```
+
 ### `version`
 
 ```
+$ make restart-db
+...
 $ make run-examples-main GOLEMBIC_CMD=version
 2020/08/20 01:01:54 No migrations have been run
 ```

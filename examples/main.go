@@ -96,6 +96,7 @@ func mustNil(err error) {
 
 type cmdMetadata struct {
 	UpToRevision string
+	RedoRevision string
 }
 
 func golembicCommand() (string, cmdMetadata) {
@@ -107,8 +108,11 @@ func golembicCommand() (string, cmdMetadata) {
 	}
 
 	metadata := cmdMetadata{}
-	if cmd == "up-to" {
+	switch cmd {
+	case "up-to":
 		metadata.UpToRevision = parts[1]
+	case "redo":
+		metadata.RedoRevision = parts[1]
 	}
 	return cmd, metadata
 }
@@ -144,6 +148,14 @@ func main() {
 	case "up-to":
 		ctx := context.Background()
 		err = m.UpTo(ctx, metadata.UpToRevision)
+		mustNil(err)
+	case "redo":
+		ctx := context.Background()
+		migration := m.Sequence.Get(metadata.RedoRevision)
+		if migration == nil {
+			mustNil(fmt.Errorf("Migration does not exist %q", metadata.RedoRevision))
+		}
+		err = m.ApplyMigration(ctx, *migration)
 		mustNil(err)
 	case "version":
 		ctx := context.Background()
