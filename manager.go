@@ -3,6 +3,7 @@ package golembic
 import (
 	"context"
 	"database/sql"
+	"fmt"
 )
 
 const (
@@ -65,4 +66,48 @@ func (m *Manager) EnsureMigrationsTable(ctx context.Context) error {
 	}
 
 	return CreateMigrationsTable(ctx, db, m.Provider, m.MetadataTable)
+}
+
+// IsApplied checks if a migration has already been applied.
+//
+// NOTE: This assumes, but does not check, that the migrations metadata table
+// exists.
+func (m *Manager) IsApplied(ctx context.Context, tx *sql.Tx, revision string) (bool, error) {
+	migration := m.Sequence.Get(revision)
+	if migration == nil {
+		err := fmt.Errorf("%w; revision: %q", ErrMigrationNotRegistered, revision)
+		return false, err
+	}
+
+	query := fmt.Sprintf(
+		"SELECT parent, revision FROM %s WHERE revision = $1;",
+		m.Provider.QuoteIdentifier(m.MetadataTable),
+	)
+	rows, err := readAllMigration(ctx, tx, query, revision)
+	if err != nil {
+		return false, err
+	}
+
+	return verifyMigration(rows, *migration)
+}
+
+func verifyMigration(rows []Migration, migration Migration) (bool, error) {
+	if len(rows) == 0 {
+		return false, nil
+	}
+
+	// NOTE: We don't verify that `len(rows) == 1` since we trust the UNIQUE
+	//       index in the `revision` column.
+	if rows[0].Parent != migration.Parent {
+		err := fmt.Errorf(
+			"%w; revision: %q, registered parent %q does not match parent %q from migrations table",
+			ErrMigrationMismatch,
+			migration.Revision,
+			migration.Parent,
+			rows[0].Parent,
+		)
+		return false, err
+	}
+
+	return true, nil
 }
