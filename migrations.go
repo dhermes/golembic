@@ -2,7 +2,6 @@ package golembic
 
 import (
 	"fmt"
-	"log"
 	"sync"
 )
 
@@ -232,7 +231,7 @@ type describeMetadata struct {
 }
 
 // Describe displays all of the registered migrations (with descriptions).
-func (m *Migrations) Describe() {
+func (m *Migrations) Describe(log PrintfReceiver) {
 	revisions := m.Revisions()
 
 	m.lock.Lock()
@@ -248,10 +247,9 @@ func (m *Migrations) Describe() {
 	}
 
 	indexWidth := len(fmt.Sprintf("%d", len(dms)-1))
-	format := (":: " +
-		"%" + fmt.Sprintf("%d", indexWidth) + "d " +
+	format := ("%" + fmt.Sprintf("%d", indexWidth) + "d " +
 		"| %" + fmt.Sprintf("%d", revisionWidth) + "s " +
-		"| %s")
+		"| %s\n")
 	for i, dm := range dms {
 		log.Printf(format, i, dm.Revision, dm.Description)
 	}

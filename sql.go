@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"time"
 )
 
@@ -110,12 +109,11 @@ func rowsClose(rows *sql.Rows, err error) error {
 // done.
 //
 // TODO: https://github.com/dhermes/golembic/issues/9
-func rollbackAndLog(tx *sql.Tx) {
+func rollbackAndLog(tx *sql.Tx, log PrintfReceiver) {
 	err := tx.Rollback()
 	if err == nil || err == sql.ErrTxDone {
 		return
 	}
 
-	// TODO: https://github.com/dhermes/golembic/issues/1
-	log.Println(err)
+	log.Printf("%v", err)
 }

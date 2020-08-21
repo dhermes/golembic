@@ -16,8 +16,12 @@ func MakeRootCommand(rm RegisterMigrations) (*cobra.Command, error) {
 		return nil, errors.New("Root command requires a non-nil migrations sequence")
 	}
 
+	manager, err := golembic.NewManager()
+	if err != nil {
+		return nil, err
+	}
+
 	sqlDirectory := ""
-	manager := &golembic.Manager{}
 	cmd := &cobra.Command{
 		Use:           "golembic",
 		Short:         "Manage database migrations for Go codebases",

@@ -29,22 +29,22 @@ ALTER TABLE %[1]s
 // table used to track migrations. If the table already exists (as detected by
 // `provider.TableExistsSQL()`), this function will not attempt to create a
 // table or any constraints.
-func CreateMigrationsTable(ctx context.Context, conn *sql.Conn, provider EngineProvider, table string) error {
+func CreateMigrationsTable(ctx context.Context, conn *sql.Conn, manager *Manager) error {
 	tx, err := conn.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
-	defer rollbackAndLog(tx)
+	defer rollbackAndLog(tx, manager.Log)
 
 	// Make sure to "guard" against long locks by setting timeouts within the
 	// transaction before doing any work.
-	err = provider.SetTxTimeouts(ctx, tx)
+	err = manager.Provider.SetTxTimeouts(ctx, tx)
 	if err != nil {
 		return err
 	}
 
 	// Early exit if the table exists.
-	exists, err := tableExists(ctx, tx, provider, table)
+	exists, err := tableExists(ctx, tx, manager)
 	if err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func CreateMigrationsTable(ctx context.Context, conn *sql.Conn, provider EngineP
 		return nil
 	}
 
-	_, err = tx.ExecContext(ctx, createMigrationsSQL(provider, table))
+	_, err = tx.ExecContext(ctx, createMigrationsSQL(manager))
 	if err != nil {
 		return err
 	}
@@ -60,11 +60,14 @@ func CreateMigrationsTable(ctx context.Context, conn *sql.Conn, provider EngineP
 	return tx.Commit()
 }
 
-func createMigrationsSQL(provider EngineProvider, table string) string {
+func createMigrationsSQL(manager *Manager) string {
+	table := manager.MetadataTable
 	pkConstraint := fmt.Sprintf("pk_%s_revision", table)
 	fkConstraint := fmt.Sprintf("fk_%s_parent", table)
 	uqConstraint := fmt.Sprintf("uq_%s_parent", table)
 	chkConstraint := fmt.Sprintf("chk_%s_parent_neq_revision", table)
+
+	provider := manager.Provider
 	return fmt.Sprintf(
 		createMigrationsTableSQL,
 		provider.QuoteIdentifier(table),
@@ -75,9 +78,9 @@ func createMigrationsSQL(provider EngineProvider, table string) string {
 	)
 }
 
-func tableExists(ctx context.Context, tx *sql.Tx, provider EngineProvider, table string) (bool, error) {
-	query := provider.TableExistsSQL()
-	rows, err := readAllInt(ctx, tx, query, table)
+func tableExists(ctx context.Context, tx *sql.Tx, manager *Manager) (bool, error) {
+	query := manager.Provider.TableExistsSQL()
+	rows, err := readAllInt(ctx, tx, query, manager.MetadataTable)
 	if err != nil {
 		return false, err
 	}

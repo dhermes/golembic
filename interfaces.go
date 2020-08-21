@@ -52,3 +52,8 @@ type EngineProvider interface {
 	// to filter results.
 	TableExistsSQL() string
 }
+
+// PrintfReceiver is a generic interface for logging and printing.
+type PrintfReceiver interface {
+	Printf(format string, a ...interface{}) (n int, err error)
+}

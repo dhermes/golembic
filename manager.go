@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"time"
 )
 
@@ -20,10 +19,12 @@ const (
 	DefaultMetadataTable = "golembic_migrations"
 )
 
-// NewManager creates a new manager for orchestrating migrations. The variadic
-// input `table` can be used
+// NewManager creates a new manager for orchestrating migrations.
 func NewManager(opts ...ManagerOption) (*Manager, error) {
-	m := &Manager{MetadataTable: DefaultMetadataTable}
+	m := &Manager{
+		MetadataTable: DefaultMetadataTable,
+		Log:           &stdoutPrintf{},
+	}
 	for _, opt := range opts {
 		err := opt(m)
 		if err != nil {
@@ -55,6 +56,8 @@ type Manager struct {
 	// Sequence is the collection of registered migrations to be applied,
 	// verified, described, etc. by this manager.
 	Sequence *Migrations
+	// Log is used for printing output
+	Log PrintfReceiver
 }
 
 // NewConnection creates a new database connection, validates the connection
@@ -107,7 +110,7 @@ func (m *Manager) EnsureMigrationsTable(ctx context.Context) error {
 		return err
 	}
 
-	return CreateMigrationsTable(ctx, conn, m.Provider, m.MetadataTable)
+	return CreateMigrationsTable(ctx, conn, m)
 }
 
 // InsertMigration inserts a migration into the migrations metadata table.
@@ -131,8 +134,7 @@ func (m *Manager) InsertMigration(ctx context.Context, tx *sql.Tx, migration Mig
 
 // ApplyMigration creates a transaction that runs the "Up" migration.
 func (m *Manager) ApplyMigration(ctx context.Context, migration Migration) error {
-	// TODO: https://github.com/dhermes/golembic/issues/1
-	log.Printf("Applying %s: %s\n", migration.Revision, migration.Description)
+	m.Log.Printf("Applying %s: %s\n", migration.Revision, migration.Description)
 
 	conn, err := m.EnsureConnection(ctx)
 	if err != nil {
@@ -143,7 +145,7 @@ func (m *Manager) ApplyMigration(ctx context.Context, migration Migration) error
 	if err != nil {
 		return err
 	}
-	defer rollbackAndLog(tx)
+	defer rollbackAndLog(tx, m.Log)
 
 	// Make sure to "guard" against long locks by setting timeouts within the
 	// transaction before doing any work.
@@ -183,8 +185,7 @@ func (m *Manager) Up(ctx context.Context) error {
 	}
 
 	if len(migrations) == 0 {
-		// TODO: https://github.com/dhermes/golembic/issues/1
-		log.Printf("No migrations to run; latest revision: %s\n", latest)
+		m.Log.Printf("No migrations to run; latest revision: %s\n", latest)
 		return nil
 	}
 
@@ -226,8 +227,7 @@ func (m *Manager) UpOne(ctx context.Context) error {
 	}
 
 	if len(migrations) == 0 {
-		// TODO: https://github.com/dhermes/golembic/issues/1
-		log.Printf("No migrations to run; latest revision: %s\n", latest)
+		m.Log.Printf("No migrations to run; latest revision: %s\n", latest)
 		return nil
 	}
 
@@ -256,8 +256,7 @@ func (m *Manager) UpTo(ctx context.Context, revision string) error {
 	}
 
 	if len(migrations) == 0 {
-		// TODO: https://github.com/dhermes/golembic/issues/1
-		log.Printf("No migrations to run; latest revision: %s\n", latest)
+		m.Log.Printf("No migrations to run; latest revision: %s\n", latest)
 		return nil
 	}
 
@@ -296,7 +295,7 @@ func (m *Manager) Latest(ctx context.Context) (string, time.Time, error) {
 	if err != nil {
 		return "", time.Time{}, err
 	}
-	defer rollbackAndLog(tx)
+	defer rollbackAndLog(tx, m.Log)
 
 	// Make sure to "guard" against long locks by setting timeouts within the
 	// transaction before doing any work.
@@ -372,7 +371,7 @@ func (m *Manager) Verify(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	defer rollbackAndLog(tx)
+	defer rollbackAndLog(tx, m.Log)
 
 	// Make sure to "guard" against long locks by setting timeouts within the
 	// transaction before doing any work.
@@ -419,13 +418,13 @@ func (m *Manager) Verify(ctx context.Context) error {
 	for i, fromAll := range all {
 		if i < len(rows) {
 			row := rows[i]
-			log.Printf(
-				":: %d | %s | %s (applied %s)\n",
+			m.Log.Printf(
+				"%d | %s | %s (applied %s)\n",
 				i, fromAll.Revision, fromAll.Description, row.CreatedAt,
 			)
 		} else {
-			log.Printf(
-				":: %d | %s | %s (not yet applied)\n",
+			m.Log.Printf(
+				"%d | %s | %s (not yet applied)\n",
 				i, fromAll.Revision, fromAll.Description,
 			)
 		}
@@ -436,7 +435,7 @@ func (m *Manager) Verify(ctx context.Context) error {
 
 // Describe displays all of the registered migrations (with descriptions).
 func (m *Manager) Describe(_ context.Context) error {
-	m.Sequence.Describe()
+	m.Sequence.Describe(m.Log)
 	return nil
 }
 
@@ -447,11 +446,10 @@ func (m *Manager) Version(ctx context.Context) error {
 		return err
 	}
 
-	// TODO: https://github.com/dhermes/golembic/issues/1
 	if migration == nil {
-		log.Println("No migrations have been run")
+		m.Log.Printf("No migrations have been run\n")
 	} else {
-		log.Printf(
+		m.Log.Printf(
 			"%s: %s (applied %s)\n",
 			migration.Revision, migration.Description, migration.CreatedAt,
 		)
