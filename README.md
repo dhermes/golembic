@@ -134,7 +134,7 @@ $ make run-examples-main GOLEMBIC_CMD=up
 If we manually delete one, the last migration will get run
 
 ```
-$ make psql-db
+$ make psql
 ...
 golembic=> DELETE FROM golembic_migrations WHERE revision = '432f690fcbda';
 DELETE 1
@@ -281,7 +281,7 @@ $ make run-examples-main GOLEMBIC_CMD=verify
 We can artificially introduce a "new" migration and see failure to verify
 
 ```
-$ make psql-db
+$ make psql
 ...
 golembic=> INSERT INTO golembic_migrations (parent, revision) VALUES ('432f690fcbda', 'not-in-sequence');
 INSERT 0 1
@@ -296,7 +296,7 @@ make: *** [run-examples-main] Error 1
 Similarly, if we can introduce an unknown entry "in sequence"
 
 ```
-$ make psql-db
+$ make psql
 ...
 golembic=> DELETE FROM golembic_migrations WHERE revision IN ('not-in-sequence', '432f690fcbda');
 DELETE 2
@@ -314,7 +314,7 @@ Luckily more painful cases such as one migration being deleted "in the middle"
 are protected by the constraints on the table:
 
 ```
-$ make psql-db
+$ make psql
 ...
 golembic=> DELETE FROM golembic_migrations WHERE revision = '0430566018cc';
 ERROR:  update or delete on table "golembic_migrations" violates foreign key constraint "fk_golembic_migrations_parent" on table "golembic_migrations"
@@ -351,7 +351,7 @@ Usage:
    make stop-db                Stops the PostgreSQL database running in a Docker container
    make restart-db             Stops the PostgreSQL database (if running) and starts a fresh Docker container
    make require-db             Determine if PostgreSQL database is running; fail if not
-   make psql-db                Connects to currently running PostgreSQL DB via `psql`
+   make psql                   Connects to currently running PostgreSQL DB via `psql`
    make run-examples-main      Run `./examples/main.go`
 
 ```

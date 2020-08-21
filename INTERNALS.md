@@ -23,7 +23,7 @@ CONTAINER ID        IMAGE                  COMMAND                  CREATED     
 ## Run `./examples/main.go`
 
 ```
-$ make psql-db
+$ make psql
 ...
 golembic=> \dt
 Did not find any relations.
@@ -45,7 +45,7 @@ $ make run-examples-main GOLEMBIC_CMD=version
 ## Migrations Metadata Table Created by Version Check
 
 ```
-$ make psql-db
+$ make psql
 ...
 golembic=> \dt
                    List of relations
@@ -95,7 +95,7 @@ $ make run-examples-main GOLEMBIC_CMD=up
 Observe the tables created by the migrations
 
 ```
-$ make psql-db
+$ make psql
 ...
 golembic=> \dt
                    List of relations
@@ -161,7 +161,7 @@ And see how these migrations are tracked
 $ make run-examples-main GOLEMBIC_CMD=version
 2020/08/20 19:19:47 432f690fcbda: Create movies table (applied 2020-08-21 00:18:45.134451 +0000 UTC)
 $
-$ make psql-db
+$ make psql
 ...
 golembic=> SELECT * FROM golembic_migrations;
    revision   |    parent    |          created_at

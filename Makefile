@@ -12,7 +12,7 @@ help:
 	@echo '   make stop-db                Stops the PostgreSQL database running in a Docker container'
 	@echo '   make restart-db             Stops the PostgreSQL database (if running) and starts a fresh Docker container'
 	@echo '   make require-db             Determine if PostgreSQL database is running; fail if not'
-	@echo '   make psql-db                Connects to currently running PostgreSQL DB via `psql`'
+	@echo '   make psql                   Connects to currently running PostgreSQL DB via `psql`'
 	@echo '   make run-examples-main      Run `./examples/main.go`'
 	@echo ''
 
@@ -97,8 +97,8 @@ require-db:
 	  DB_ADMIN_PASSWORD=$(DB_ADMIN_PASSWORD) \
 	  ./_bin/require_db.sh
 
-.PHONY: psql-db
-psql-db: require-db
+.PHONY: psql
+psql: require-db
 	@echo "Running psql against port $(DB_PORT)"
 	PGPASSWORD=$(DB_ADMIN_PASSWORD) psql \
 	  --username $(DB_ADMIN_USER) \
