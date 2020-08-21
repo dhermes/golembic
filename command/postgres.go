@@ -110,19 +110,19 @@ func postgresSubCommand(manager *golembic.Manager, parent *cobra.Command) (*cobr
 		&cfg.ConnectTimeout,
 		"connect-timeout",
 		cfg.ConnectTimeout,
-		"The timeout to use when waiting on a new connection to PostgreSQL",
+		"The timeout to use when waiting on a new connection to PostgreSQL, must be exactly convertible to seconds",
 	)
 	cmd.PersistentFlags().DurationVar(
 		&cfg.LockTimeout,
 		"lock-timeout",
 		cfg.LockTimeout,
-		"The lock timeout to use when connecting to PostgreSQL",
+		"The lock timeout to use when connecting to PostgreSQL, must be exactly convertible to milliseconds",
 	)
 	cmd.PersistentFlags().DurationVar(
 		&cfg.StatementTimeout,
 		"statement-timeout",
 		cfg.StatementTimeout,
-		"The statement timeout to use when connecting to PostgreSQL",
+		"The statement timeout to use when connecting to PostgreSQL, must be exactly convertible to milliseconds",
 	)
 	cmd.PersistentFlags().IntVar(
 		&cfg.IdleConnections,

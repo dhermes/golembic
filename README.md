@@ -66,19 +66,19 @@ Available Commands:
   version     Display the revision of the most recent migration to be applied
 
 Flags:
-      --connect-timeout duration     The timeout to use when waiting on a new connection to PostgreSQL
+      --connect-timeout duration     The timeout to use when waiting on a new connection to PostgreSQL, must be exactly convertible to seconds
       --dbname string                The database name to use when connecting to PostgreSQL (default "postgres")
       --driver-name string           The name of SQL driver to be used when creating a new database connection pool (default "postgres")
   -h, --help                         help for postgres
       --host string                  The host to use when connecting to PostgreSQL (default "localhost")
       --idle-connections int         The maximum number of idle connections (in a connection pool) to PostgreSQL (default 16)
-      --lock-timeout duration        The lock timeout to use when connecting to PostgreSQL (default 4s)
+      --lock-timeout duration        The lock timeout to use when connecting to PostgreSQL, must be exactly convertible to milliseconds (default 4s)
       --max-connections int          The maximum number of connections (in a connection pool) to PostgreSQL (default 32)
       --max-lifetime duration        The maximum time a connection (from a connection pool) to PostgreSQL can remain open
       --port string                  The port to use when connecting to PostgreSQL (default "5432")
       --schema string                The schema to use when connecting to PostgreSQL
       --ssl-mode string              The SSL mode to use when connecting to PostgreSQL
-      --statement-timeout duration   The statement timeout to use when connecting to PostgreSQL (default 5s)
+      --statement-timeout duration   The statement timeout to use when connecting to PostgreSQL, must be exactly convertible to milliseconds (default 5s)
       --username string              The username to use when connecting to PostgreSQL
 
 Global Flags:
@@ -103,12 +103,12 @@ Flags:
       --revision string   The revision to run migrations up to
 
 Global Flags:
-      --connect-timeout duration     The timeout to use when waiting on a new connection to PostgreSQL
+      --connect-timeout duration     The timeout to use when waiting on a new connection to PostgreSQL, must be exactly convertible to seconds
       --dbname string                The database name to use when connecting to PostgreSQL (default "postgres")
       --driver-name string           The name of SQL driver to be used when creating a new database connection pool (default "postgres")
       --host string                  The host to use when connecting to PostgreSQL (default "localhost")
       --idle-connections int         The maximum number of idle connections (in a connection pool) to PostgreSQL (default 16)
-      --lock-timeout duration        The lock timeout to use when connecting to PostgreSQL (default 4s)
+      --lock-timeout duration        The lock timeout to use when connecting to PostgreSQL, must be exactly convertible to milliseconds (default 4s)
       --max-connections int          The maximum number of connections (in a connection pool) to PostgreSQL (default 32)
       --max-lifetime duration        The maximum time a connection (from a connection pool) to PostgreSQL can remain open
       --metadata-table string        The name of the table that stores migration metadata (default "golembic_migrations")
@@ -116,7 +116,7 @@ Global Flags:
       --schema string                The schema to use when connecting to PostgreSQL
       --sql-directory string         Path to a directory containing ".sql" migration files
       --ssl-mode string              The SSL mode to use when connecting to PostgreSQL
-      --statement-timeout duration   The statement timeout to use when connecting to PostgreSQL (default 5s)
+      --statement-timeout duration   The statement timeout to use when connecting to PostgreSQL, must be exactly convertible to milliseconds (default 5s)
       --username string              The username to use when connecting to PostgreSQL
 ```
 
