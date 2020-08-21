@@ -106,8 +106,18 @@ func postgresSubCommand(manager *golembic.Manager, parent *cobra.Command) (*cobr
 		cfg.DriverName,
 		"The name of SQL driver to be used when creating a new database connection pool",
 	)
-	// TODO: Add lock-timeout
-	// TODO: Add statement-timeout
+	cmd.PersistentFlags().DurationVar(
+		&cfg.LockTimeout,
+		"lock-timeout",
+		cfg.LockTimeout,
+		"The lock timeout to use when connecting to PostgreSQL",
+	)
+	cmd.PersistentFlags().DurationVar(
+		&cfg.StatementTimeout,
+		"statement-timeout",
+		cfg.StatementTimeout,
+		"The statement timeout to use when connecting to PostgreSQL",
+	)
 
 	return cmd, nil
 }

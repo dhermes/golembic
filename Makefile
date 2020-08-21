@@ -47,6 +47,7 @@ GOLEMBIC_SQL_DIR ?= $(shell pwd)/examples/sql
 dev-deps:
 	go get -v -u github.com/lib/pq
 	go get -v -u github.com/spf13/cobra
+	go get -v -u github.com/spf13/pflag
 
 .PHONY: vet
 vet:
