@@ -73,31 +73,31 @@ func postgresSubCommand(manager *golembic.Manager, parent *cobra.Command) (*cobr
 		&cfg.Host,
 		"host",
 		cfg.Host,
-		"The host to use when connecting to PostgreSQL.",
+		"The host to use when connecting to PostgreSQL",
 	)
 	cmd.PersistentFlags().StringVar(
 		&cfg.Port,
 		"port",
 		cfg.Port,
-		"The port to use when connecting to PostgreSQL.",
+		"The port to use when connecting to PostgreSQL",
 	)
 	cmd.PersistentFlags().StringVar(
 		&cfg.Database,
 		"dbname",
 		cfg.Database,
-		"The database name to use when connecting to PostgreSQL.",
+		"The database name to use when connecting to PostgreSQL",
 	)
 	cmd.PersistentFlags().StringVar(
 		&cfg.Username,
 		"username",
 		cfg.Username,
-		"The username to use when connecting to PostgreSQL.",
+		"The username to use when connecting to PostgreSQL",
 	)
 	cmd.PersistentFlags().StringVar(
 		&cfg.SSLMode,
 		"ssl-mode",
 		cfg.SSLMode,
-		"The SSL mode to use when connecting to PostgreSQL.",
+		"The SSL mode to use when connecting to PostgreSQL",
 	)
 
 	return cmd, nil

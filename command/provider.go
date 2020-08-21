@@ -70,7 +70,7 @@ func upToSubCommand(manager *golembic.Manager) *cobra.Command {
 		&revision,
 		"revision",
 		"",
-		"The revision to run migrations up to.",
+		"The revision to run migrations up to",
 	)
 	cobra.MarkFlagRequired(cmd.PersistentFlags(), "revision")
 

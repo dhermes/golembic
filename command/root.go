@@ -44,14 +44,14 @@ func MakeRootCommand(rm RegisterMigrations) (*cobra.Command, error) {
 		&manager.MetadataTable,
 		"metadata-table",
 		golembic.DefaultMetadataTable,
-		"The name of the table that stores migration metadata.",
+		"The name of the table that stores migration metadata",
 	)
 
 	cmd.PersistentFlags().StringVar(
 		&sqlDirectory,
 		"sql-directory",
 		"",
-		"Path to a directory containing \".sql\" migration files.",
+		"Path to a directory containing \".sql\" migration files",
 	)
 
 	// Add provider specific sub-commands.
