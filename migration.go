@@ -46,17 +46,6 @@ func NewMigration(opts ...MigrationOption) (*Migration, error) {
 	return m, nil
 }
 
-// MustNewMigration is the "must" form of `NewMigration()`. It panics if the
-// migration could not be created.
-func MustNewMigration(opts ...MigrationOption) Migration {
-	m, err := NewMigration(opts...)
-	if err != nil {
-		panic(err)
-	}
-
-	return *m
-}
-
 // Like is "almost" an equality check, it compares the `Parent` and `Revision`.
 func (m Migration) Like(other Migration) bool {
 	return m.Parent == other.Parent && m.Revision == other.Revision

@@ -59,10 +59,30 @@ func (m *Migrations) Register(migration Migration) error {
 }
 
 // RegisterMany attempts to register multiple migrations (in order) with an
-// existing sequence
+// existing sequence.
 func (m *Migrations) RegisterMany(ms ...Migration) error {
 	for _, migration := range ms {
 		err := m.Register(migration)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// RegisterManyOpt attempts to register multiple migrations (in order) with an
+// existing sequence. It differs from `RegisterMany()` in that the construction
+// of `Migration` objects is handled directly here by taking a slice of
+// option slices.
+func (m *Migrations) RegisterManyOpt(manyOpts ...[]MigrationOption) error {
+	for _, opts := range manyOpts {
+		migration, err := NewMigration(opts...)
+		if err != nil {
+			return err
+		}
+
+		err = m.Register(*migration)
 		if err != nil {
 			return err
 		}
