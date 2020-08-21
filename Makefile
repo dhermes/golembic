@@ -40,11 +40,13 @@ DB_ADMIN_USER ?= golembic_admin
 DB_ADMIN_PASSWORD ?= testpassword_admin
 
 GOLEMBIC_CMD ?= up
+GOLEMBIC_ARGS ?=
 GOLEMBIC_SQL_DIR ?= $(shell pwd)/examples/sql
 
 .PHONY: dev-deps
 dev-deps:
 	go get -v -u github.com/lib/pq
+	go get -v -u github.com/spf13/cobra
 
 .PHONY: vet
 vet:
@@ -106,12 +108,13 @@ psql-db: require-db
 
 .PHONY: run-examples-main
 run-examples-main: require-db
-	@DB_HOST=$(DB_HOST) \
-	  DB_PORT=$(DB_PORT) \
-	  DB_SSLMODE=$(DB_SSLMODE) \
-	  DB_NAME=$(DB_NAME) \
-	  DB_ADMIN_USER=$(DB_ADMIN_USER) \
-	  DB_ADMIN_PASSWORD=$(DB_ADMIN_PASSWORD) \
-	  GOLEMBIC_CMD=$(GOLEMBIC_CMD) \
-	  GOLEMBIC_SQL_DIR=$(GOLEMBIC_SQL_DIR) \
-	  go run ./examples/main.go
+	@GOLEMBIC_SQL_DIR=$(GOLEMBIC_SQL_DIR) \
+	  PGPASSWORD=$(DB_ADMIN_PASSWORD) \
+	  go run ./examples/main.go \
+	    postgres $(GOLEMBIC_CMD) \
+	    --dbname $(DB_NAME) \
+	    --host $(DB_HOST) \
+	    --port $(DB_PORT) \
+	    --ssl-mode $(DB_SSLMODE) \
+	    --username $(DB_ADMIN_USER) \
+		$(GOLEMBIC_ARGS)

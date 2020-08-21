@@ -1,16 +1,21 @@
 package main
 
 import (
-	"context"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/dhermes/golembic"
-	"github.com/dhermes/golembic/postgres"
+	"github.com/dhermes/golembic/command"
 )
+
+func mustEnvVar(key string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		log.Fatalf("Environment variable missing: %q", key)
+	}
+	return value
+}
 
 func allMigrations() (*golembic.Migrations, error) {
 	sqlDir := mustEnvVar("GOLEMBIC_SQL_DIR")
@@ -69,104 +74,18 @@ func allMigrations() (*golembic.Migrations, error) {
 	return migrations, nil
 }
 
-func mustEnvVar(key string) string {
-	value := os.Getenv(key)
-	if value == "" {
-		log.Fatalf("Environment variable missing: %q", key)
-	}
-	return value
-}
-
 func mustNil(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-type cmdMetadata struct {
-	UpToRevision string
-	RedoRevision string
-}
-
-func golembicCommand() (string, cmdMetadata) {
-	cmdWith := mustEnvVar("GOLEMBIC_CMD")
-	parts := strings.SplitN(cmdWith, ":", 2)
-	cmd := parts[0]
-	if len(parts) == 1 {
-		return cmd, cmdMetadata{}
-	}
-
-	metadata := cmdMetadata{}
-	switch cmd {
-	case "up-to":
-		metadata.UpToRevision = parts[1]
-	case "redo":
-		metadata.RedoRevision = parts[1]
-	}
-	return cmd, metadata
-}
-
 func main() {
 	migrations, err := allMigrations()
 	mustNil(err)
 
-	provider, err := postgres.New(
-		postgres.OptHost(mustEnvVar("DB_HOST")),
-		postgres.OptPort(mustEnvVar("DB_PORT")),
-		postgres.OptDatabase(mustEnvVar("DB_NAME")),
-		postgres.OptUsername(mustEnvVar("DB_ADMIN_USER")),
-		postgres.OptPassword(mustEnvVar("DB_ADMIN_PASSWORD")),
-		postgres.OptSSLMode(mustEnvVar("DB_SSLMODE")),
-	)
-	m, err := golembic.NewManager(
-		golembic.OptManagerProvider(provider),
-		golembic.OptManagerSequence(migrations),
-	)
+	cmd, err := command.MakeRootCommand(migrations)
 	mustNil(err)
-
-	cmd, metadata := golembicCommand()
-	switch cmd {
-	case "up":
-		ctx := context.Background()
-		err = m.Up(ctx)
-		mustNil(err)
-	case "up-one":
-		ctx := context.Background()
-		err = m.UpOne(ctx)
-		mustNil(err)
-	case "up-to":
-		ctx := context.Background()
-		err = m.UpTo(ctx, metadata.UpToRevision)
-		mustNil(err)
-	case "redo":
-		ctx := context.Background()
-		migration := m.Sequence.Get(metadata.RedoRevision)
-		if migration == nil {
-			mustNil(fmt.Errorf("Migration does not exist %q", metadata.RedoRevision))
-		}
-		err = m.ApplyMigration(ctx, *migration)
-		mustNil(err)
-	case "version":
-		ctx := context.Background()
-		migration, err := m.Version(ctx)
-		mustNil(err)
-		// TODO: https://github.com/dhermes/golembic/issues/1
-		if migration == nil {
-			log.Println("No migrations have been run")
-		} else {
-			log.Printf(
-				"%s: %s (applied %s)\n",
-				migration.Revision, migration.Description, migration.CreatedAt,
-			)
-		}
-	case "verify":
-		ctx := context.Background()
-		err := m.Verify(ctx)
-		mustNil(err)
-	case "describe":
-		migrations.Describe()
-	default:
-		err = fmt.Errorf("Invalid command: %q", cmd)
-		mustNil(err)
-	}
+	err = cmd.Execute()
+	mustNil(err)
 }
