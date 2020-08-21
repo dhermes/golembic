@@ -349,6 +349,7 @@ Makefile for `golembic` project
 Usage:
    make dev-deps               Install (or upgrade) development time dependencies
    make vet                    Run `go vet` over source tree
+   make shellcheck             Run `shellcheck` on all shell files in `./_bin/`
    make start-docker-db        Starts a PostgreSQL database running in a Docker container
    make superuser-migration    Run superuser migration
    make run-migrations         Run all migrations

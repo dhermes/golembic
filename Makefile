@@ -5,6 +5,7 @@ help:
 	@echo 'Usage:'
 	@echo '   make dev-deps               Install (or upgrade) development time dependencies'
 	@echo '   make vet                    Run `go vet` over source tree'
+	@echo '   make shellcheck             Run `shellcheck` on all shell files in `./_bin/`'
 	@echo '   make start-docker-db        Starts a PostgreSQL database running in a Docker container'
 	@echo '   make superuser-migration    Run superuser migration'
 	@echo '   make run-migrations         Run all migrations'
@@ -22,6 +23,11 @@ help:
 ifdef DEBUG
 	bindata_flags = -debug
 endif
+
+################################################################################
+# Meta-variables
+################################################################################
+SHELLCHECK_PRESENT := $(shell command -v shellcheck 2> /dev/null)
 
 ################################################################################
 # Environment variable defaults
@@ -54,6 +60,16 @@ dev-deps:
 .PHONY: vet
 vet:
 	go vet ./...
+
+.PHONY: _require-shellcheck
+_require-shellcheck:
+ifndef SHELLCHECK_PRESENT
+	$(error 'shellcheck is not installed, it can be installed via "apt-get install shellcheck" or "brew install shellcheck".')
+endif
+
+.PHONY: shellcheck
+shellcheck: _require-shellcheck
+	shellcheck --exclude SC1090 ./_bin/*
 
 .PHONY: start-docker-db
 start-docker-db:
