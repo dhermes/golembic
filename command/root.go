@@ -17,8 +17,9 @@ func MakeRootCommand(migrations *golembic.Migrations) (*cobra.Command, error) {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "golembic",
-		Short: "Manage database migrations for Go codebases",
+		Use:          "golembic",
+		Short:        "Manage database migrations for Go codebases",
+		SilenceUsage: true,
 	}
 
 	manager := &golembic.Manager{Sequence: migrations}
