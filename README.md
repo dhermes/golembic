@@ -26,7 +26,7 @@ func main() {
 The root command of this binary has a subcommand for each provider
 
 ```
-$ go build -o golembic ./examples/main.go
+$ go build -o golembic ./examples/cmd/main.go
 $ ./golembic --help
 Manage database migrations for Go codebases
 
@@ -130,7 +130,7 @@ Global Flags:
 ```
 $ make restart-db
 ...
-$ make run-examples-main GOLEMBIC_CMD=up
+$ make run-example-cmd GOLEMBIC_CMD=up
 Applying c9b52448285b: Create users table
 Applying f1be62155239: Seed data in users table
 Applying dce8812d7b6f: Add city column to users table
@@ -143,7 +143,7 @@ Applying 432f690fcbda: Create movies table
 After creation, the next run does nothing
 
 ```
-$ make run-examples-main GOLEMBIC_CMD=up
+$ make run-example-cmd GOLEMBIC_CMD=up
 No migrations to run; latest revision: 432f690fcbda
 ```
 
@@ -159,7 +159,7 @@ DROP TABLE
 golembic=> \q
 $
 $
-$ make run-examples-main GOLEMBIC_CMD=up
+$ make run-example-cmd GOLEMBIC_CMD=up
 Applying 432f690fcbda: Create movies table
 ```
 
@@ -168,28 +168,28 @@ Applying 432f690fcbda: Create movies table
 ```
 $ make restart-db
 ...
-$ make run-examples-main GOLEMBIC_CMD=up-one
+$ make run-example-cmd GOLEMBIC_CMD=up-one
 Applying c9b52448285b: Create users table
 $
-$ make run-examples-main GOLEMBIC_CMD=up-one
+$ make run-example-cmd GOLEMBIC_CMD=up-one
 Applying f1be62155239: Seed data in users table
 $
-$ make run-examples-main GOLEMBIC_CMD=up-one
+$ make run-example-cmd GOLEMBIC_CMD=up-one
 Applying dce8812d7b6f: Add city column to users table
 $
-$ make run-examples-main GOLEMBIC_CMD=up-one
+$ make run-example-cmd GOLEMBIC_CMD=up-one
 Applying 0430566018cc: Rename the root user
 $
-$ make run-examples-main GOLEMBIC_CMD=up-one
+$ make run-example-cmd GOLEMBIC_CMD=up-one
 Applying 0501ccd1d98c: Add index on user emails (concurrently)
 $
-$ make run-examples-main GOLEMBIC_CMD=up-one
+$ make run-example-cmd GOLEMBIC_CMD=up-one
 Applying e2d4eecb1841: Create books table
 $
-$ make run-examples-main GOLEMBIC_CMD=up-one
+$ make run-example-cmd GOLEMBIC_CMD=up-one
 Applying 432f690fcbda: Create movies table
 $
-$ make run-examples-main GOLEMBIC_CMD=up-one
+$ make run-example-cmd GOLEMBIC_CMD=up-one
 No migrations to run; latest revision: 432f690fcbda
 ```
 
@@ -198,23 +198,23 @@ No migrations to run; latest revision: 432f690fcbda
 ```
 $ make restart-db
 ...
-$ make run-examples-main GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision dce8812d7b6f"
+$ make run-example-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision dce8812d7b6f"
 Applying c9b52448285b: Create users table
 Applying f1be62155239: Seed data in users table
 Applying dce8812d7b6f: Add city column to users table
 $
-$ make run-examples-main GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 0501ccd1d98c"
+$ make run-example-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 0501ccd1d98c"
 Applying 0430566018cc: Rename the root user
 Applying 0501ccd1d98c: Add index on user emails (concurrently)
 $
-$ make run-examples-main GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 0430566018cc"
+$ make run-example-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 0430566018cc"
 No migrations to run; latest revision: 0501ccd1d98c
 $
-$ make run-examples-main GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 432f690fcbda"
+$ make run-example-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 432f690fcbda"
 Applying e2d4eecb1841: Create books table
 Applying 432f690fcbda: Create movies table
 $
-$ make run-examples-main GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 432f690fcbda"
+$ make run-example-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 432f690fcbda"
 No migrations to run; latest revision: 432f690fcbda
 ```
 
@@ -223,16 +223,16 @@ No migrations to run; latest revision: 432f690fcbda
 ```
 $ make restart-db
 ...
-$ make run-examples-main GOLEMBIC_CMD=version
+$ make run-example-cmd GOLEMBIC_CMD=version
  No migrations have been run
 ```
 
 Then run **all** of the migrations and check the version
 
 ```
-$ make run-examples-main GOLEMBIC_CMD=up
+$ make run-example-cmd GOLEMBIC_CMD=up
 ...
-$ make run-examples-main GOLEMBIC_CMD=version
+$ make run-example-cmd GOLEMBIC_CMD=version
 432f690fcbda: Create movies table (applied 2020-08-21 05:34:41.98568 +0000 UTC)
 ```
 
@@ -241,7 +241,7 @@ $ make run-examples-main GOLEMBIC_CMD=version
 ```
 $ make restart-db
 ...
-$ make run-examples-main GOLEMBIC_CMD=verify
+$ make run-example-cmd GOLEMBIC_CMD=verify
 0 | c9b52448285b | Create users table (not yet applied)
 1 | f1be62155239 | Seed data in users table (not yet applied)
 2 | dce8812d7b6f | Add city column to users table (not yet applied)
@@ -251,9 +251,9 @@ $ make run-examples-main GOLEMBIC_CMD=verify
 6 | 432f690fcbda | Create movies table (not yet applied)
 $
 $
-$ make run-examples-main GOLEMBIC_CMD=up-one
+$ make run-example-cmd GOLEMBIC_CMD=up-one
 Applying c9b52448285b: Create users table
-$ make run-examples-main GOLEMBIC_CMD=verify
+$ make run-example-cmd GOLEMBIC_CMD=verify
 0 | c9b52448285b | Create users table (applied 2020-08-21 05:35:08.846686 +0000 UTC)
 1 | f1be62155239 | Seed data in users table (not yet applied)
 2 | dce8812d7b6f | Add city column to users table (not yet applied)
@@ -263,9 +263,9 @@ $ make run-examples-main GOLEMBIC_CMD=verify
 6 | 432f690fcbda | Create movies table (not yet applied)
 $
 $
-$ make run-examples-main GOLEMBIC_CMD=up-one
+$ make run-example-cmd GOLEMBIC_CMD=up-one
 Applying f1be62155239: Seed data in users table
-$ make run-examples-main GOLEMBIC_CMD=verify
+$ make run-example-cmd GOLEMBIC_CMD=verify
 0 | c9b52448285b | Create users table (applied 2020-08-21 05:35:08.846686 +0000 UTC)
 1 | f1be62155239 | Seed data in users table (applied 2020-08-21 05:35:19.509364 +0000 UTC)
 2 | dce8812d7b6f | Add city column to users table (not yet applied)
@@ -275,13 +275,13 @@ $ make run-examples-main GOLEMBIC_CMD=verify
 6 | 432f690fcbda | Create movies table (not yet applied)
 $
 $
-$ make run-examples-main GOLEMBIC_CMD=up
+$ make run-example-cmd GOLEMBIC_CMD=up
 Applying dce8812d7b6f: Add city column to users table
 Applying 0430566018cc: Rename the root user
 Applying 0501ccd1d98c: Add index on user emails (concurrently)
 Applying e2d4eecb1841: Create books table
 Applying 432f690fcbda: Create movies table
-$ make run-examples-main GOLEMBIC_CMD=verify
+$ make run-example-cmd GOLEMBIC_CMD=verify
 0 | c9b52448285b | Create users table (applied 2020-08-21 05:35:08.846686 +0000 UTC)
 1 | f1be62155239 | Seed data in users table (applied 2020-08-21 05:35:19.509364 +0000 UTC)
 2 | dce8812d7b6f | Add city column to users table (applied 2020-08-21 05:35:56.149084 +0000 UTC)
@@ -300,10 +300,10 @@ golembic=> INSERT INTO golembic_migrations (parent, revision) VALUES ('432f690fc
 INSERT 0 1
 golembic=> \q
 $
-$ make run-examples-main GOLEMBIC_CMD=verify
+$ make run-example-cmd GOLEMBIC_CMD=verify
 2020/08/21 00:36:21 Migration stored in SQL doesn't match sequence; sequence has 7 migrations but 8 are stored in the table
 exit status 1
-make: *** [run-examples-main] Error 1
+make: *** [run-example-cmd] Error 1
 ```
 
 Similarly, if we can introduce an unknown entry "in sequence"
@@ -317,10 +317,10 @@ golembic=> INSERT INTO golembic_migrations (parent, revision) VALUES ('e2d4eecb1
 INSERT 0 1
 golembic=> \q
 $
-$ make run-examples-main GOLEMBIC_CMD=verify
+$ make run-example-cmd GOLEMBIC_CMD=verify
 2020/08/21 00:36:41 Migration stored in SQL doesn't match sequence; stored migration 6: "not-in-sequence:e2d4eecb1841" does not match migration "432f690fcbda:e2d4eecb1841" in sequence
 exit status 1
-make: *** [run-examples-main] Error 1
+make: *** [run-example-cmd] Error 1
 ```
 
 Luckily more painful cases such as one migration being deleted "in the middle"
@@ -338,7 +338,7 @@ golembic=> \q
 ### `describe`
 
 ```
-$ make run-examples-main GOLEMBIC_CMD=describe
+$ make run-example-cmd GOLEMBIC_CMD=describe
 0 | c9b52448285b | Create users table
 1 | f1be62155239 | Seed data in users table
 2 | dce8812d7b6f | Add city column to users table
@@ -366,7 +366,7 @@ Usage:
    make restart-db             Stops the PostgreSQL database (if running) and starts a fresh Docker container
    make require-db             Determine if PostgreSQL database is running; fail if not
    make psql                   Connects to currently running PostgreSQL DB via `psql`
-   make run-examples-main      Run `./examples/main.go`
+   make run-example-cmd        Run `./examples/cmd/main.go`
 
 ```
 

@@ -20,7 +20,7 @@ CONTAINER ID        IMAGE                  COMMAND                  CREATED     
 050b8cb47768        postgres:10.6-alpine   "docker-entrypoint.s…"   4 seconds ago       Up 3 seconds        0.0.0.0:18426->5432/tcp   dev-postgres-golembic
 ```
 
-## Run `./examples/main.go`
+## Run `./examples/cmd/main.go`
 
 ```
 $ make psql
@@ -30,7 +30,7 @@ Did not find any relations.
 golembic=> \q
 $
 $
-$ make run-examples-main GOLEMBIC_CMD=describe
+$ make run-example-cmd GOLEMBIC_CMD=describe
 0 | c9b52448285b | Create users table
 1 | f1be62155239 | Seed data in users table
 2 | dce8812d7b6f | Add city column to users table
@@ -38,7 +38,7 @@ $ make run-examples-main GOLEMBIC_CMD=describe
 4 | 0501ccd1d98c | Add index on user emails (concurrently)
 5 | e2d4eecb1841 | Create books table
 6 | 432f690fcbda | Create movies table
-$ make run-examples-main GOLEMBIC_CMD=version
+$ make run-example-cmd GOLEMBIC_CMD=version
 No migrations have been run
 ```
 
@@ -82,7 +82,7 @@ golembic=> \q
 ## Run Some Migrations
 
 ```
-$ make run-examples-main GOLEMBIC_CMD=up
+$ make run-example-cmd GOLEMBIC_CMD=up
 Applying c9b52448285b: Create users table
 Applying f1be62155239: Seed data in users table
 Applying dce8812d7b6f: Add city column to users table
@@ -158,7 +158,7 @@ golembic=> \q
 And see how these migrations are tracked
 
 ```
-$ make run-examples-main GOLEMBIC_CMD=version
+$ make run-example-cmd GOLEMBIC_CMD=version
 432f690fcbda: Create movies table (applied 2020-08-21 05:29:09.022916 +0000 UTC)
 $
 $ make psql

@@ -14,7 +14,7 @@ help:
 	@echo '   make restart-db             Stops the PostgreSQL database (if running) and starts a fresh Docker container'
 	@echo '   make require-db             Determine if PostgreSQL database is running; fail if not'
 	@echo '   make psql                   Connects to currently running PostgreSQL DB via `psql`'
-	@echo '   make run-examples-main      Run `./examples/main.go`'
+	@echo '   make run-example-cmd        Run `./examples/cmd/main.go`'
 	@echo ''
 
 ################################################################################
@@ -125,10 +125,10 @@ psql: require-db
 	  --port $(DB_PORT) \
 	  --host $(DB_HOST)
 
-.PHONY: run-examples-main
-run-examples-main: require-db
+.PHONY: run-example-cmd
+run-example-cmd: require-db
 	@PGPASSWORD=$(DB_ADMIN_PASSWORD) \
-	  go run ./examples/main.go \
+	  go run ./examples/cmd/main.go \
 	  --sql-directory $(GOLEMBIC_SQL_DIR) \
 	  postgres \
 	  --dbname $(DB_NAME) \
