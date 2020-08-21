@@ -15,10 +15,10 @@ func OptManagerMetadataTable(table string) ManagerOption {
 	}
 }
 
-// OptManagerConnection sets the connection on a manager.
-func OptManagerConnection(conn *sql.Conn) ManagerOption {
+// OptManagerConnectionPool sets the connection pool on a manager.
+func OptManagerConnectionPool(pool *sql.DB) ManagerOption {
 	return func(m *Manager) error {
-		m.Connection = conn
+		m.ConnectionPool = pool
 		return nil
 	}
 }

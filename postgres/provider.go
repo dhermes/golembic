@@ -85,15 +85,15 @@ func (sp *SQLProvider) Open() (*sql.DB, error) {
 
 	// NOTE: This requires that the `postgres` driver has been registered with
 	//       the `sql` package.
-	db, err := sql.Open(sp.Config.DriverName, cs)
+	pool, err := sql.Open(sp.Config.DriverName, cs)
 	if err != nil {
 		return nil, err
 	}
 
-	db.SetConnMaxLifetime(sp.Config.MaxLifetime)
-	db.SetMaxIdleConns(sp.Config.IdleConnections)
-	db.SetMaxOpenConns(sp.Config.MaxConnections)
-	return db, nil
+	pool.SetConnMaxLifetime(sp.Config.MaxLifetime)
+	pool.SetMaxIdleConns(sp.Config.IdleConnections)
+	pool.SetMaxOpenConns(sp.Config.MaxConnections)
+	return pool, nil
 }
 
 // TableExistsSQL returns a SQL query that can be used to determine if a

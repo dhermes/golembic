@@ -62,18 +62,18 @@ func (m Migration) Compact() string {
 
 // InvokeUp dispatches to `Up` or `UpConn`, depending on which is set. If both
 // or neither is set, that is considered an error. If `UpConn` needs to be invoked,
-// this lazily invokes a helper to create a new connection. It's crucial that
-// this helper sets the relevant timeouts on that connection to make sure
-// migrations don't cause disruptions in application performance due to accidentally
-// holding locks for an extended period.
-func (m Migration) InvokeUp(ctx context.Context, nc NewConnection, tx *sql.Tx) error {
+// this lazily creates a new connection from a pool. It's crucial that the pool
+// sets the relevant timeouts when creating a new connection to make sure
+// migrations don't cause disruptions in application performance due to
+// accidentally holding locks for an extended period.
+func (m Migration) InvokeUp(ctx context.Context, pool *sql.DB, tx *sql.Tx) error {
 	// Handle the `UpConn` case first.
 	if m.UpConn != nil {
 		if m.Up != nil {
 			return fmt.Errorf("%w; both Up and UpConn are set", ErrCannotInvokeUp)
 		}
 
-		conn, err := nc(ctx)
+		conn, err := pool.Conn(ctx)
 		if err != nil {
 			return err
 		}

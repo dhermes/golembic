@@ -7,12 +7,6 @@ import (
 	"time"
 )
 
-// NOTE: Ensure that
-//       * `Manager.NewConnection` satisfies `NewConnection`.
-var (
-	_ NewConnection = (*Manager)(nil).NewConnection
-)
-
 const (
 	// DefaultMetadataTable is the default name for the table used to store
 	// metadata about migrations.
@@ -43,18 +37,8 @@ type Manager struct {
 	// The expected default value (`DefaultMetadataTable`) is
 	// "golembic_migrations".
 	MetadataTable string
-	// Connection is a cache-able connection to the database.
-	//
-	// TODO: Cache a connection pool rather than a `Conn`.
-	//
-	// (Previously) we used a `sql.Conn` vs. a `sql.DB` because we can
-	// guarantee that connection timeouts are set on a connection whereas a
-	// `sql.DB` may use a different connection from the pool. Though `sql.Conn`
-	// is **not** concurrency safe, this isn't a problem for us because
-	// migrations should run in series.
-	// (Now) we realized `lock_timeout` and `statement_timeout` can be set in
-	// the connection string.
-	Connection *sql.Conn
+	// ConnectionPool is a cache-able pool of connections to the database.
+	ConnectionPool *sql.DB
 	// Provider delegates all actions to an abstract SQL database engine, with
 	// the expectation that the provider also encodes connection information.
 	Provider EngineProvider
@@ -65,41 +49,36 @@ type Manager struct {
 	Log PrintfReceiver
 }
 
-// NewConnection creates a new database connection and validates the connection
-// can ping the DB.
-func (m *Manager) NewConnection(ctx context.Context) (*sql.Conn, error) {
-	db, err := m.Provider.Open()
+// NewConnectionPool creates a new database connection pool and validates that
+// it can ping the DB.
+func (m *Manager) NewConnectionPool(ctx context.Context) (*sql.DB, error) {
+	pool, err := m.Provider.Open()
 	if err != nil {
 		return nil, err
 	}
 
-	conn, err := db.Conn(ctx)
+	err = pool.PingContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	err = conn.PingContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return conn, nil
+	return pool, nil
 }
 
-// EnsureConnection returns a cached database connection (if already set) or
-// invokes `NewConnection()` to create a new one.
-func (m *Manager) EnsureConnection(ctx context.Context) (*sql.Conn, error) {
-	if m.Connection != nil {
-		return m.Connection, nil
+// EnsureConnectionPool returns a cached database connection pool (if already
+// set) or invokes `NewConnection()` to create a new one.
+func (m *Manager) EnsureConnectionPool(ctx context.Context) (*sql.DB, error) {
+	if m.ConnectionPool != nil {
+		return m.ConnectionPool, nil
 	}
 
-	conn, err := m.NewConnection(ctx)
+	pool, err := m.NewConnectionPool(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	m.Connection = conn
-	return m.Connection, nil
+	m.ConnectionPool = pool
+	return m.ConnectionPool, nil
 }
 
 // EnsureMigrationsTable checks that the migrations metadata table exists
@@ -130,17 +109,21 @@ func (m *Manager) InsertMigration(ctx context.Context, tx *sql.Tx, migration Mig
 // NewTx creates a new transaction after ensuring there is an existing
 // connection.
 func (m *Manager) NewTx(ctx context.Context) (*sql.Tx, error) {
-	conn, err := m.EnsureConnection(ctx)
+	pool, err := m.EnsureConnectionPool(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return conn.BeginTx(ctx, nil)
+	return pool.BeginTx(ctx, nil)
 }
 
 // ApplyMigration creates a transaction that runs the "Up" migration.
 func (m *Manager) ApplyMigration(ctx context.Context, migration Migration) error {
 	m.Log.Printf("Applying %s: %s\n", migration.Revision, migration.Description)
+	pool, err := m.EnsureConnectionPool(ctx)
+	if err != nil {
+		return err
+	}
 
 	tx, err := m.NewTx(ctx)
 	if err != nil {
@@ -148,7 +131,7 @@ func (m *Manager) ApplyMigration(ctx context.Context, migration Migration) error
 	}
 	defer rollbackAndLog(tx, m.Log)
 
-	err = migration.InvokeUp(ctx, m.NewConnection, tx)
+	err = migration.InvokeUp(ctx, pool, tx)
 	if err != nil {
 		return err
 	}

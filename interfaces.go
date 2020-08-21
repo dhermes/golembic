@@ -19,15 +19,8 @@ type UpMigration = func(context.Context, *sql.Tx) error
 
 // UpMigrationConn defines a function interface to be used for up / forward
 // migrations. This is the non-transactional form of `UpMigration` and
-// should only be used in rare situations. Note that the second argument is
-// a `Conn` (vs. a `DB`). A DB is concurrency-safe because it represents a
-// connection pool. However, we pass in a **single** connection because we
-// need to guarantee that
+// should only be used in rare situations.
 type UpMigrationConn = func(context.Context, *sql.Conn) error
-
-// NewConnection defines a function interface that can generate a new
-// connection on demand.
-type NewConnection = func(context.Context) (*sql.Conn, error)
 
 // migrationsFilter defines a function interface that filters migrations
 // based on the `latest` revision. It's expected that a migrations filter
