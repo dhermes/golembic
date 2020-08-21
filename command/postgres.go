@@ -20,8 +20,6 @@ const (
 )
 
 func postgresPasswordFromEnv(cfg *postgres.Config) {
-	// TODO: Consider using `github.com/spf13/viper` for reading from
-	//       environment variables.
 	password, exists := os.LookupEnv(EnvVarPostgresPassword)
 	if !exists {
 		return
@@ -37,9 +35,6 @@ func postgresSubCommand(manager *golembic.Manager, parent *cobra.Command) (*cobr
 	}
 
 	short := "Manage database migrations for a PostgreSQL database"
-	// TODO: Consider using `github.com/spf13/viper` for reading from
-	//       environment variables. It's unclear if using viper would eliminate
-	//       the need for the extra bit at the end of `long` below.
 	long := strings.Join([]string{
 		short + ".",
 		"",
