@@ -99,6 +99,12 @@ func postgresSubCommand(manager *golembic.Manager, parent *cobra.Command) (*cobr
 		cfg.SSLMode,
 		"The SSL mode to use when connecting to PostgreSQL",
 	)
+	cmd.PersistentFlags().StringVar(
+		&cfg.DriverName,
+		"driver-name",
+		cfg.DriverName,
+		"The name of SQL driver to be used when creating a new database connection pool",
+	)
 
 	return cmd, nil
 }

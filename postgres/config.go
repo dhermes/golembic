@@ -18,6 +18,11 @@ const (
 	// DefaultSchema is the default schema to connect to
 	DefaultSchema = "public"
 
+	// DefaultDriverName is the default SQL driver to be used when creating
+	// a new database connection pool via `sql.Open()`. This default driver
+	// is expected to be registered by importing `github.com/lib/pq`.
+	DefaultDriverName = "postgres"
+
 	// DefaultLockTimeout is the default timeout to use when attempting to
 	// acquire a lock.
 	DefaultLockTimeout = 4 * time.Second
@@ -55,6 +60,13 @@ type Config struct {
 	ConnectTimeout int
 	// SSLMode is the SSL mode for the connection.
 	SSLMode string
+
+	// DriverName specifies the name of SQL driver to be used when creating
+	// a new database connection pool via `sql.Open()`. The default driver
+	// is expected to be registered by importing `github.com/lib/pq`, however
+	// we may want to support other drivers that are wire compatible, such
+	// as `github.com/jackc/pgx`.
+	DriverName string
 
 	// LockTimeout is the timeout to use when attempting to acquire a lock.
 	LockTimeout time.Duration

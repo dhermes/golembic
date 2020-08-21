@@ -4,11 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
-
-	// NOTE: Importing `pq` comes with side effects, see
-	//       https://github.com/lib/pq/blob/v1.8.0/conn.go#L51-L53.
-	"github.com/lib/pq"
 
 	"github.com/dhermes/golembic"
 )
@@ -27,6 +24,7 @@ func New(opts ...Option) (*SQLProvider, error) {
 		Port:             DefaultPort,
 		Database:         DefaultDatabase,
 		Schema:           DefaultSchema,
+		DriverName:       DefaultDriverName,
 		LockTimeout:      DefaultLockTimeout,
 		StatementTimeout: DefaultStatementTimeout,
 		IdleConnections:  DefaultIdleConnections,
@@ -50,21 +48,42 @@ type SQLProvider struct {
 
 // QuoteIdentifier quotes an identifier, such as a table name, for usage
 // in a query.
+//
+// This implementation is vendored in here to avoid the side effects of
+// importing `github.com/lib/pq`. See:
+// - https://github.com/lib/pq/blob/v1.8.0/conn.go#L1564-L1581
+// - https://github.com/lib/pq/blob/v1.8.0/conn.go#L51-L53.
 func (sp *SQLProvider) QuoteIdentifier(name string) string {
-	return pq.QuoteIdentifier(name)
+	end := strings.IndexRune(name, 0)
+	if end > -1 {
+		name = name[:end]
+	}
+	return `"` + strings.Replace(name, `"`, `""`, -1) + `"`
 }
 
 // QuoteLiteral quotes a literal, such as `2023-01-05 15:00:00Z`, for usage
 // in a query.
+//
+// This implementation is vendored in here to avoid the side effects of
+// importing `github.com/lib/pq`. See:
+// - https://github.com/lib/pq/blob/v1.8.0/conn.go#L1583-L1614
+// - https://github.com/lib/pq/blob/v1.8.0/conn.go#L51-L53.
 func (sp *SQLProvider) QuoteLiteral(literal string) string {
-	return pq.QuoteLiteral(literal)
+	literal = strings.Replace(literal, `'`, `''`, -1)
+	if strings.Contains(literal, `\`) {
+		literal = strings.Replace(literal, `\`, `\\`, -1)
+		literal = ` E'` + literal + `'`
+	} else {
+		literal = `'` + literal + `'`
+	}
+	return literal
 }
 
 // Open creates a database connection to a PostgreSQL instance.
 func (sp *SQLProvider) Open() (*sql.DB, error) {
 	// NOTE: This requires that the `postgres` driver has been registered with
 	//       the `sql` package.
-	db, err := sql.Open("postgres", sp.Config.GetConnectionString())
+	db, err := sql.Open(sp.Config.DriverName, sp.Config.GetConnectionString())
 	if err != nil {
 		return nil, err
 	}

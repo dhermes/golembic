@@ -71,6 +71,14 @@ func OptSSLMode(sslMode string) Option {
 	}
 }
 
+// OptDriverName sets the `DriverName` on a `Config`.
+func OptDriverName(name string) Option {
+	return func(cfg *Config) error {
+		cfg.DriverName = name
+		return nil
+	}
+}
+
 // OptLockTimeout sets the `LockTimeout` on a `Config`.
 func OptLockTimeout(d time.Duration) Option {
 	return func(cfg *Config) error {

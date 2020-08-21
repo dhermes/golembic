@@ -6,6 +6,7 @@ import (
 
 	"github.com/dhermes/golembic"
 	"github.com/dhermes/golembic/command"
+	_ "github.com/lib/pq"
 )
 
 // NOTE: Ensure that
