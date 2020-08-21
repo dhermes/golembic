@@ -45,10 +45,15 @@ type Manager struct {
 	MetadataTable string
 	// Connection is a cache-able connection to the database.
 	//
-	// We use a `sql.Conn` vs. a `sql.DB` because we can guarantee that connection
-	// timeouts are set on a connection whereas a `sql.DB` may use a different
-	// connection from the pool. Though `sql.Conn` is **not** concurrency safe,
-	// this isn't a problem for us because migrations should run in series.
+	// TODO: Cache a connection pool rather than a `Conn`.
+	//
+	// (Previously) we used a `sql.Conn` vs. a `sql.DB` because we can
+	// guarantee that connection timeouts are set on a connection whereas a
+	// `sql.DB` may use a different connection from the pool. Though `sql.Conn`
+	// is **not** concurrency safe, this isn't a problem for us because
+	// migrations should run in series.
+	// (Now) we realized `lock_timeout` and `statement_timeout` can be set in
+	// the connection string.
 	Connection *sql.Conn
 	// Provider delegates all actions to an abstract SQL database engine, with
 	// the expectation that the provider also encodes connection information.
@@ -60,8 +65,8 @@ type Manager struct {
 	Log PrintfReceiver
 }
 
-// NewConnection creates a new database connection, validates the connection
-// can ping the DB and sets timeouts via `Provider.SetConnTimeouts()`.
+// NewConnection creates a new database connection and validates the connection
+// can ping the DB.
 func (m *Manager) NewConnection(ctx context.Context) (*sql.Conn, error) {
 	db, err := m.Provider.Open()
 	if err != nil {
@@ -74,11 +79,6 @@ func (m *Manager) NewConnection(ctx context.Context) (*sql.Conn, error) {
 	}
 
 	err = conn.PingContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	err = m.Provider.SetConnTimeouts(ctx, conn)
 	if err != nil {
 		return nil, err
 	}
@@ -127,27 +127,15 @@ func (m *Manager) InsertMigration(ctx context.Context, tx *sql.Tx, migration Mig
 	return err
 }
 
-// NewTx creates a new transaction and sets timeouts via
-// `Provider.SetTxTimeouts()`.
+// NewTx creates a new transaction after ensuring there is an existing
+// connection.
 func (m *Manager) NewTx(ctx context.Context) (*sql.Tx, error) {
 	conn, err := m.EnsureConnection(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	tx, err := conn.BeginTx(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	// Make sure to "guard" against long locks by setting timeouts within the
-	// transaction before doing any work.
-	err = m.Provider.SetTxTimeouts(ctx, tx)
-	if err != nil {
-		return nil, err
-	}
-
-	return tx, nil
+	return conn.BeginTx(ctx, nil)
 }
 
 // ApplyMigration creates a transaction that runs the "Up" migration.

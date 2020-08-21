@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"fmt"
 	"net/url"
 	"strconv"
 	"time"
@@ -81,9 +82,9 @@ type Config struct {
 // GetConnectionString creates a PostgreSQL connection string from the config.
 // If `ConnectionString` is already cached on the `Config`, it will be returned
 // immediately.
-func (c Config) GetConnectionString() string {
+func (c Config) GetConnectionString() (string, error) {
 	if c.ConnectionString != "" {
-		return c.ConnectionString
+		return c.ConnectionString, nil
 	}
 
 	host := c.Host
@@ -112,6 +113,19 @@ func (c Config) GetConnectionString() string {
 	if c.ConnectTimeout > 0 {
 		q.Add("connect_timeout", strconv.Itoa(c.ConnectTimeout))
 	}
+	if c.LockTimeout > 0 {
+		err := SetConnectionTimeout(q, "lock_timeout", c.LockTimeout)
+		if err != nil {
+			return "", err
+		}
+	}
+	if c.StatementTimeout > 0 {
+		err := SetConnectionTimeout(q, "statement_timeout", c.StatementTimeout)
+		if err != nil {
+			return "", err
+		}
+	}
+
 	// NOTE: If no schema is specified, `postgres` will connect to the
 	//       `"public"` schema.
 	if c.Schema != "" {
@@ -119,5 +133,58 @@ func (c Config) GetConnectionString() string {
 	}
 
 	u.RawQuery = q.Encode()
-	return u.String()
+	return u.String(), nil
+}
+
+// toMilliseconds converts a duration to the **exact** number of milliseconds
+// or errors if round off is required.
+func toMilliseconds(d time.Duration) (int64, error) {
+	remainder := d % time.Millisecond
+	if remainder != 0 {
+		err := fmt.Errorf("%w; duration: %s", ErrNotMilliseconds, d)
+		return 0, err
+	}
+
+	ms := int64(d / time.Millisecond)
+	return ms, nil
+}
+
+// SetConnectionTimeout sets a timeout value in connection string query parameters.
+//
+// Valid units for this parameter in PostgresSQL are "ms", "s", "min", "h"
+// and "d" and the value should be between 0 and 2147483647ms. We explicitly
+// cast to milliseconds but leave validation on the value to PostgreSQL.
+//
+//   golembic=> BEGIN;
+//   BEGIN
+//   golembic=> SET LOCAL lock_timeout TO '4000ms';
+//   SET
+//   golembic=> SHOW lock_timeout;
+//    lock_timeout
+//   --------------
+//    4s
+//   (1 row)
+//   --
+//   golembic=> SET LOCAL lock_timeout TO '4500ms';
+//   SET
+//   golembic=> SHOW lock_timeout;
+//    lock_timeout
+//   --------------
+//    4500ms
+//   (1 row)
+//   --
+//   golembic=> COMMIT;
+//   COMMIT
+//
+// See:
+// - https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-LOCK-TIMEOUT
+// - https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-STATEMENT-TIMEOUT
+func SetConnectionTimeout(q url.Values, name string, d time.Duration) error {
+	ms, err := toMilliseconds(d)
+	if err != nil {
+		return err
+	}
+
+	q.Add(name, fmt.Sprintf("%dms", ms))
+	return nil
 }
