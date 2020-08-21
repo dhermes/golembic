@@ -11,7 +11,7 @@ created as follows:
 
 ```go
 func main() {
-	cmd, err := command.MakeRootCommand(allMigrations)
+	cmd, err := command.MakeRootCommand(examples.AllMigrations)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -22,6 +22,9 @@ func main() {
 	}
 }
 ```
+
+> **NOTE**: For usage in Go code (vs. as a binary), see
+> `examples/script/main.go`.
 
 The root command of this binary has a subcommand for each provider
 
@@ -367,6 +370,7 @@ Usage:
    make require-db             Determine if PostgreSQL database is running; fail if not
    make psql                   Connects to currently running PostgreSQL DB via `psql`
    make run-example-cmd        Run `./examples/cmd/main.go`
+   make run-example-script     Run `./examples/script/main.go`
 
 ```
 

@@ -15,6 +15,7 @@ help:
 	@echo '   make require-db             Determine if PostgreSQL database is running; fail if not'
 	@echo '   make psql                   Connects to currently running PostgreSQL DB via `psql`'
 	@echo '   make run-example-cmd        Run `./examples/cmd/main.go`'
+	@echo '   make run-example-script     Run `./examples/script/main.go`'
 	@echo ''
 
 ################################################################################
@@ -137,3 +138,14 @@ run-example-cmd: require-db
 	  --ssl-mode $(DB_SSLMODE) \
 	  --username $(DB_ADMIN_USER) \
 	  $(GOLEMBIC_CMD) $(GOLEMBIC_ARGS)
+
+.PHONY: run-example-script
+run-example-script: require-db
+	@GOLEMBIC_SQL_DIR=$(GOLEMBIC_SQL_DIR) \
+	  DB_HOST=$(DB_HOST) \
+	  DB_PORT=$(DB_PORT) \
+	  DB_NAME=$(DB_NAME) \
+	  DB_USER=$(DB_ADMIN_USER) \
+	  PGPASSWORD=$(DB_ADMIN_PASSWORD) \
+	  DB_SSLMODE=$(DB_SSLMODE) \
+	  go run ./examples/script/main.go
