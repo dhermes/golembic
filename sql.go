@@ -97,23 +97,35 @@ func rowsClose(rows *sql.Rows, err error) error {
 	}
 
 	closeErr := rows.Close()
-	if closeErr == nil {
-		return err
+	if err == nil {
+		return closeErr
 	}
 
 	return fmt.Errorf("%w; failed to close rows: %v", err, closeErr)
 }
 
-// rollbackAndLog rolls back a transaction and logs any unexpected error. This
-// is intended to be run in a `defer` where no larger error handling can be
-// done.
-//
-// TODO: https://github.com/dhermes/golembic/issues/9
-func rollbackAndLog(tx *sql.Tx, log PrintfReceiver) {
-	err := tx.Rollback()
-	if err == nil || err == sql.ErrTxDone {
-		return
+// txFinalize is intended to be used in `defer` blocks to ensure that a SQL
+// transaction is always rolled back after being started. In cases when the
+// transaction was successfully committed, the rollback will fail with
+// `sql.ErrTxDone` which will be ignored here.
+func txFinalize(tx *sql.Tx, err error) error {
+	if tx == nil {
+		return err
 	}
 
-	log.Printf("%v", err)
+	rollbackErr := ignoreTxDone(tx.Rollback())
+	if err == nil {
+		return rollbackErr
+	}
+
+	return fmt.Errorf("%w; failed to rollback transaction: %v", err, rollbackErr)
+}
+
+// ignoreTxDone converts a `sql.ErrTxDone` error to `nil` (and leaves alone
+// all other errors).
+func ignoreTxDone(err error) error {
+	if err == sql.ErrTxDone {
+		return nil
+	}
+	return err
 }

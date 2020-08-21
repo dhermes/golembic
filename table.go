@@ -29,28 +29,33 @@ ALTER TABLE %[1]s
 // table used to track migrations. If the table already exists (as detected by
 // `provider.TableExistsSQL()`), this function will not attempt to create a
 // table or any constraints.
-func CreateMigrationsTable(ctx context.Context, manager *Manager) error {
-	tx, err := manager.NewTx(ctx)
+func CreateMigrationsTable(ctx context.Context, manager *Manager) (err error) {
+	var tx *sql.Tx
+	defer func() {
+		err = txFinalize(tx, err)
+	}()
+
+	tx, err = manager.NewTx(ctx)
 	if err != nil {
-		return err
+		return
 	}
-	defer rollbackAndLog(tx, manager.Log)
 
 	// Early exit if the table exists.
 	exists, err := tableExists(ctx, tx, manager)
 	if err != nil {
-		return err
+		return
 	}
 	if exists {
-		return nil
+		return
 	}
 
 	_, err = tx.ExecContext(ctx, createMigrationsSQL(manager))
 	if err != nil {
-		return err
+		return
 	}
 
-	return tx.Commit()
+	err = tx.Commit()
+	return
 }
 
 func createMigrationsSQL(manager *Manager) string {

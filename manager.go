@@ -118,30 +118,35 @@ func (m *Manager) NewTx(ctx context.Context) (*sql.Tx, error) {
 }
 
 // ApplyMigration creates a transaction that runs the "Up" migration.
-func (m *Manager) ApplyMigration(ctx context.Context, migration Migration) error {
+func (m *Manager) ApplyMigration(ctx context.Context, migration Migration) (err error) {
+	var tx *sql.Tx
+	defer func() {
+		err = txFinalize(tx, err)
+	}()
+
 	m.Log.Printf("Applying %s: %s\n", migration.Revision, migration.Description)
 	pool, err := m.EnsureConnectionPool(ctx)
 	if err != nil {
-		return err
+		return
 	}
 
-	tx, err := m.NewTx(ctx)
+	tx, err = m.NewTx(ctx)
 	if err != nil {
-		return err
+		return
 	}
-	defer rollbackAndLog(tx, m.Log)
 
 	err = migration.InvokeUp(ctx, pool, tx)
 	if err != nil {
-		return err
+		return
 	}
 
 	err = m.InsertMigration(ctx, tx, migration)
 	if err != nil {
-		return err
+		return
 	}
 
-	return tx.Commit()
+	err = tx.Commit()
+	return
 }
 
 // filterMigrations applies a filter function that takes the revision of the
@@ -253,12 +258,16 @@ func (m *Manager) betweenOrUntil(latest string, revision string) ([]Migration, e
 //
 // NOTE: This assumes, but does not check, that the migrations metadata table
 // exists.
-func (m *Manager) Latest(ctx context.Context) (string, time.Time, error) {
-	tx, err := m.NewTx(ctx)
+func (m *Manager) Latest(ctx context.Context) (revision string, createdAt time.Time, err error) {
+	var tx *sql.Tx
+	defer func() {
+		err = txFinalize(tx, err)
+	}()
+
+	tx, err = m.NewTx(ctx)
 	if err != nil {
-		return "", time.Time{}, err
+		return
 	}
-	defer rollbackAndLog(tx, m.Log)
 
 	query := fmt.Sprintf(
 		"SELECT parent, revision, created_at FROM %s ORDER BY created_at DESC LIMIT 1;",
@@ -266,16 +275,18 @@ func (m *Manager) Latest(ctx context.Context) (string, time.Time, error) {
 	)
 	rows, err := readAllMigration(ctx, tx, query)
 	if err != nil {
-		return "", time.Time{}, err
+		return
 	}
 
 	if len(rows) == 0 {
-		return "", time.Time{}, nil
+		return
 	}
 
 	// NOTE: Here we trust that the query is sufficient to guarantee that
 	//       `len(rows) == 1`.
-	return rows[0].Revision, rows[0].CreatedAt, nil
+	revision = rows[0].Revision
+	createdAt = rows[0].CreatedAt
+	return
 }
 
 // GetVersion returns the migration that corresponds to the version that was
@@ -312,17 +323,21 @@ func (m *Manager) GetVersion(ctx context.Context) (*Migration, error) {
 
 // Verify checks that the rows in the migrations metadata table match the
 // sequence.
-func (m *Manager) Verify(ctx context.Context) error {
-	err := m.EnsureMigrationsTable(ctx)
+func (m *Manager) Verify(ctx context.Context) (err error) {
+	var tx *sql.Tx
+	defer func() {
+		err = txFinalize(tx, err)
+	}()
+
+	err = m.EnsureMigrationsTable(ctx)
 	if err != nil {
-		return err
+		return
 	}
 
-	tx, err := m.NewTx(ctx)
+	tx, err = m.NewTx(ctx)
 	if err != nil {
-		return err
+		return
 	}
-	defer rollbackAndLog(tx, m.Log)
 
 	query := fmt.Sprintf(
 		"SELECT parent, revision, created_at FROM %s ORDER BY created_at ASC;",
@@ -330,27 +345,27 @@ func (m *Manager) Verify(ctx context.Context) error {
 	)
 	rows, err := readAllMigration(ctx, tx, query)
 	if err != nil {
-		return err
+		return
 	}
 
 	all := m.Sequence.All()
 	if len(rows) > len(all) {
-		err := fmt.Errorf(
+		err = fmt.Errorf(
 			"%w; sequence has %d migrations but %d are stored in the table",
 			ErrMigrationMismatch, len(all), len(rows),
 		)
-		return err
+		return
 	}
 
 	// Do a first pass for correctness.
 	for i, row := range rows {
 		expected := all[i]
 		if !row.Like(expected) {
-			err := fmt.Errorf(
+			err = fmt.Errorf(
 				"%w; stored migration %d: %q does not match migration %q in sequence",
 				ErrMigrationMismatch, i, row.Compact(), expected.Compact(),
 			)
-			return err
+			return
 		}
 	}
 
@@ -370,7 +385,7 @@ func (m *Manager) Verify(ctx context.Context) error {
 		}
 	}
 
-	return nil
+	return
 }
 
 // Describe displays all of the registered migrations (with descriptions).
