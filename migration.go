@@ -21,8 +21,11 @@ type Migration struct {
 	// performed. It is intended to be used in "describe" scenarios where
 	// a long form "history" of changes is presented.
 	Description string
-	// Up is the function to be executed when a migration is being applied. It
-	// is required for a migration to be valid.
+	// Up is the function to be executed when a migration is being applied. Either
+	// this field or `UpConn` are required (not both) and this field should be
+	// the default choice in most cases. This function will be run in a transaction
+	// that also writes a row to the migrations metadata table to signify that
+	// this migration was applied.
 	Up UpMigration
 	// UpConn is the non-transactional form of `Up`. This should be used in
 	// rare situations where a migration cannot run inside a transaction, e.g.
