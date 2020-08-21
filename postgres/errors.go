@@ -5,10 +5,6 @@ import (
 )
 
 var (
-	// ErrDurationConversion is the error returned when a duration cannot be
-	// converted to multiple of some base (e.g. milliseconds or seconds)
-	// without round off.
-	ErrDurationConversion = errors.New("Cannot convert duration")
 	// ErrNegativeTimeout is the error returned when a timeout duration cannot
 	// be negative.
 	ErrNegativeTimeout = errors.New("Negative values not allowed for timeouts")

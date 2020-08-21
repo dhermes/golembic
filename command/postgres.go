@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -106,22 +107,19 @@ func postgresSubCommand(manager *golembic.Manager, parent *cobra.Command) (*cobr
 		cfg.DriverName,
 		"The name of SQL driver to be used when creating a new database connection pool",
 	)
-	cmd.PersistentFlags().DurationVar(
-		&cfg.ConnectTimeout,
+	cmd.PersistentFlags().Var(
+		&RoundDuration{Base: time.Second, Value: &cfg.ConnectTimeout},
 		"connect-timeout",
-		cfg.ConnectTimeout,
 		"The timeout to use when waiting on a new connection to PostgreSQL, must be exactly convertible to seconds",
 	)
-	cmd.PersistentFlags().DurationVar(
-		&cfg.LockTimeout,
+	cmd.PersistentFlags().Var(
+		&RoundDuration{Base: time.Millisecond, Value: &cfg.LockTimeout},
 		"lock-timeout",
-		cfg.LockTimeout,
 		"The lock timeout to use when connecting to PostgreSQL, must be exactly convertible to milliseconds",
 	)
-	cmd.PersistentFlags().DurationVar(
-		&cfg.StatementTimeout,
+	cmd.PersistentFlags().Var(
+		&RoundDuration{Base: time.Millisecond, Value: &cfg.StatementTimeout},
 		"statement-timeout",
-		cfg.StatementTimeout,
 		"The statement timeout to use when connecting to PostgreSQL, must be exactly convertible to milliseconds",
 	)
 	cmd.PersistentFlags().IntVar(

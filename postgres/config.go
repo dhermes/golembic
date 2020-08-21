@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/url"
 	"time"
+
+	"github.com/dhermes/golembic"
 )
 
 const (
@@ -177,7 +179,7 @@ func (c Config) GetConnectionString() (string, error) {
 // - https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-LOCK-TIMEOUT
 // - https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-STATEMENT-TIMEOUT
 func SetTimeoutMilliseconds(q url.Values, name string, d time.Duration) error {
-	ms, err := toRoundDuration(d, time.Millisecond)
+	ms, err := golembic.ToRoundDuration(d, time.Millisecond)
 	if err != nil {
 		return err
 	}
@@ -195,24 +197,11 @@ func SetTimeoutMilliseconds(q url.Values, name string, d time.Duration) error {
 // See:
 // - https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-LOCK-TIMEOUT
 func SetTimeoutSeconds(q url.Values, name string, d time.Duration) error {
-	s, err := toRoundDuration(d, time.Second)
+	s, err := golembic.ToRoundDuration(d, time.Second)
 	if err != nil {
 		return err
 	}
 
 	q.Add(name, fmt.Sprintf("%d", s))
 	return nil
-}
-
-// toRoundDuration converts a duration to an **exact** multiple of some base
-// duration or errors if round off is required.
-func toRoundDuration(d, base time.Duration) (int64, error) {
-	remainder := d % base
-	if remainder != 0 {
-		err := fmt.Errorf("%w; duration %s is not a multiple of %s", ErrDurationConversion, d, base)
-		return 0, err
-	}
-
-	ms := int64(d / base)
-	return ms, nil
 }

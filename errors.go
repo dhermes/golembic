@@ -5,6 +5,10 @@ import (
 )
 
 var (
+	// ErrDurationConversion is the error returned when a duration cannot be
+	// converted to multiple of some base (e.g. milliseconds or seconds)
+	// without round off.
+	ErrDurationConversion = errors.New("Cannot convert duration")
 	// ErrNotRoot is the error returned when attempting to start a sequence of
 	// migration with a non-root migration.
 	ErrNotRoot = errors.New("Root migration cannot have a parent")
