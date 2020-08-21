@@ -6,8 +6,48 @@
 
 ## Usage
 
+If a `*golembic.Migrations` sequence has been formed, then a binary can be
+created as follows:
+
+```go
+func main() {
+	migrations, err := allMigrations()
+	mustNil(err)
+
+	cmd, err := command.MakeRootCommand(migrations)
+	mustNil(err)
+	err = cmd.Execute()
+	mustNil(err)
+}
 ```
-$ make run-examples-main GOLEMBIC_CMD= GOLEMBIC_ARGS="--help"
+
+The root command of this binary has a subcommand for each provider
+
+```
+$ go build -o golembic ./examples/main.go
+$ GOLEMBIC_SQL_DIR=./examples/sql/ ./golembic --help
+Manage database migrations for Go codebases
+
+Usage:
+  golembic [command]
+
+Available Commands:
+  help        Help about any command
+  postgres    Manage database migrations for a PostgreSQL database
+
+Flags:
+  -h, --help                    help for golembic
+      --metadata-table string   The name of the table that stores migration metadata. (default "golembic_migrations")
+      --sql-directory string    Path to a directory containing ".sql" migration files.
+
+Use "golembic [command] --help" for more information about a command.
+```
+
+and the given subcommands have the same set of actions they can perform
+(as subcommands)
+
+```
+$ GOLEMBIC_SQL_DIR=./examples/sql/ ./golembic postgres --help
 Manage database migrations for a PostgreSQL database.
 
 Use the PGPASSWORD environment variable to set the password for the database connection.
@@ -37,6 +77,32 @@ Global Flags:
 
 Use "golembic postgres [command] --help" for more information about a command.
 ```
+
+Some of the "leaf" commands have their own flags as well, but this is
+uncommon:
+
+```
+$ GOLEMBIC_SQL_DIR=./examples/sql/ ./golembic postgres up-to --help
+Run the all migrations up to a fixed revision that have not yet been applied
+
+Usage:
+  golembic postgres up-to [flags]
+
+Flags:
+  -h, --help              help for up-to
+      --revision string   The revision to run migrations up to.
+
+Global Flags:
+      --dbname string           The database name to use when connecting to PostgreSQL. (default "postgres")
+      --host string             The host to use when connecting to PostgreSQL. (default "localhost")
+      --metadata-table string   The name of the table that stores migration metadata. (default "golembic_migrations")
+      --port string             The port to use when connecting to PostgreSQL. (default "5432")
+      --sql-directory string    Path to a directory containing ".sql" migration files.
+      --ssl-mode string         The SSL mode to use when connecting to PostgreSQL.
+      --username string         The username to use when connecting to PostgreSQL.
+```
+
+## Examples
 
 ### `up`
 
