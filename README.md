@@ -71,6 +71,7 @@ Flags:
   -h, --help                 help for postgres
       --host string          The host to use when connecting to PostgreSQL (default "localhost")
       --port string          The port to use when connecting to PostgreSQL (default "5432")
+      --schema string        The schema to use when connecting to PostgreSQL
       --ssl-mode string      The SSL mode to use when connecting to PostgreSQL
       --username string      The username to use when connecting to PostgreSQL
 
@@ -101,6 +102,7 @@ Global Flags:
       --host string             The host to use when connecting to PostgreSQL (default "localhost")
       --metadata-table string   The name of the table that stores migration metadata (default "golembic_migrations")
       --port string             The port to use when connecting to PostgreSQL (default "5432")
+      --schema string           The schema to use when connecting to PostgreSQL
       --sql-directory string    Path to a directory containing ".sql" migration files
       --ssl-mode string         The SSL mode to use when connecting to PostgreSQL
       --username string         The username to use when connecting to PostgreSQL

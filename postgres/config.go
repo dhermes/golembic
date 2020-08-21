@@ -15,8 +15,6 @@ const (
 	// DefaultDatabase is the default database to connect to, we use
 	// `postgres` to not pollute the template databases.
 	DefaultDatabase = "postgres"
-	// DefaultSchema is the default schema to connect to
-	DefaultSchema = "public"
 
 	// DefaultDriverName is the default SQL driver to be used when creating
 	// a new database connection pool via `sql.Open()`. This default driver
@@ -114,6 +112,8 @@ func (c Config) GetConnectionString() string {
 	if c.ConnectTimeout > 0 {
 		q.Add("connect_timeout", strconv.Itoa(c.ConnectTimeout))
 	}
+	// NOTE: If no schema is specified, `postgres` will connect to the
+	//       `"public"` schema.
 	if c.Schema != "" {
 		q.Add("search_path", c.Schema)
 	}

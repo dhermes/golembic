@@ -23,7 +23,6 @@ func New(opts ...Option) (*SQLProvider, error) {
 		Host:             DefaultHost,
 		Port:             DefaultPort,
 		Database:         DefaultDatabase,
-		Schema:           DefaultSchema,
 		DriverName:       DefaultDriverName,
 		LockTimeout:      DefaultLockTimeout,
 		StatementTimeout: DefaultStatementTimeout,
