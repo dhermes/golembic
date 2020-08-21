@@ -97,11 +97,7 @@ func rowsClose(rows *sql.Rows, err error) error {
 	}
 
 	closeErr := rows.Close()
-	if err == nil {
-		return closeErr
-	}
-
-	return fmt.Errorf("%w; failed to close rows: %v", err, closeErr)
+	return maybeWrap(err, closeErr, "failed to close rows")
 }
 
 // txFinalize is intended to be used in `defer` blocks to ensure that a SQL
@@ -114,11 +110,7 @@ func txFinalize(tx *sql.Tx, err error) error {
 	}
 
 	rollbackErr := ignoreTxDone(tx.Rollback())
-	if err == nil {
-		return rollbackErr
-	}
-
-	return fmt.Errorf("%w; failed to rollback transaction: %v", err, rollbackErr)
+	return maybeWrap(err, rollbackErr, "failed to rollback transaction")
 }
 
 // ignoreTxDone converts a `sql.ErrTxDone` error to `nil` (and leaves alone
@@ -128,4 +120,17 @@ func ignoreTxDone(err error) error {
 		return nil
 	}
 	return err
+}
+
+// maybeWrap attempts to wrap a secondary error inside a primary one. If
+// one (or both) of the errors if `nil`, then no wrapping is necessary.
+func maybeWrap(primary, secondary error, message string) error {
+	if primary == nil {
+		return secondary
+	}
+	if secondary == nil {
+		return primary
+	}
+
+	return fmt.Errorf("%w; %s: %v", primary, message, secondary)
 }
