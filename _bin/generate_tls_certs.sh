@@ -1,16 +1,20 @@
 #!/bin/sh
 
-set -e
+set -e -x
 
-# ``readlink -f`` is not our friend on macOS.
-SCRIPT_FILE=$(python -c "import os; print(os.path.realpath('${0}'))")
-BIN_DIR=$(dirname ${SCRIPT_FILE})
-ROOT_DIR=$(dirname ${BIN_DIR})
+. "$(dirname "${0}")/exists.sh"
 
+exists "python"
+# Get the absolute path to root of the repository
+ROOT_DIR="$(dirname "${0}")/.."
+# macOS workaround for `readlink`; see https://stackoverflow.com/q/3572030/1068170
+ROOT_DIR=$(python -c "import os; print(os.path.realpath('${ROOT_DIR}'))")
+
+exists "docker"
 docker run \
   --rm \
-  --volume "${ROOT_DIR}/_bin/generate_tls_certs_on_alpine.sh":/var/code/generate_tls_certs.sh \
+  --volume "${ROOT_DIR}/_bin":/var/code \
   --volume "${ROOT_DIR}/_docker/tls-certs:/var/tls-certs" \
   --env CAROOT=/var/tls-certs \
   golang:1.15.0-alpine3.12 \
-  /var/code/generate_tls_certs.sh
+  /var/code/generate_tls_certs_on_alpine.sh

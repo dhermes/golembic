@@ -2,8 +2,8 @@
 
 set -e
 
-source "$(dirname ${0})/exists.sh"
-source "$(dirname ${0})/require_env_var.sh"
+. "$(dirname "${0}")/exists.sh"
+. "$(dirname "${0}")/require_env_var.sh"
 
 requireEnvVar "DB_HOST"
 requireEnvVar "DB_PORT"

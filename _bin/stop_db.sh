@@ -2,13 +2,13 @@
 
 set -e
 
-source "$(dirname ${0})/exists.sh"
-source "$(dirname ${0})/require_env_var.sh"
+. "$(dirname "${0}")/exists.sh"
+. "$(dirname "${0}")/require_env_var.sh"
 
 exists "docker"
 requireEnvVar "DB_CONTAINER_NAME"
 EXISTS=$(docker ps --quiet --filter "name=${DB_CONTAINER_NAME}")
-if [[ -z "${EXISTS}" ]]; then
+if [ -z "${EXISTS}" ]; then
     echo "Container ${DB_CONTAINER_NAME} is not currently running."
     exit
 fi

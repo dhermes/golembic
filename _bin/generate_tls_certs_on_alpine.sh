@@ -2,11 +2,10 @@
 
 set -e -x
 
+. "$(dirname "${0}")/require_env_var.sh"
+
 # Make sure CAROOT is set (it is used by `mkcert`)
-if [[ -z "${CAROOT}" ]]; then
-  echo "CAROOT environment variable should be set by the caller."
-  exit 1
-fi
+requireEnvVar "CAROOT"
 
 # NOTE: `git` is needed for `go get`
 apk --update --no-cache add git
