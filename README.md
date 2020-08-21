@@ -193,11 +193,8 @@ $ make run-examples-main GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 0501ccd1d9
 Applying 0430566018cc: Rename the root user
 Applying 0501ccd1d98c: Add index on user emails (concurrently)
 $
-$ # TODO: Fix the way this is searched / the interval is determined
 $ make run-examples-main GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 0430566018cc"
-2020/08/21 00:33:28 No migration registered for revision; revision: "0501ccd1d98c"
-exit status 1
-make: *** [run-examples-main] Error 1
+No migrations to run; latest revision: 0501ccd1d98c
 $
 $ make run-examples-main GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 432f690fcbda"
 Applying e2d4eecb1841: Create books table

@@ -188,6 +188,9 @@ func (m *Migrations) Between(since, until string) ([]Migration, error) {
 	result := []Migration{}
 	for _, migration := range all {
 		if foundSince {
+			if foundUntil {
+				break
+			}
 			result = append(result, migration)
 		}
 
@@ -197,7 +200,6 @@ func (m *Migrations) Between(since, until string) ([]Migration, error) {
 
 		if migration.Revision == until {
 			foundUntil = true
-			break
 		}
 	}
 
