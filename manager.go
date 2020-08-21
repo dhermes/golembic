@@ -323,9 +323,9 @@ func (m *Manager) Latest(ctx context.Context) (string, time.Time, error) {
 	return rows[0].Revision, rows[0].CreatedAt, nil
 }
 
-// Version returns the migration that corresponds to the version that was
+// GetVersion returns the migration that corresponds to the version that was
 // most recently applied.
-func (m *Manager) Version(ctx context.Context) (*Migration, error) {
+func (m *Manager) GetVersion(ctx context.Context) (*Migration, error) {
 	err := m.EnsureMigrationsTable(ctx)
 	if err != nil {
 		return nil, err
@@ -431,6 +431,31 @@ func (m *Manager) Verify(ctx context.Context) error {
 		}
 	}
 
+	return nil
+}
+
+// Describe displays all of the registered migrations (with descriptions).
+func (m *Manager) Describe(_ context.Context) error {
+	m.Sequence.Describe()
+	return nil
+}
+
+// Version displays the revision of the most recent migration to be applied
+func (m *Manager) Version(ctx context.Context) error {
+	migration, err := m.GetVersion(ctx)
+	if err != nil {
+		return err
+	}
+
+	// TODO: https://github.com/dhermes/golembic/issues/1
+	if migration == nil {
+		log.Println("No migrations have been run")
+	} else {
+		log.Printf(
+			"%s: %s (applied %s)\n",
+			migration.Revision, migration.Description, migration.CreatedAt,
+		)
+	}
 	return nil
 }
 

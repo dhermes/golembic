@@ -2,7 +2,6 @@ package command
 
 import (
 	"context"
-	"log"
 
 	"github.com/spf13/cobra"
 
@@ -24,8 +23,9 @@ func describeSubCommand(manager *golembic.Manager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "describe",
 		Short: "Describe the registered sequence of migrations",
-		Run: func(cmd *cobra.Command, args []string) {
-			manager.Sequence.Describe()
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := context.Background()
+			return manager.Describe(ctx)
 		},
 	}
 	return cmd
@@ -95,21 +95,7 @@ func versionSubCommand(manager *golembic.Manager) *cobra.Command {
 		Short: "Display the revision of the most recent migration to be applied",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
-			migration, err := manager.Version(ctx)
-			if err != nil {
-				return err
-			}
-
-			// TODO: https://github.com/dhermes/golembic/issues/1
-			if migration == nil {
-				log.Println("No migrations have been run")
-			} else {
-				log.Printf(
-					"%s: %s (applied %s)\n",
-					migration.Revision, migration.Description, migration.CreatedAt,
-				)
-			}
-			return nil
+			return manager.Version(ctx)
 		},
 	}
 	return cmd
