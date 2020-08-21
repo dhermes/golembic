@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -56,9 +57,14 @@ func OptPassword(password string) Option {
 }
 
 // OptConnectTimeout sets the `ConnectTimeout` on a `Config`.
-func OptConnectTimeout(timeout int) Option {
+func OptConnectTimeout(d int) Option {
+	if d < 0 {
+		err := fmt.Errorf("%w; connect timeout: %d", ErrNegativeTimeout, d)
+		return OptAlwaysError(err)
+	}
+
 	return func(cfg *Config) error {
-		cfg.ConnectTimeout = timeout
+		cfg.ConnectTimeout = d
 		return nil
 	}
 }
@@ -81,8 +87,12 @@ func OptDriverName(name string) Option {
 
 // OptLockTimeout sets the `LockTimeout` on a `Config`.
 func OptLockTimeout(d time.Duration) Option {
+	if d < 0 {
+		err := fmt.Errorf("%w; lock timeout: %s", ErrNegativeTimeout, d)
+		return OptAlwaysError(err)
+	}
+
 	return func(cfg *Config) error {
-		// TODO: https://github.com/dhermes/golembic/issues/5
 		cfg.LockTimeout = d
 		return nil
 	}
@@ -90,8 +100,12 @@ func OptLockTimeout(d time.Duration) Option {
 
 // OptStatementTimeout sets the `StatementTimeout` on a `Config`.
 func OptStatementTimeout(d time.Duration) Option {
+	if d < 0 {
+		err := fmt.Errorf("%w; statement timeout: %s", ErrNegativeTimeout, d)
+		return OptAlwaysError(err)
+	}
+
 	return func(cfg *Config) error {
-		// TODO: https://github.com/dhermes/golembic/issues/5
 		cfg.StatementTimeout = d
 		return nil
 	}
@@ -99,8 +113,12 @@ func OptStatementTimeout(d time.Duration) Option {
 
 // OptIdleConnections sets the `IdleConnections` on a `Config`.
 func OptIdleConnections(count int) Option {
+	if count < 0 {
+		err := fmt.Errorf("%w; idle connections: %d", ErrNegativeCount, count)
+		return OptAlwaysError(err)
+	}
+
 	return func(cfg *Config) error {
-		// TODO: https://github.com/dhermes/golembic/issues/5
 		cfg.IdleConnections = count
 		return nil
 	}
@@ -108,8 +126,12 @@ func OptIdleConnections(count int) Option {
 
 // OptMaxConnections sets the `MaxConnections` on a `Config`.
 func OptMaxConnections(count int) Option {
+	if count < 0 {
+		err := fmt.Errorf("%w; max connections: %d", ErrNegativeCount, count)
+		return OptAlwaysError(err)
+	}
+
 	return func(cfg *Config) error {
-		// TODO: https://github.com/dhermes/golembic/issues/5
 		cfg.MaxConnections = count
 		return nil
 	}
@@ -117,9 +139,20 @@ func OptMaxConnections(count int) Option {
 
 // OptMaxLifetime sets the `MaxLifetime` on a `Config`.
 func OptMaxLifetime(d time.Duration) Option {
+	if d < 0 {
+		err := fmt.Errorf("%w; max lifetime: %s", ErrNegativeTimeout, d)
+		return OptAlwaysError(err)
+	}
+
 	return func(cfg *Config) error {
-		// TODO: https://github.com/dhermes/golembic/issues/5
 		cfg.MaxLifetime = d
 		return nil
+	}
+}
+
+// OptAlwaysError returns an option that always returns an error.
+func OptAlwaysError(err error) Option {
+	return func(cfg *Config) error {
+		return err
 	}
 }
