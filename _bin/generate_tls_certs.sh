@@ -9,8 +9,8 @@ ROOT_DIR=$(dirname ${BIN_DIR})
 
 docker run \
   --rm \
-  --volume "${ROOT_DIR}/_bin/generate-tls-certs-on-alpine.sh":/var/code/generate-tls-certs.sh \
+  --volume "${ROOT_DIR}/_bin/generate_tls_certs_on_alpine.sh":/var/code/generate_tls_certs.sh \
   --volume "${ROOT_DIR}/_docker/tls-certs:/var/tls-certs" \
   --env CAROOT=/var/tls-certs \
   golang:1.15.0-alpine3.12 \
-  /var/code/generate-tls-certs.sh
+  /var/code/generate_tls_certs.sh
