@@ -78,8 +78,9 @@ func tableExists(ctx context.Context, tx *sql.Tx, manager *Manager) (bool, error
 		return false, err
 	}
 
-	// NOTE: Here we trust that the query is sufficient to determine existence
-	//       by just having some results. We could go further and check that
-	//       `rows == []int{1}` but we elect not to do so.
-	return len(rows) > 0, nil
+	// NOTE: If `len(rows) > 1` it could be due to an insufficiently specific
+	//       query. For example, if no database schema is specified in the
+	//       provider configuration, but the table name exists in multiple
+	//       schemas / schemata.
+	return len(rows) == 1, nil
 }

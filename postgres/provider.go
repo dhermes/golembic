@@ -96,10 +96,14 @@ func (sp *SQLProvider) Open() (*sql.DB, error) {
 // TableExistsSQL returns a SQL query that can be used to determine if a
 // table exists.
 func (sp *SQLProvider) TableExistsSQL() string {
-	return fmt.Sprintf(
-		"SELECT 1 FROM pg_catalog.pg_tables WHERE tablename = $1 AND schemaname = %s",
-		sp.QuoteLiteral(sp.Config.Schema),
-	)
+	if sp.Config.Schema != "" {
+		return fmt.Sprintf(
+			"SELECT 1 FROM pg_catalog.pg_tables WHERE tablename = $1 AND schemaname = %s",
+			sp.QuoteLiteral(sp.Config.Schema),
+		)
+	}
+
+	return "SELECT 1 FROM pg_catalog.pg_tables WHERE tablename = $1"
 }
 
 // SetConnTimeouts sets timeouts on a database connection to ensure that a
