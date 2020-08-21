@@ -77,14 +77,14 @@ func (m Migration) Compact() string {
 // this helper sets the relevant timeouts on that connection to make sure
 // migrations don't cause disruptions in application performance due to accidentally
 // holding locks for an extended period.
-func (m Migration) InvokeUp(ctx context.Context, mc NewConnection, tx *sql.Tx) error {
+func (m Migration) InvokeUp(ctx context.Context, nc NewConnection, tx *sql.Tx) error {
 	// Handle the `UpConn` case first.
 	if m.UpConn != nil {
 		if m.Up != nil {
 			return fmt.Errorf("%w; both Up and UpConn are set", ErrCannotInvokeUp)
 		}
 
-		conn, err := mc(ctx)
+		conn, err := nc(ctx)
 		if err != nil {
 			return err
 		}
