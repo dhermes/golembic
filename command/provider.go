@@ -59,7 +59,7 @@ func upToSubCommand(manager *golembic.Manager) *cobra.Command {
 	revision := ""
 	cmd := &cobra.Command{
 		Use:   "up-to",
-		Short: "Run the all migrations up to a fixed revision that have not yet been applied",
+		Short: "Run all the migrations up to a fixed revision that have not yet been applied",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
 			return manager.UpTo(ctx, revision)

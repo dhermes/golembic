@@ -108,13 +108,13 @@ psql-db: require-db
 
 .PHONY: run-examples-main
 run-examples-main: require-db
-	@GOLEMBIC_SQL_DIR=$(GOLEMBIC_SQL_DIR) \
-	  PGPASSWORD=$(DB_ADMIN_PASSWORD) \
+	@PGPASSWORD=$(DB_ADMIN_PASSWORD) \
 	  go run ./examples/main.go \
-	    postgres $(GOLEMBIC_CMD) \
-	    --dbname $(DB_NAME) \
-	    --host $(DB_HOST) \
-	    --port $(DB_PORT) \
-	    --ssl-mode $(DB_SSLMODE) \
-	    --username $(DB_ADMIN_USER) \
-		$(GOLEMBIC_ARGS)
+	  --sql-directory $(GOLEMBIC_SQL_DIR) \
+	  postgres \
+	  --dbname $(DB_NAME) \
+	  --host $(DB_HOST) \
+	  --port $(DB_PORT) \
+	  --ssl-mode $(DB_SSLMODE) \
+	  --username $(DB_ADMIN_USER) \
+	  $(GOLEMBIC_CMD) $(GOLEMBIC_ARGS)

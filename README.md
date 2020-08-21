@@ -11,13 +11,15 @@ created as follows:
 
 ```go
 func main() {
-	migrations, err := allMigrations()
-	mustNil(err)
+	cmd, err := command.MakeRootCommand(allMigrations)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	cmd, err := command.MakeRootCommand(migrations)
-	mustNil(err)
 	err = cmd.Execute()
-	mustNil(err)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 ```
 
@@ -25,7 +27,7 @@ The root command of this binary has a subcommand for each provider
 
 ```
 $ go build -o golembic ./examples/main.go
-$ GOLEMBIC_SQL_DIR=./examples/sql/ ./golembic --help
+$ ./golembic --help
 Manage database migrations for Go codebases
 
 Usage:
@@ -47,7 +49,7 @@ and the given subcommands have the same set of actions they can perform
 (as subcommands)
 
 ```
-$ GOLEMBIC_SQL_DIR=./examples/sql/ ./golembic postgres --help
+$ ./golembic postgres --help
 Manage database migrations for a PostgreSQL database.
 
 Use the PGPASSWORD environment variable to set the password for the database connection.
@@ -59,7 +61,7 @@ Available Commands:
   describe    Describe the registered sequence of migrations
   up          Run all migrations that have not yet been applied
   up-one      Run the first migration that has not yet been applied
-  up-to       Run the all migrations up to a fixed revision that have not yet been applied
+  up-to       Run all the migrations up to a fixed revision that have not yet been applied
   verify      Verify the stored migration metadata against the registered sequence
   version     Display the revision of the most recent migration to be applied
 
@@ -82,8 +84,8 @@ Some of the "leaf" commands have their own flags as well, but this is
 uncommon:
 
 ```
-$ GOLEMBIC_SQL_DIR=./examples/sql/ ./golembic postgres up-to --help
-Run the all migrations up to a fixed revision that have not yet been applied
+$ ./golembic postgres up-to --help
+Run all the migrations up to a fixed revision that have not yet been applied
 
 Usage:
   golembic postgres up-to [flags]
@@ -191,10 +193,6 @@ $ make run-examples-main GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 0501ccd1d9
 $
 $ # TODO: Fix the way this is searched / the interval is determined
 $ make run-examples-main GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 0430566018cc"
-Error: No migration registered for revision; revision: "0501ccd1d98c"
-Usage:
-  golembic postgres up-to [flags]
-...
 2020/08/20 19:13:02 No migration registered for revision; revision: "0501ccd1d98c"
 exit status 1
 make: *** [run-examples-main] Error 1
@@ -290,10 +288,6 @@ INSERT 0 1
 golembic=> \q
 $
 $ make run-examples-main GOLEMBIC_CMD=verify
-Error: Migration stored in SQL doesn't match sequence; sequence has 7 migrations but 8 are stored in the table
-Usage:
-  golembic postgres verify [flags]
-...
 2020/08/20 19:16:02 Migration stored in SQL doesn't match sequence; sequence has 7 migrations but 8 are stored in the table
 exit status 1
 make: *** [run-examples-main] Error 1
@@ -304,19 +298,13 @@ Similarly, if we can introduce an unknown entry "in sequence"
 ```
 $ make psql-db
 ...
-golembic=> DELETE FROM golembic_migrations WHERE revision = 'not-in-sequence';
-DELETE 1
-golembic=> DELETE FROM golembic_migrations WHERE revision = '432f690fcbda';
-DELETE 1
+golembic=> DELETE FROM golembic_migrations WHERE revision IN ('not-in-sequence', '432f690fcbda');
+DELETE 2
 golembic=> INSERT INTO golembic_migrations (parent, revision) VALUES ('e2d4eecb1841', 'not-in-sequence');
 INSERT 0 1
 golembic=> \q
 $
 $ make run-examples-main GOLEMBIC_CMD=verify
-Error: Migration stored in SQL doesn't match sequence; stored migration 6: "not-in-sequence:e2d4eecb1841" does not match migration "432f690fcbda:e2d4eecb1841" in sequence
-Usage:
-  golembic postgres verify [flags]
-...
 2020/08/20 19:16:35 Migration stored in SQL doesn't match sequence; stored migration 6: "not-in-sequence:e2d4eecb1841" does not match migration "432f690fcbda:e2d4eecb1841" in sequence
 exit status 1
 make: *** [run-examples-main] Error 1
