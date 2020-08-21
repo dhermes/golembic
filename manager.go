@@ -105,12 +105,7 @@ func (m *Manager) EnsureConnection(ctx context.Context) (*sql.Conn, error) {
 // EnsureMigrationsTable checks that the migrations metadata table exists
 // and creates it if not.
 func (m *Manager) EnsureMigrationsTable(ctx context.Context) error {
-	conn, err := m.EnsureConnection(ctx)
-	if err != nil {
-		return err
-	}
-
-	return CreateMigrationsTable(ctx, conn, m)
+	return CreateMigrationsTable(ctx, m)
 }
 
 // InsertMigration inserts a migration into the migrations metadata table.
@@ -132,27 +127,38 @@ func (m *Manager) InsertMigration(ctx context.Context, tx *sql.Tx, migration Mig
 	return err
 }
 
-// ApplyMigration creates a transaction that runs the "Up" migration.
-func (m *Manager) ApplyMigration(ctx context.Context, migration Migration) error {
-	m.Log.Printf("Applying %s: %s\n", migration.Revision, migration.Description)
-
+// NewTx creates a new transaction and sets timeouts via
+// `Provider.SetTxTimeouts()`.
+func (m *Manager) NewTx(ctx context.Context) (*sql.Tx, error) {
 	conn, err := m.EnsureConnection(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	tx, err := conn.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer rollbackAndLog(tx, m.Log)
 
 	// Make sure to "guard" against long locks by setting timeouts within the
 	// transaction before doing any work.
 	err = m.Provider.SetTxTimeouts(ctx, tx)
 	if err != nil {
+		return nil, err
+	}
+
+	return tx, nil
+}
+
+// ApplyMigration creates a transaction that runs the "Up" migration.
+func (m *Manager) ApplyMigration(ctx context.Context, migration Migration) error {
+	m.Log.Printf("Applying %s: %s\n", migration.Revision, migration.Description)
+
+	tx, err := m.NewTx(ctx)
+	if err != nil {
 		return err
 	}
+	defer rollbackAndLog(tx, m.Log)
 
 	err = migration.InvokeUp(ctx, m.NewConnection, tx)
 	if err != nil {
@@ -277,23 +283,11 @@ func (m *Manager) betweenOrUntil(latest string, revision string) ([]Migration, e
 // NOTE: This assumes, but does not check, that the migrations metadata table
 // exists.
 func (m *Manager) Latest(ctx context.Context) (string, time.Time, error) {
-	conn, err := m.EnsureConnection(ctx)
-	if err != nil {
-		return "", time.Time{}, err
-	}
-
-	tx, err := conn.BeginTx(ctx, nil)
+	tx, err := m.NewTx(ctx)
 	if err != nil {
 		return "", time.Time{}, err
 	}
 	defer rollbackAndLog(tx, m.Log)
-
-	// Make sure to "guard" against long locks by setting timeouts within the
-	// transaction before doing any work.
-	err = m.Provider.SetTxTimeouts(ctx, tx)
-	if err != nil {
-		return "", time.Time{}, err
-	}
 
 	query := fmt.Sprintf(
 		"SELECT parent, revision, created_at FROM %s ORDER BY created_at DESC LIMIT 1;",
@@ -353,28 +347,12 @@ func (m *Manager) Verify(ctx context.Context) error {
 		return err
 	}
 
-	conn, err := m.EnsureConnection(ctx)
-	if err != nil {
-		return err
-	}
-
-	tx, err := conn.BeginTx(ctx, nil)
+	tx, err := m.NewTx(ctx)
 	if err != nil {
 		return err
 	}
 	defer rollbackAndLog(tx, m.Log)
 
-	// Make sure to "guard" against long locks by setting timeouts within the
-	// transaction before doing any work.
-	err = m.Provider.SetTxTimeouts(ctx, tx)
-	if err != nil {
-		return err
-	}
-
-	// TODO: All of the code above gets copy-pasted quite a bit; try to
-	//       re-factor to make it easier for re-use (e.g. `StartTx()`). It
-	//       is a wee bit delicate because of the need to `defer` in this block
-	//       vs. an invoked method or function.
 	query := fmt.Sprintf(
 		"SELECT parent, revision, created_at FROM %s ORDER BY created_at ASC;",
 		m.Provider.QuoteIdentifier(m.MetadataTable),
