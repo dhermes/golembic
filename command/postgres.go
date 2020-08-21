@@ -83,6 +83,12 @@ func postgresSubCommand(manager *golembic.Manager, parent *cobra.Command) (*cobr
 		"The database name to use when connecting to PostgreSQL",
 	)
 	cmd.PersistentFlags().StringVar(
+		&cfg.Schema,
+		"schema",
+		cfg.Schema,
+		"The schema to use when connecting to PostgreSQL",
+	)
+	cmd.PersistentFlags().StringVar(
 		&cfg.Username,
 		"username",
 		cfg.Username,
@@ -95,16 +101,16 @@ func postgresSubCommand(manager *golembic.Manager, parent *cobra.Command) (*cobr
 		"The SSL mode to use when connecting to PostgreSQL",
 	)
 	cmd.PersistentFlags().StringVar(
-		&cfg.Schema,
-		"schema",
-		cfg.Schema,
-		"The schema to use when connecting to PostgreSQL",
-	)
-	cmd.PersistentFlags().StringVar(
 		&cfg.DriverName,
 		"driver-name",
 		cfg.DriverName,
 		"The name of SQL driver to be used when creating a new database connection pool",
+	)
+	cmd.PersistentFlags().DurationVar(
+		&cfg.ConnectTimeout,
+		"connect-timeout",
+		cfg.ConnectTimeout,
+		"The timeout to use when waiting on a new connection to PostgreSQL",
 	)
 	cmd.PersistentFlags().DurationVar(
 		&cfg.LockTimeout,
@@ -117,6 +123,24 @@ func postgresSubCommand(manager *golembic.Manager, parent *cobra.Command) (*cobr
 		"statement-timeout",
 		cfg.StatementTimeout,
 		"The statement timeout to use when connecting to PostgreSQL",
+	)
+	cmd.PersistentFlags().IntVar(
+		&cfg.IdleConnections,
+		"idle-connections",
+		cfg.IdleConnections,
+		"The maximum number of idle connections (in a connection pool) to PostgreSQL",
+	)
+	cmd.PersistentFlags().IntVar(
+		&cfg.MaxConnections,
+		"max-connections",
+		cfg.MaxConnections,
+		"The maximum number of connections (in a connection pool) to PostgreSQL",
+	)
+	cmd.PersistentFlags().DurationVar(
+		&cfg.MaxLifetime,
+		"max-lifetime",
+		cfg.MaxLifetime,
+		"The maximum time a connection (from a connection pool) to PostgreSQL can remain open",
 	)
 
 	return cmd, nil

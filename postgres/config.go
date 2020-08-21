@@ -3,7 +3,6 @@ package postgres
 import (
 	"fmt"
 	"net/url"
-	"strconv"
 	"time"
 )
 
@@ -55,8 +54,6 @@ type Config struct {
 	Username string
 	// Password is the password for the connection via password auth.
 	Password string
-	// ConnectTimeout is the connection timeout in seconds.
-	ConnectTimeout int
 	// SSLMode is the SSL mode for the connection.
 	SSLMode string
 
@@ -67,9 +64,19 @@ type Config struct {
 	// as `github.com/jackc/pgx`.
 	DriverName string
 
+	// ConnectTimeout determines the maximum wait for connection. The minimum
+	// allowed timeout is 2 seconds, so anything below is treated the same
+	// as unset.
+	//
+	// See: https://www.postgresql.org/docs/10/libpq-connect.html#LIBPQ-CONNECT-CONNECT-TIMEOUT
+	ConnectTimeout time.Duration
 	// LockTimeout is the timeout to use when attempting to acquire a lock.
+	//
+	// See: https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-LOCK-TIMEOUT
 	LockTimeout time.Duration
 	// StatementTimeout is the timeout to use when invoking a SQL statement.
+	//
+	// See: https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-STATEMENT-TIMEOUT
 	StatementTimeout time.Duration
 	// IdleConnections is the number of idle connections.
 	IdleConnections int
@@ -111,16 +118,19 @@ func (c Config) GetConnectionString() (string, error) {
 		q.Add("sslmode", c.SSLMode)
 	}
 	if c.ConnectTimeout > 0 {
-		q.Add("connect_timeout", strconv.Itoa(c.ConnectTimeout))
+		err := SetTimeoutSeconds(q, "connect_timeout", c.ConnectTimeout)
+		if err != nil {
+			return "", err
+		}
 	}
 	if c.LockTimeout > 0 {
-		err := SetConnectionTimeout(q, "lock_timeout", c.LockTimeout)
+		err := SetTimeoutMilliseconds(q, "lock_timeout", c.LockTimeout)
 		if err != nil {
 			return "", err
 		}
 	}
 	if c.StatementTimeout > 0 {
-		err := SetConnectionTimeout(q, "statement_timeout", c.StatementTimeout)
+		err := SetTimeoutMilliseconds(q, "statement_timeout", c.StatementTimeout)
 		if err != nil {
 			return "", err
 		}
@@ -136,20 +146,7 @@ func (c Config) GetConnectionString() (string, error) {
 	return u.String(), nil
 }
 
-// toMilliseconds converts a duration to the **exact** number of milliseconds
-// or errors if round off is required.
-func toMilliseconds(d time.Duration) (int64, error) {
-	remainder := d % time.Millisecond
-	if remainder != 0 {
-		err := fmt.Errorf("%w; duration: %s", ErrNotMilliseconds, d)
-		return 0, err
-	}
-
-	ms := int64(d / time.Millisecond)
-	return ms, nil
-}
-
-// SetConnectionTimeout sets a timeout value in connection string query parameters.
+// SetTimeoutMilliseconds sets a timeout value in connection string query parameters.
 //
 // Valid units for this parameter in PostgresSQL are "ms", "s", "min", "h"
 // and "d" and the value should be between 0 and 2147483647ms. We explicitly
@@ -179,12 +176,43 @@ func toMilliseconds(d time.Duration) (int64, error) {
 // See:
 // - https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-LOCK-TIMEOUT
 // - https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-STATEMENT-TIMEOUT
-func SetConnectionTimeout(q url.Values, name string, d time.Duration) error {
-	ms, err := toMilliseconds(d)
+func SetTimeoutMilliseconds(q url.Values, name string, d time.Duration) error {
+	ms, err := toRoundDuration(d, time.Millisecond)
 	if err != nil {
 		return err
 	}
 
 	q.Add(name, fmt.Sprintf("%dms", ms))
 	return nil
+}
+
+// SetTimeoutSeconds sets a timeout value in connection string query parameters.
+//
+// This timeout is expected to be an exact number of seconds (as an integer)
+// so we convert `d` to an integer first and set the value as a query parameter
+// without units.
+//
+// See:
+// - https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-LOCK-TIMEOUT
+func SetTimeoutSeconds(q url.Values, name string, d time.Duration) error {
+	s, err := toRoundDuration(d, time.Second)
+	if err != nil {
+		return err
+	}
+
+	q.Add(name, fmt.Sprintf("%d", s))
+	return nil
+}
+
+// toRoundDuration converts a duration to an **exact** multiple of some base
+// duration or errors if round off is required.
+func toRoundDuration(d, base time.Duration) (int64, error) {
+	remainder := d % base
+	if remainder != 0 {
+		err := fmt.Errorf("%w; duration %s is not a multiple of %s", ErrDurationConversion, d, base)
+		return 0, err
+	}
+
+	ms := int64(d / base)
+	return ms, nil
 }

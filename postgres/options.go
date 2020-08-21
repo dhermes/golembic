@@ -57,9 +57,9 @@ func OptPassword(password string) Option {
 }
 
 // OptConnectTimeout sets the `ConnectTimeout` on a `Config`.
-func OptConnectTimeout(d int) Option {
+func OptConnectTimeout(d time.Duration) Option {
 	if d < 0 {
-		err := fmt.Errorf("%w; connect timeout: %d", ErrNegativeTimeout, d)
+		err := fmt.Errorf("%w; connect timeout: %s", ErrNegativeTimeout, d)
 		return OptAlwaysError(err)
 	}
 
