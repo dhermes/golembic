@@ -28,7 +28,8 @@ func MakeRootCommand(rm RegisterMigrations) (*cobra.Command, error) {
 			//       `PersistentPreRunE`; this is written with the expectation
 			//       that child commands will maintain a reference to parents
 			//       if necessary and invoke this function. See:
-			//       https://github.com/spf13/cobra/issues/216
+			//       - https://github.com/spf13/cobra/issues/216
+			//       - https://github.com/spf13/cobra/issues/252
 			migrations, err := rm(sqlDirectory)
 			if err != nil {
 				return err

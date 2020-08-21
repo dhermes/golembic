@@ -54,7 +54,8 @@ func postgresSubCommand(manager *golembic.Manager, parent *cobra.Command) (*cobr
 			// NOTE: Manually invoke `PersistentPreRunE` on the parent to enable
 			//       chaining (the behavior in `cobra` is to replace as the
 			//       tree is traversed). See:
-			//       https://github.com/spf13/cobra/issues/216
+			//       - https://github.com/spf13/cobra/issues/216
+			//       - https://github.com/spf13/cobra/issues/252
 			if parent != nil && parent.PersistentPreRunE != nil {
 				err := parent.PersistentPreRunE(cmd, args)
 				if err != nil {
