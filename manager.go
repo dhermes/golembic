@@ -167,30 +167,43 @@ func (m *Manager) ApplyMigration(ctx context.Context, migration Migration) error
 	return tx.Commit()
 }
 
-// Up applies all migrations that have not yet been applied.
-func (m *Manager) Up(ctx context.Context) error {
+// filterMigrations applies a filter function that takes the revision of the
+// last applied migration to determine a set of migrations to run.
+func (m *Manager) filterMigrations(ctx context.Context, filter migrationsFilter) ([]Migration, error) {
 	err := m.EnsureMigrationsTable(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	latest, _, err := m.Latest(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	migrations, err := m.sinceOrAll(latest)
+	migrations, err := filter(latest)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if len(migrations) == 0 {
 		m.Log.Printf("No migrations to run; latest revision: %s\n", latest)
+		return nil, nil
+	}
+
+	return migrations, nil
+}
+
+// Up applies all migrations that have not yet been applied.
+func (m *Manager) Up(ctx context.Context) error {
+	migrations, err := m.filterMigrations(ctx, m.sinceOrAll)
+	if err != nil {
+		return err
+	}
+
+	if migrations == nil {
 		return nil
 	}
 
-	// TODO: Re-factor the above into a helper that is common to `Up`, `UpOne`
-	//       and `UpTo`.
 	for _, migration := range migrations {
 		err = m.ApplyMigration(ctx, migration)
 		if err != nil {
@@ -211,28 +224,15 @@ func (m *Manager) sinceOrAll(revision string) ([]Migration, error) {
 
 // UpOne applies the **next** migration that has yet been applied, if any.
 func (m *Manager) UpOne(ctx context.Context) error {
-	err := m.EnsureMigrationsTable(ctx)
+	migrations, err := m.filterMigrations(ctx, m.sinceOrAll)
 	if err != nil {
 		return err
 	}
 
-	latest, _, err := m.Latest(ctx)
-	if err != nil {
-		return err
-	}
-
-	migrations, err := m.sinceOrAll(latest)
-	if err != nil {
-		return err
-	}
-
-	if len(migrations) == 0 {
-		m.Log.Printf("No migrations to run; latest revision: %s\n", latest)
+	if migrations == nil {
 		return nil
 	}
 
-	// TODO: Re-factor the above into a helper that is common to `Up`, `UpOne`
-	//       and `UpTo`.
 	migration := migrations[0]
 	return m.ApplyMigration(ctx, migration)
 }
@@ -240,28 +240,19 @@ func (m *Manager) UpOne(ctx context.Context) error {
 // UpTo applies all migrations that have yet to be applied up to (and
 // including) `revision`, if any.
 func (m *Manager) UpTo(ctx context.Context, revision string) error {
-	err := m.EnsureMigrationsTable(ctx)
+	filter := func(latest string) ([]Migration, error) {
+		return m.betweenOrUntil(latest, revision)
+	}
+
+	migrations, err := m.filterMigrations(ctx, filter)
 	if err != nil {
 		return err
 	}
 
-	latest, _, err := m.Latest(ctx)
-	if err != nil {
-		return err
-	}
-
-	migrations, err := m.betweenOrUntil(latest, revision)
-	if err != nil {
-		return err
-	}
-
-	if len(migrations) == 0 {
-		m.Log.Printf("No migrations to run; latest revision: %s\n", latest)
+	if migrations == nil {
 		return nil
 	}
 
-	// TODO: Re-factor the above into a helper that is common to `Up`, `UpOne`
-	//       and `UpTo`.
 	for _, migration := range migrations {
 		err = m.ApplyMigration(ctx, migration)
 		if err != nil {

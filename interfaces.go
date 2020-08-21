@@ -29,6 +29,11 @@ type UpMigrationConn = func(context.Context, *sql.Conn) error
 // connection on demand.
 type NewConnection = func(context.Context) (*sql.Conn, error)
 
+// migrationsFilter defines a function interface that filters migrations
+// based on the `latest` revision. It's expected that a migrations filter
+// will enclose other state such as a `Manager`.
+type migrationsFilter = func(latest string) ([]Migration, error)
+
 // EngineProvider describes the interface required for a database engine.
 type EngineProvider interface {
 	// QuoteIdentifier quotes an identifier, such as a table name, for usage
