@@ -31,8 +31,10 @@ for i in {1..20}
 do
   if pgIsReady
   then
-    break
+    exit 0
   fi
   echo "Checking if PostgresSQL is ready on ${DB_HOST}:${DB_PORT}"
   sleep "0.1"
 done
+
+exit 1

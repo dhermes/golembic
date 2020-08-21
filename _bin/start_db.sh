@@ -59,9 +59,10 @@ for i in {1..20}
 do
   if pgIsReady
   then
-    break
+    echo "Container ${DB_CONTAINER_NAME} accepting Postgres connections."
+    exit 0
   fi
   sleep "0.1"
 done
 
-echo "Container ${DB_CONTAINER_NAME} accepting Postgres connections."
+exit 1
