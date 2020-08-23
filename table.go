@@ -22,6 +22,9 @@ ALTER TABLE %[1]s
   ADD CONSTRAINT %[4]s UNIQUE (parent);
 ALTER TABLE %[1]s
   ADD CONSTRAINT %[5]s CHECK (parent != revision);
+CREATE UNIQUE INDEX %[6]s
+  ON %[1]s
+  ((parent IS NULL)) WHERE parent IS NULL;
 `
 )
 
@@ -64,6 +67,7 @@ func createMigrationsSQL(manager *Manager) string {
 	fkConstraint := fmt.Sprintf("fk_%s_parent", table)
 	uqConstraint := fmt.Sprintf("uq_%s_parent", table)
 	chkConstraint := fmt.Sprintf("chk_%s_parent_neq_revision", table)
+	nullParentIndex := fmt.Sprintf("idx_%s_one_null_parent", table)
 
 	provider := manager.Provider
 	return fmt.Sprintf(
@@ -73,6 +77,7 @@ func createMigrationsSQL(manager *Manager) string {
 		provider.QuoteIdentifier(fkConstraint),
 		provider.QuoteIdentifier(uqConstraint),
 		provider.QuoteIdentifier(chkConstraint),
+		provider.QuoteIdentifier(nullParentIndex),
 	)
 }
 
