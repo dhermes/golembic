@@ -65,6 +65,22 @@ func (m *Manager) NewConnectionPool(ctx context.Context) (*sql.DB, error) {
 	return pool, nil
 }
 
+// CloseConnectionPool closes the connection pool and removes it, if one is
+// set / cached on the current manager.
+func (m *Manager) CloseConnectionPool() error {
+	if m.ConnectionPool == nil {
+		return nil
+	}
+
+	err := m.ConnectionPool.Close()
+	if err != nil {
+		return err
+	}
+
+	m.ConnectionPool = nil
+	return nil
+}
+
 // EnsureConnectionPool returns a cached database connection pool (if already
 // set) or invokes `NewConnection()` to create a new one.
 func (m *Manager) EnsureConnectionPool(ctx context.Context) (*sql.DB, error) {

@@ -20,6 +20,15 @@ func mustEnvVar(name string) string {
 	return value
 }
 
+func deferredClose(manager *golembic.Manager) {
+	err := manager.CloseConnectionPool()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return
+}
+
 func main() {
 	sqlDirectory := mustEnvVar("GOLEMBIC_SQL_DIR")
 	migrations, err := examples.AllMigrations(sqlDirectory)
@@ -46,6 +55,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer deferredClose(manager)
 
 	ctx := context.Background()
 	err = manager.Up(ctx)

@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -32,9 +33,14 @@ func describeSubCommand(manager *golembic.Manager) *cobra.Command {
 		Use:   "describe",
 		Short: short,
 		Long:  long,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			defer func() {
+				err = poolFinalize(manager, err)
+			}()
+
 			ctx := context.Background()
-			return manager.Describe(ctx)
+			err = manager.Describe(ctx)
+			return
 		},
 	}
 	return cmd
@@ -45,9 +51,14 @@ func upSubCommand(manager *golembic.Manager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "up",
 		Short: "Run all migrations that have not yet been applied",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			defer func() {
+				err = poolFinalize(manager, err)
+			}()
+
 			ctx := context.Background()
-			return manager.Up(ctx, golembic.OptApplyVerifyHistory(verifyHistory))
+			err = manager.Up(ctx, golembic.OptApplyVerifyHistory(verifyHistory))
+			return
 		},
 	}
 
@@ -69,9 +80,14 @@ func upOneSubCommand(manager *golembic.Manager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "up-one",
 		Short: "Run the first migration that has not yet been applied",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			defer func() {
+				err = poolFinalize(manager, err)
+			}()
+
 			ctx := context.Background()
-			return manager.UpOne(ctx, golembic.OptApplyVerifyHistory(verifyHistory))
+			err = manager.UpOne(ctx, golembic.OptApplyVerifyHistory(verifyHistory))
+			return
 		},
 	}
 
@@ -85,13 +101,18 @@ func upToSubCommand(manager *golembic.Manager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "up-to",
 		Short: "Run all the migrations up to a fixed revision that have not yet been applied",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			defer func() {
+				err = poolFinalize(manager, err)
+			}()
+
 			ctx := context.Background()
-			return manager.UpTo(
+			err = manager.UpTo(
 				ctx,
 				golembic.OptApplyRevision(revision),
 				golembic.OptApplyVerifyHistory(verifyHistory),
 			)
+			return
 		},
 	}
 
@@ -111,9 +132,14 @@ func verifySubCommand(manager *golembic.Manager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "verify",
 		Short: "Verify the stored migration metadata against the registered sequence",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			defer func() {
+				err = poolFinalize(manager, err)
+			}()
+
 			ctx := context.Background()
-			return manager.Verify(ctx)
+			err = manager.Verify(ctx)
+			return
 		},
 	}
 	return cmd
@@ -124,13 +150,41 @@ func versionSubCommand(manager *golembic.Manager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "version",
 		Short: "Display the revision of the most recent migration to be applied",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			defer func() {
+				err = poolFinalize(manager, err)
+			}()
+
 			ctx := context.Background()
-			return manager.Version(ctx, golembic.OptApplyVerifyHistory(verifyHistory))
+			err = manager.Version(ctx, golembic.OptApplyVerifyHistory(verifyHistory))
+			return
 		},
 	}
 
-
 	addVerifyHistory(cmd, &verifyHistory)
 	return cmd
+}
+
+// poolFinalize is intended to be used in `defer` blocks to ensure that a SQL
+// database connection pool on a manager is always closed after the manager is
+// used.
+func poolFinalize(manager *golembic.Manager, err error) error {
+	closeErr := manager.CloseConnectionPool()
+	return maybeWrap(err, closeErr, "failed to close connection pool")
+
+}
+
+// maybeWrap attempts to wrap a secondary error inside a primary one. If
+// one (or both) of the errors if `nil`, then no wrapping is necessary.
+//
+// This has been copied directly from `github.com/dhermes/golembic:sql.go`
+func maybeWrap(primary, secondary error, message string) error {
+	if primary == nil {
+		return secondary
+	}
+	if secondary == nil {
+		return primary
+	}
+
+	return fmt.Errorf("%w; %s: %v", primary, message, secondary)
 }
