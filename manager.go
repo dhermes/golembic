@@ -157,7 +157,7 @@ func (m *Manager) filterMigrations(ctx context.Context, filter migrationsFilter,
 		return nil, err
 	}
 
-	latest, _, err := m.Latest(ctx)
+	latest, _, err := m.latestMaybeVerify(ctx, verifyHistory)
 	if err != nil {
 		return nil, err
 	}
@@ -305,15 +305,53 @@ func (m *Manager) Latest(ctx context.Context) (revision string, createdAt time.T
 	return
 }
 
+// latestMaybeVerify determines the latest applied migration and verifies all of the
+// migration history if `verifyHistory` is true.
+func (m *Manager) latestMaybeVerify(ctx context.Context, verifyHistory bool) (revision string, createdAt time.Time, err error) {
+	if !verifyHistory {
+		revision, createdAt, err = m.Latest(ctx)
+		return
+	}
+
+	var tx *sql.Tx
+	defer func() {
+		err = txFinalize(tx, err)
+	}()
+
+	tx, err = m.NewTx(ctx)
+	if err != nil {
+		return
+	}
+
+	history, _, err := m.verifyHistory(ctx, tx)
+	if err != nil {
+		return
+	}
+
+	if len(history) == 0 {
+		return
+	}
+
+	revision = history[len(history)-1].Revision
+	createdAt = history[len(history)-1].CreatedAt
+	err = tx.Commit()
+	return
+}
+
 // GetVersion returns the migration that corresponds to the version that was
 // most recently applied.
-func (m *Manager) GetVersion(ctx context.Context) (*Migration, error) {
-	err := m.EnsureMigrationsTable(ctx)
+func (m *Manager) GetVersion(ctx context.Context, opts ...ApplyOption) (*Migration, error) {
+	ac, err := NewApplyConfig(opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	revision, createdAt, err := m.Latest(ctx)
+	err = m.EnsureMigrationsTable(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	revision, createdAt, err := m.latestMaybeVerify(ctx, ac.VerifyHistory)
 	if err != nil {
 		return nil, err
 	}
@@ -423,12 +461,7 @@ func (m *Manager) Describe(_ context.Context) error {
 
 // Version displays the revision of the most recent migration to be applied
 func (m *Manager) Version(ctx context.Context, opts ...ApplyOption) error {
-	_, err := NewApplyConfig(opts...)
-	if err != nil {
-		return err
-	}
-
-	migration, err := m.GetVersion(ctx)
+	migration, err := m.GetVersion(ctx, opts...)
 	if err != nil {
 		return err
 	}
