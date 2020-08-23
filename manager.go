@@ -355,49 +355,60 @@ func (m *Manager) Verify(ctx context.Context) (err error) {
 		return
 	}
 
-	query := fmt.Sprintf(
-		"SELECT parent, revision, created_at FROM %s ORDER BY created_at ASC;",
-		m.Provider.QuoteIdentifier(m.MetadataTable),
-	)
-	rows, err := readAllMigration(ctx, tx, query)
+	history, registered, err := m.verifyHistory(ctx, tx)
 	if err != nil {
 		return
 	}
 
-	all := m.Sequence.All()
-	if len(rows) > len(all) {
+	for i, migration := range registered {
+		if i < len(history) {
+			applied := history[i]
+			m.Log.Printf(
+				"%d | %s | %s (applied %s)\n",
+				i, migration.Revision, migration.Description, applied.CreatedAt,
+			)
+		} else {
+			m.Log.Printf(
+				"%d | %s | %s (not yet applied)\n",
+				i, migration.Revision, migration.Description,
+			)
+		}
+	}
+
+	return
+}
+
+// verifyHistory retrieves a full history of migrations and compares it against
+// the sequence of registered migrations. If they match (up to the end of the
+// history, the registered sequence can be longer), this will return with no
+// error and include slices of the history and the registered migrations.
+func (m *Manager) verifyHistory(ctx context.Context, tx *sql.Tx) (history, registered []Migration, err error) {
+	query := fmt.Sprintf(
+		"SELECT parent, revision, created_at FROM %s ORDER BY created_at ASC;",
+		m.Provider.QuoteIdentifier(m.MetadataTable),
+	)
+	history, err = readAllMigration(ctx, tx, query)
+	if err != nil {
+		return
+	}
+
+	registered = m.Sequence.All()
+	if len(history) > len(registered) {
 		err = fmt.Errorf(
 			"%w; sequence has %d migrations but %d are stored in the table",
-			ErrMigrationMismatch, len(all), len(rows),
+			ErrMigrationMismatch, len(registered), len(history),
 		)
 		return
 	}
 
-	// Do a first pass for correctness.
-	for i, row := range rows {
-		expected := all[i]
+	for i, row := range history {
+		expected := registered[i]
 		if !row.Like(expected) {
 			err = fmt.Errorf(
 				"%w; stored migration %d: %q does not match migration %q in sequence",
 				ErrMigrationMismatch, i, row.Compact(), expected.Compact(),
 			)
 			return
-		}
-	}
-
-	// Do a second pass for display purposes.
-	for i, fromAll := range all {
-		if i < len(rows) {
-			row := rows[i]
-			m.Log.Printf(
-				"%d | %s | %s (applied %s)\n",
-				i, fromAll.Revision, fromAll.Description, row.CreatedAt,
-			)
-		} else {
-			m.Log.Printf(
-				"%d | %s | %s (not yet applied)\n",
-				i, fromAll.Revision, fromAll.Description,
-			)
 		}
 	}
 
