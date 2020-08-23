@@ -76,7 +76,7 @@ func (sp *SQLProvider) QuoteLiteral(literal string) string {
 	return literal
 }
 
-// Open creates a database connection to a PostgreSQL instance.
+// Open creates a database connection pool to a PostgreSQL instance.
 func (sp *SQLProvider) Open() (*sql.DB, error) {
 	cs, err := sp.Config.GetConnectionString()
 	if err != nil {

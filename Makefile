@@ -3,19 +3,20 @@ help:
 	@echo 'Makefile for `golembic` project'
 	@echo ''
 	@echo 'Usage:'
-	@echo '   make dev-deps               Install (or upgrade) development time dependencies'
-	@echo '   make vet                    Run `go vet` over source tree'
-	@echo '   make shellcheck             Run `shellcheck` on all shell files in `./_bin/`'
-	@echo '   make start-docker-db        Starts a PostgreSQL database running in a Docker container'
-	@echo '   make superuser-migration    Run superuser migration'
-	@echo '   make run-migrations         Run all migrations'
-	@echo '   make start-db               Run start-docker-db, and migration target(s)'
-	@echo '   make stop-db                Stops the PostgreSQL database running in a Docker container'
-	@echo '   make restart-db             Stops the PostgreSQL database (if running) and starts a fresh Docker container'
-	@echo '   make require-db             Determine if PostgreSQL database is running; fail if not'
-	@echo '   make psql                   Connects to currently running PostgreSQL DB via `psql`'
-	@echo '   make run-example-cmd        Run `./examples/cmd/main.go`'
-	@echo '   make run-example-script     Run `./examples/script/main.go`'
+	@echo '   make dev-deps                  Install (or upgrade) development time dependencies'
+	@echo '   make vet                       Run `go vet` over source tree'
+	@echo '   make shellcheck                Run `shellcheck` on all shell files in `./_bin/`'
+	@echo '   make start-docker-db           Starts a PostgreSQL database running in a Docker container'
+	@echo '   make superuser-migration       Run superuser migration'
+	@echo '   make run-migrations            Run all migrations'
+	@echo '   make start-db                  Run start-docker-db, and migration target(s)'
+	@echo '   make stop-db                   Stops the PostgreSQL database running in a Docker container'
+	@echo '   make restart-db                Stops the PostgreSQL database (if running) and starts a fresh Docker container'
+	@echo '   make require-db                Determine if PostgreSQL database is running; fail if not'
+	@echo '   make psql                      Connects to currently running PostgreSQL DB via `psql`'
+	@echo '   make run-example-cmd           Run `./examples/cmd/main.go`'
+	@echo '   make run-example-script        Run `./examples/script/main.go`'
+	@echo '   make run-example-script-ram    Run `./examples/script-ram/main.go`'
 	@echo ''
 
 ################################################################################
@@ -55,6 +56,7 @@ dev-deps:
 	go get -v -u github.com/lib/pq
 	go get -v -u github.com/lib/pq/oid
 	go get -v -u github.com/lib/pq/scram
+	go get -v -u github.com/proullon/ramsql
 	go get -v -u github.com/spf13/cobra
 	go get -v -u github.com/spf13/pflag
 
@@ -149,3 +151,8 @@ run-example-script: require-db
 	  PGPASSWORD=$(DB_ADMIN_PASSWORD) \
 	  DB_SSLMODE=$(DB_SSLMODE) \
 	  go run ./examples/script/main.go
+
+.PHONY: run-example-script-ram
+run-example-script-ram:
+	@GOLEMBIC_SQL_DIR=$(GOLEMBIC_SQL_DIR) \
+	  go run ./examples/script-ram/main.go
