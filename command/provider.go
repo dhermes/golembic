@@ -80,7 +80,7 @@ func upToSubCommand(manager *golembic.Manager) *cobra.Command {
 			ctx := context.Background()
 			return manager.UpTo(
 				ctx,
-				revision,
+				golembic.OptApplyRevision(revision),
 				golembic.OptApplyVerifyHistory(verifyHistory),
 			)
 		},

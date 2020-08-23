@@ -230,15 +230,16 @@ func (m *Manager) UpOne(ctx context.Context, opts ...ApplyOption) error {
 }
 
 // UpTo applies all migrations that have yet to be applied up to (and
-// including) `revision`, if any.
-func (m *Manager) UpTo(ctx context.Context, revision string, opts ...ApplyOption) error {
-	_, err := NewApplyConfig(opts...)
+// including) a revision, if any. This expects the `ApplyConfig` revision to
+// be set in `opts`.
+func (m *Manager) UpTo(ctx context.Context, opts ...ApplyOption) error {
+	ac, err := NewApplyConfig(opts...)
 	if err != nil {
 		return err
 	}
 
 	filter := func(latest string) ([]Migration, error) {
-		return m.betweenOrUntil(latest, revision)
+		return m.betweenOrUntil(latest, ac.Revision)
 	}
 
 	migrations, err := m.filterMigrations(ctx, filter)
