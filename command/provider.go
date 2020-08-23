@@ -32,6 +32,7 @@ func describeSubCommand(manager *golembic.Manager) *cobra.Command {
 }
 
 func upSubCommand(manager *golembic.Manager) *cobra.Command {
+	verifyHistory := false
 	cmd := &cobra.Command{
 		Use:   "up",
 		Short: "Run all migrations that have not yet been applied",
@@ -40,10 +41,22 @@ func upSubCommand(manager *golembic.Manager) *cobra.Command {
 			return manager.Up(ctx)
 		},
 	}
+
+	addVerifyHistory(cmd, &verifyHistory)
 	return cmd
 }
 
+func addVerifyHistory(cmd *cobra.Command, verifyHistory *bool) {
+	cmd.PersistentFlags().BoolVar(
+		verifyHistory,
+		"verify-history",
+		false,
+		"If set, verify that all of the migration history matches the registered migrations",
+	)
+}
+
 func upOneSubCommand(manager *golembic.Manager) *cobra.Command {
+	verifyHistory := false
 	cmd := &cobra.Command{
 		Use:   "up-one",
 		Short: "Run the first migration that has not yet been applied",
@@ -52,10 +65,13 @@ func upOneSubCommand(manager *golembic.Manager) *cobra.Command {
 			return manager.UpOne(ctx)
 		},
 	}
+
+	addVerifyHistory(cmd, &verifyHistory)
 	return cmd
 }
 
 func upToSubCommand(manager *golembic.Manager) *cobra.Command {
+	verifyHistory := false
 	revision := ""
 	cmd := &cobra.Command{
 		Use:   "up-to",
@@ -74,6 +90,7 @@ func upToSubCommand(manager *golembic.Manager) *cobra.Command {
 	)
 	cobra.MarkFlagRequired(cmd.PersistentFlags(), "revision")
 
+	addVerifyHistory(cmd, &verifyHistory)
 	return cmd
 }
 

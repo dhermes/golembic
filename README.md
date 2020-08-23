@@ -104,6 +104,7 @@ Usage:
 Flags:
   -h, --help              help for up-to
       --revision string   The revision to run migrations up to
+      --verify-history    If set, verify that all of the migration history matches the registered migrations
 
 Global Flags:
       --connect-timeout duration     The timeout to use when waiting on a new connection to PostgreSQL, must be exactly convertible to seconds
