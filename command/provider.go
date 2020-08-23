@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -20,9 +21,17 @@ func registerProviderSubcommands(cmd *cobra.Command, manager *golembic.Manager) 
 }
 
 func describeSubCommand(manager *golembic.Manager) *cobra.Command {
+	short := "Describe the registered sequence of migrations"
+	long := strings.Join([]string{
+		short + ".",
+		"",
+		"This does not make any connection to the database. Use the",
+		"`verify` command to compare registered migrations to history.",
+	}, "\n")
 	cmd := &cobra.Command{
 		Use:   "describe",
-		Short: "Describe the registered sequence of migrations",
+		Short: short,
+		Long:  long,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
 			return manager.Describe(ctx)
