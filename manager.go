@@ -411,7 +411,12 @@ func (m *Manager) Describe(_ context.Context) error {
 }
 
 // Version displays the revision of the most recent migration to be applied
-func (m *Manager) Version(ctx context.Context) error {
+func (m *Manager) Version(ctx context.Context, opts ...ApplyOption) error {
+	_, err := NewApplyConfig(opts...)
+	if err != nil {
+		return err
+	}
+
 	migration, err := m.GetVersion(ctx)
 	if err != nil {
 		return err

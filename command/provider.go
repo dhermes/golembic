@@ -120,13 +120,17 @@ func verifySubCommand(manager *golembic.Manager) *cobra.Command {
 }
 
 func versionSubCommand(manager *golembic.Manager) *cobra.Command {
+	verifyHistory := false
 	cmd := &cobra.Command{
 		Use:   "version",
 		Short: "Display the revision of the most recent migration to be applied",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
-			return manager.Version(ctx)
+			return manager.Version(ctx, golembic.OptApplyVerifyHistory(verifyHistory))
 		},
 	}
+
+
+	addVerifyHistory(cmd, &verifyHistory)
 	return cmd
 }
