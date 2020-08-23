@@ -6,9 +6,6 @@ import (
 	"io/ioutil"
 )
 
-// MigrationOption describes options used to create a new migration.
-type MigrationOption = func(*Migration) error
-
 // OptParent sets the parent on a migration.
 func OptParent(parent string) MigrationOption {
 	return func(m *Migration) error {

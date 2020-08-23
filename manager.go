@@ -176,7 +176,12 @@ func (m *Manager) filterMigrations(ctx context.Context, filter migrationsFilter)
 }
 
 // Up applies all migrations that have not yet been applied.
-func (m *Manager) Up(ctx context.Context) error {
+func (m *Manager) Up(ctx context.Context, opts ...ApplyOption) error {
+	_, err := NewApplyConfig(opts...)
+	if err != nil {
+		return err
+	}
+
 	migrations, err := m.filterMigrations(ctx, m.sinceOrAll)
 	if err != nil {
 		return err
@@ -205,7 +210,12 @@ func (m *Manager) sinceOrAll(revision string) ([]Migration, error) {
 }
 
 // UpOne applies the **next** migration that has yet been applied, if any.
-func (m *Manager) UpOne(ctx context.Context) error {
+func (m *Manager) UpOne(ctx context.Context, opts ...ApplyOption) error {
+	_, err := NewApplyConfig(opts...)
+	if err != nil {
+		return err
+	}
+
 	migrations, err := m.filterMigrations(ctx, m.sinceOrAll)
 	if err != nil {
 		return err
@@ -221,7 +231,12 @@ func (m *Manager) UpOne(ctx context.Context) error {
 
 // UpTo applies all migrations that have yet to be applied up to (and
 // including) `revision`, if any.
-func (m *Manager) UpTo(ctx context.Context, revision string) error {
+func (m *Manager) UpTo(ctx context.Context, revision string, opts ...ApplyOption) error {
+	_, err := NewApplyConfig(opts...)
+	if err != nil {
+		return err
+	}
+
 	filter := func(latest string) ([]Migration, error) {
 		return m.betweenOrUntil(latest, revision)
 	}

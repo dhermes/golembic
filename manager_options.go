@@ -4,9 +4,6 @@ import (
 	"database/sql"
 )
 
-// ManagerOption describes options used to create a new manager.
-type ManagerOption = func(*Manager) error
-
 // OptManagerMetadataTable sets the metadata table name on a manager.
 func OptManagerMetadataTable(table string) ManagerOption {
 	return func(m *Manager) error {

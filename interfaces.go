@@ -47,3 +47,12 @@ type EngineProvider interface {
 type PrintfReceiver interface {
 	Printf(format string, a ...interface{}) (n int, err error)
 }
+
+// ManagerOption describes options used to create a new manager.
+type ManagerOption = func(*Manager) error
+
+// MigrationOption describes options used to create a new migration.
+type MigrationOption = func(*Migration) error
+
+// ApplyOption describes options used to create a apply configuration.
+type ApplyOption = func(*ApplyConfig) error

@@ -38,7 +38,7 @@ func upSubCommand(manager *golembic.Manager) *cobra.Command {
 		Short: "Run all migrations that have not yet been applied",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
-			return manager.Up(ctx)
+			return manager.Up(ctx, golembic.OptApplyVerifyHistory(verifyHistory))
 		},
 	}
 
@@ -62,7 +62,7 @@ func upOneSubCommand(manager *golembic.Manager) *cobra.Command {
 		Short: "Run the first migration that has not yet been applied",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
-			return manager.UpOne(ctx)
+			return manager.UpOne(ctx, golembic.OptApplyVerifyHistory(verifyHistory))
 		},
 	}
 
@@ -78,7 +78,11 @@ func upToSubCommand(manager *golembic.Manager) *cobra.Command {
 		Short: "Run all the migrations up to a fixed revision that have not yet been applied",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
-			return manager.UpTo(ctx, revision)
+			return manager.UpTo(
+				ctx,
+				revision,
+				golembic.OptApplyVerifyHistory(verifyHistory),
+			)
 		},
 	}
 
