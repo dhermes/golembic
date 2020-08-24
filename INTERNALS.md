@@ -17,7 +17,7 @@ $
 $
 $ docker ps
 CONTAINER ID        IMAGE                  COMMAND                  CREATED             STATUS              PORTS                     NAMES
-050b8cb47768        postgres:10.6-alpine   "docker-entrypoint.s…"   4 seconds ago       Up 3 seconds        0.0.0.0:18426->5432/tcp   dev-postgres-golembic
+7c98ab206731        postgres:10.6-alpine   "docker-entrypoint.s…"   4 seconds ago       Up 4 seconds        0.0.0.0:18426->5432/tcp   dev-postgres-golembic
 ```
 
 ## Run `./examples/cmd/main.go`
@@ -63,6 +63,7 @@ golembic=> \d+ golembic_migrations
  created_at | timestamp with time zone |           |          | CURRENT_TIMESTAMP | plain    |              |
 Indexes:
     "pk_golembic_migrations_revision" PRIMARY KEY, btree (revision)
+    "idx_golembic_migrations_one_null_parent" UNIQUE, btree ((parent IS NULL)) WHERE parent IS NULL
     "uq_golembic_migrations_parent" UNIQUE CONSTRAINT, btree (parent)
 Check constraints:
     "chk_golembic_migrations_parent_neq_revision" CHECK (parent::text <> revision::text)
@@ -116,7 +117,7 @@ golembic=> \d+ users
  email   | character varying(40)  |           |          |         | extended |              |
  city    | character varying(100) |           |          |         | extended |              |
 Indexes:
-    "uq_users_email" UNIQUE CONSTRAINT, btree (email)
+    "uq_users_email" UNIQUE, btree (email)
     "users_user_id_key" UNIQUE CONSTRAINT, btree (user_id)
 
 golembic=> SELECT * FROM users;
@@ -159,20 +160,20 @@ And see how these migrations are tracked
 
 ```
 $ make run-example-cmd GOLEMBIC_CMD=version
-432f690fcbda: Create movies table (applied 2020-08-21 05:29:09.022916 +0000 UTC)
+432f690fcbda: Create movies table (applied 2020-08-24 02:38:08.541333 +0000 UTC)
 $
 $ make psql
 ...
 golembic=> SELECT * FROM golembic_migrations;
    revision   |    parent    |          created_at
 --------------+--------------+-------------------------------
- c9b52448285b |              | 2020-08-21 05:29:08.943775+00
- f1be62155239 | c9b52448285b | 2020-08-21 05:29:08.958052+00
- dce8812d7b6f | f1be62155239 | 2020-08-21 05:29:08.968391+00
- 0430566018cc | dce8812d7b6f | 2020-08-21 05:29:08.977114+00
- 0501ccd1d98c | 0430566018cc | 2020-08-21 05:29:08.985671+00
- e2d4eecb1841 | 0501ccd1d98c | 2020-08-21 05:29:09.011263+00
- 432f690fcbda | e2d4eecb1841 | 2020-08-21 05:29:09.022916+00
+ c9b52448285b |              | 2020-08-24 02:38:08.492807+00
+ f1be62155239 | c9b52448285b | 2020-08-24 02:38:08.500951+00
+ dce8812d7b6f | f1be62155239 | 2020-08-24 02:38:08.506237+00
+ 0430566018cc | dce8812d7b6f | 2020-08-24 02:38:08.511536+00
+ 0501ccd1d98c | 0430566018cc | 2020-08-24 02:38:08.517356+00
+ e2d4eecb1841 | 0501ccd1d98c | 2020-08-24 02:38:08.532954+00
+ 432f690fcbda | e2d4eecb1841 | 2020-08-24 02:38:08.541333+00
 (7 rows)
 
 golembic=> \q
@@ -183,7 +184,7 @@ golembic=> \q
 ```
 $ docker ps
 CONTAINER ID        IMAGE                  COMMAND                  CREATED             STATUS              PORTS                     NAMES
-050b8cb47768        postgres:10.6-alpine   "docker-entrypoint.s…"   2 minutes ago       Up 2 minutes        0.0.0.0:18426->5432/tcp   dev-postgres-golembic
+7c98ab206731        postgres:10.6-alpine   "docker-entrypoint.s…"   2 minutes ago       Up 2 minutes        0.0.0.0:18426->5432/tcp   dev-postgres-golembic
 $ make stop-db
 Container dev-postgres-golembic stopped.
 $ docker ps
