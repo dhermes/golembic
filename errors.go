@@ -18,6 +18,9 @@ var (
 	// ErrNoParent is the error returned when attempting to register a migration
 	// with no parent.
 	ErrNoParent = errors.New("Cannot register a migration with no parent")
+	// ErrParentNotRegistered is the error returned when attempting to register
+	// a migration with a parent that is not yet registered.
+	ErrParentNotRegistered = errors.New("Cannot register a migration until parent migration is registered")
 	// ErrAlreadyRegistered is the error returned when a migration has already been
 	// registered.
 	ErrAlreadyRegistered = errors.New("Migration has already been registered")

@@ -46,6 +46,13 @@ func (m *Migrations) Register(migration Migration) error {
 		return fmt.Errorf("%w; revision: %q", ErrNoParent, migration.Revision)
 	}
 
+	if _, ok := m.sequence[migration.Parent]; !ok {
+		return fmt.Errorf(
+			"%w; revision: %q, parent: %q",
+			ErrParentNotRegistered, migration.Revision, migration.Parent,
+		)
+	}
+
 	if migration.Revision == "" {
 		return fmt.Errorf("%w; parent: %q", ErrMissingRevision, migration.Parent)
 	}
