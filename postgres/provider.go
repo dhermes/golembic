@@ -3,7 +3,6 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
-	"strings"
 
 	"github.com/dhermes/golembic"
 )
@@ -45,38 +44,17 @@ type SQLProvider struct {
 
 // QuoteIdentifier quotes an identifier, such as a table name, for usage
 // in a query.
-//
-// This implementation is vendored in here to avoid the side effects of
-// importing `github.com/lib/pq`. See:
-// - https://github.com/lib/pq/blob/v1.8.0/conn.go#L1564-L1581
-// - https://github.com/lib/pq/blob/v1.8.0/conn.go#L51-L53.
 func (sp *SQLProvider) QuoteIdentifier(name string) string {
-	end := strings.IndexRune(name, 0)
-	if end > -1 {
-		name = name[:end]
-	}
-	return `"` + strings.Replace(name, `"`, `""`, -1) + `"`
+	return golembic.QuoteIdentifier(name)
 }
 
 // QuoteLiteral quotes a literal, such as `2023-01-05 15:00:00Z`, for usage
 // in a query.
-//
-// This implementation is vendored in here to avoid the side effects of
-// importing `github.com/lib/pq`. See:
-// - https://github.com/lib/pq/blob/v1.8.0/conn.go#L1583-L1614
-// - https://github.com/lib/pq/blob/v1.8.0/conn.go#L51-L53.
 func (sp *SQLProvider) QuoteLiteral(literal string) string {
-	literal = strings.Replace(literal, `'`, `''`, -1)
-	if strings.Contains(literal, `\`) {
-		literal = strings.Replace(literal, `\`, `\\`, -1)
-		literal = ` E'` + literal + `'`
-	} else {
-		literal = `'` + literal + `'`
-	}
-	return literal
+	return golembic.QuoteLiteral(literal)
 }
 
-// Open creates a database connection to a PostgreSQL instance.
+// Open creates a database connection pool to a PostgreSQL instance.
 func (sp *SQLProvider) Open() (*sql.DB, error) {
 	cs, err := sp.Config.GetConnectionString()
 	if err != nil {
