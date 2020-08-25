@@ -14,10 +14,10 @@ type Migrations struct {
 // NewSequence creates a new sequence of migrations rooted in a single
 // base / root migration.
 func NewSequence(root Migration) (*Migrations, error) {
-	if root.Parent != "" {
+	if root.Previous != "" {
 		err := fmt.Errorf(
-			"%w; parent: %q, revision: %q",
-			ErrNotRoot, root.Parent, root.Revision,
+			"%w; previous: %q, revision: %q",
+			ErrNotRoot, root.Previous, root.Revision,
 		)
 		return nil, err
 	}
@@ -36,25 +36,25 @@ func NewSequence(root Migration) (*Migrations, error) {
 }
 
 // Register adds a new migration to an existing sequence of migrations, if
-// possible. The new migration must have a parent and have a valid revision
-// that is not already registered.
+// possible. The new migration must have a previous migration and have a valid
+// revision that is not already registered.
 func (m *Migrations) Register(migration Migration) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	if migration.Parent == "" {
-		return fmt.Errorf("%w; revision: %q", ErrNoParent, migration.Revision)
+	if migration.Previous == "" {
+		return fmt.Errorf("%w; revision: %q", ErrNoPrevious, migration.Revision)
 	}
 
-	if _, ok := m.sequence[migration.Parent]; !ok {
+	if _, ok := m.sequence[migration.Previous]; !ok {
 		return fmt.Errorf(
-			"%w; revision: %q, parent: %q",
-			ErrParentNotRegistered, migration.Revision, migration.Parent,
+			"%w; revision: %q, previous: %q",
+			ErrPreviousNotRegistered, migration.Revision, migration.Previous,
 		)
 	}
 
 	if migration.Revision == "" {
-		return fmt.Errorf("%w; parent: %q", ErrMissingRevision, migration.Parent)
+		return fmt.Errorf("%w; previous: %q", ErrMissingRevision, migration.Previous)
 	}
 
 	if _, ok := m.sequence[migration.Revision]; ok {
@@ -103,15 +103,15 @@ func (m *Migrations) RegisterManyOpt(manyOpts ...[]MigrationOption) error {
 // the number of migrations should always be a small number.
 //
 // NOTE: This does not verify or enforce the invariant that there must be
-// exactly one migration without a parent. This invariant is enforced by the
-// exported methods such as `Register()` and `RegisterMany()` and the constructor
-// `NewSequence()`.
+// exactly one migration without a previous migration. This invariant is enforced
+// by the exported methods such as `Register()` and `RegisterMany()` and the
+// constructor `NewSequence()`.
 func (m *Migrations) Root() Migration {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
 	for _, migration := range m.sequence {
-		if migration.Parent == "" {
+		if migration.Previous == "" {
 			return migration
 		}
 	}
@@ -122,9 +122,9 @@ func (m *Migrations) Root() Migration {
 // All produces the migrations in the sequence, in order.
 //
 // NOTE: This does not verify or enforce the invariant that there must be
-// exactly one migration without a parent. This invariant is enforced by the
-// exported methods such as `Register()` and `RegisterMany()` and the constructor
-// `NewSequence()`.
+// exactly one migration without a previous migration. This invariant is enforced
+// by the exported methods such as `Register()` and `RegisterMany()` and the
+// constructor `NewSequence()`.
 func (m *Migrations) All() []Migration {
 	root := m.Root()
 
@@ -132,16 +132,16 @@ func (m *Migrations) All() []Migration {
 	defer m.lock.Unlock()
 	result := []Migration{root}
 	// Find the unique revision (without validation) that points at the
-	// current `parent`.
-	parent := root.Revision
+	// current `previous`.
+	previous := root.Revision
 	for i := 0; i < len(m.sequence)-1; i++ {
 		for _, migration := range m.sequence {
-			if migration.Parent != parent {
+			if migration.Previous != previous {
 				continue
 			}
 
 			result = append(result, migration)
-			parent = migration.Revision
+			previous = migration.Revision
 			break
 		}
 	}

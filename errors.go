@@ -11,16 +11,16 @@ var (
 	ErrDurationConversion = errors.New("Cannot convert duration")
 	// ErrNotRoot is the error returned when attempting to start a sequence of
 	// migration with a non-root migration.
-	ErrNotRoot = errors.New("Root migration cannot have a parent")
+	ErrNotRoot = errors.New("Root migration cannot have a previous migration set")
 	// ErrMissingRevision is the error returned when attempting to register a migration
 	// with no revision.
 	ErrMissingRevision = errors.New("A migration must have a revision")
-	// ErrNoParent is the error returned when attempting to register a migration
-	// with no parent.
-	ErrNoParent = errors.New("Cannot register a migration with no parent")
-	// ErrParentNotRegistered is the error returned when attempting to register
-	// a migration with a parent that is not yet registered.
-	ErrParentNotRegistered = errors.New("Cannot register a migration until parent migration is registered")
+	// ErrNoPrevious is the error returned when attempting to register a migration
+	// with no previous.
+	ErrNoPrevious = errors.New("Cannot register a migration with no previous migration")
+	// ErrPreviousNotRegistered is the error returned when attempting to register
+	// a migration with a previous that is not yet registered.
+	ErrPreviousNotRegistered = errors.New("Cannot register a migration until previous migration is registered")
 	// ErrAlreadyRegistered is the error returned when a migration has already been
 	// registered.
 	ErrAlreadyRegistered = errors.New("Migration has already been registered")

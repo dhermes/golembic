@@ -228,7 +228,7 @@ No migrations to run; latest revision: 432f690fcbda
 $ make restart-db
 ...
 $ make run-example-cmd GOLEMBIC_CMD=version
- No migrations have been run
+No migrations have been run
 ```
 
 Then run **all** of the migrations and check the version
@@ -237,7 +237,7 @@ Then run **all** of the migrations and check the version
 $ make run-example-cmd GOLEMBIC_CMD=up
 ...
 $ make run-example-cmd GOLEMBIC_CMD=version
-432f690fcbda: Create movies table (applied 2020-08-21 05:34:41.98568 +0000 UTC)
+432f690fcbda: Create movies table (applied 2020-08-25 00:40:34.86562 +0000 UTC)
 ```
 
 ### `verify`
@@ -258,7 +258,7 @@ $
 $ make run-example-cmd GOLEMBIC_CMD=up-one
 Applying c9b52448285b: Create users table
 $ make run-example-cmd GOLEMBIC_CMD=verify
-0 | c9b52448285b | Create users table (applied 2020-08-21 05:35:08.846686 +0000 UTC)
+0 | c9b52448285b | Create users table (applied 2020-08-25 00:41:17.693211 +0000 UTC)
 1 | f1be62155239 | Seed data in users table (not yet applied)
 2 | dce8812d7b6f | Add city column to users table (not yet applied)
 3 | 0430566018cc | Rename the root user (not yet applied)
@@ -270,8 +270,8 @@ $
 $ make run-example-cmd GOLEMBIC_CMD=up-one
 Applying f1be62155239: Seed data in users table
 $ make run-example-cmd GOLEMBIC_CMD=verify
-0 | c9b52448285b | Create users table (applied 2020-08-21 05:35:08.846686 +0000 UTC)
-1 | f1be62155239 | Seed data in users table (applied 2020-08-21 05:35:19.509364 +0000 UTC)
+0 | c9b52448285b | Create users table (applied 2020-08-25 00:41:17.693211 +0000 UTC)
+1 | f1be62155239 | Seed data in users table (applied 2020-08-25 00:41:33.571142 +0000 UTC)
 2 | dce8812d7b6f | Add city column to users table (not yet applied)
 3 | 0430566018cc | Rename the root user (not yet applied)
 4 | 0501ccd1d98c | Add index on user emails (concurrently) (not yet applied)
@@ -286,13 +286,13 @@ Applying 0501ccd1d98c: Add index on user emails (concurrently)
 Applying e2d4eecb1841: Create books table
 Applying 432f690fcbda: Create movies table
 $ make run-example-cmd GOLEMBIC_CMD=verify
-0 | c9b52448285b | Create users table (applied 2020-08-21 05:35:08.846686 +0000 UTC)
-1 | f1be62155239 | Seed data in users table (applied 2020-08-21 05:35:19.509364 +0000 UTC)
-2 | dce8812d7b6f | Add city column to users table (applied 2020-08-21 05:35:56.149084 +0000 UTC)
-3 | 0430566018cc | Rename the root user (applied 2020-08-21 05:35:56.159952 +0000 UTC)
-4 | 0501ccd1d98c | Add index on user emails (concurrently) (applied 2020-08-21 05:35:56.169768 +0000 UTC)
-5 | e2d4eecb1841 | Create books table (applied 2020-08-21 05:35:56.190074 +0000 UTC)
-6 | 432f690fcbda | Create movies table (applied 2020-08-21 05:35:56.199978 +0000 UTC)
+0 | c9b52448285b | Create users table (applied 2020-08-25 00:41:17.693211 +0000 UTC)
+1 | f1be62155239 | Seed data in users table (applied 2020-08-25 00:41:33.571142 +0000 UTC)
+2 | dce8812d7b6f | Add city column to users table (applied 2020-08-25 00:41:51.452623 +0000 UTC)
+3 | 0430566018cc | Rename the root user (applied 2020-08-25 00:41:51.459989 +0000 UTC)
+4 | 0501ccd1d98c | Add index on user emails (concurrently) (applied 2020-08-25 00:41:51.466887 +0000 UTC)
+5 | e2d4eecb1841 | Create books table (applied 2020-08-25 00:41:51.48781 +0000 UTC)
+6 | 432f690fcbda | Create movies table (applied 2020-08-25 00:41:51.496046 +0000 UTC)
 ```
 
 We can artificially introduce a "new" migration and see failure to verify
@@ -300,12 +300,12 @@ We can artificially introduce a "new" migration and see failure to verify
 ```
 $ make psql
 ...
-golembic=> INSERT INTO golembic_migrations (parent, revision) VALUES ('432f690fcbda', 'not-in-sequence');
+golembic=> INSERT INTO golembic_migrations (previous, revision) VALUES ('432f690fcbda', 'not-in-sequence');
 INSERT 0 1
 golembic=> \q
 $
 $ make run-example-cmd GOLEMBIC_CMD=verify
-2020/08/21 00:36:21 Migration stored in SQL doesn't match sequence; sequence has 7 migrations but 8 are stored in the table
+2020/08/24 19:42:41 Migration stored in SQL doesn't match sequence; sequence has 7 migrations but 8 are stored in the table
 exit status 1
 make: *** [run-example-cmd] Error 1
 ```
@@ -317,12 +317,12 @@ $ make psql
 ...
 golembic=> DELETE FROM golembic_migrations WHERE revision IN ('not-in-sequence', '432f690fcbda');
 DELETE 2
-golembic=> INSERT INTO golembic_migrations (parent, revision) VALUES ('e2d4eecb1841', 'not-in-sequence');
+golembic=> INSERT INTO golembic_migrations (previous, revision) VALUES ('e2d4eecb1841', 'not-in-sequence');
 INSERT 0 1
 golembic=> \q
 $
 $ make run-example-cmd GOLEMBIC_CMD=verify
-2020/08/21 00:36:41 Migration stored in SQL doesn't match sequence; stored migration 6: "not-in-sequence:e2d4eecb1841" does not match migration "432f690fcbda:e2d4eecb1841" in sequence
+2020/08/24 19:43:03 Migration stored in SQL doesn't match sequence; stored migration 6: "not-in-sequence:e2d4eecb1841" does not match migration "432f690fcbda:e2d4eecb1841" in sequence
 exit status 1
 make: *** [run-example-cmd] Error 1
 ```
@@ -334,7 +334,7 @@ are protected by the constraints on the table:
 $ make psql
 ...
 golembic=> DELETE FROM golembic_migrations WHERE revision = '0430566018cc';
-ERROR:  update or delete on table "golembic_migrations" violates foreign key constraint "fk_golembic_migrations_parent" on table "golembic_migrations"
+ERROR:  update or delete on table "golembic_migrations" violates foreign key constraint "fk_golembic_migrations_previous" on table "golembic_migrations"
 DETAIL:  Key (revision)=(0430566018cc) is still referenced from table "golembic_migrations".
 golembic=> \q
 ```

@@ -10,21 +10,21 @@ const (
 	createMigrationsTableSQL = `
 CREATE TABLE IF NOT EXISTS %[1]s (
   revision   VARCHAR(32) NOT NULL,
-  parent     VARCHAR(32),
+  previous   VARCHAR(32),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 ALTER TABLE %[1]s
   ADD CONSTRAINT %[2]s PRIMARY KEY (revision);
 ALTER TABLE %[1]s
-  ADD CONSTRAINT %[3]s FOREIGN KEY (parent)
+  ADD CONSTRAINT %[3]s FOREIGN KEY (previous)
   REFERENCES %[1]s(revision);
 ALTER TABLE %[1]s
-  ADD CONSTRAINT %[4]s UNIQUE (parent);
+  ADD CONSTRAINT %[4]s UNIQUE (previous);
 ALTER TABLE %[1]s
-  ADD CONSTRAINT %[5]s CHECK (parent != revision);
+  ADD CONSTRAINT %[5]s CHECK (previous != revision);
 CREATE UNIQUE INDEX %[6]s
   ON %[1]s
-  ((parent IS NULL)) WHERE parent IS NULL;
+  ((previous IS NULL)) WHERE previous IS NULL;
 `
 )
 
@@ -64,10 +64,10 @@ func CreateMigrationsTable(ctx context.Context, manager *Manager) (err error) {
 func createMigrationsSQL(manager *Manager) string {
 	table := manager.MetadataTable
 	pkConstraint := fmt.Sprintf("pk_%s_revision", table)
-	fkConstraint := fmt.Sprintf("fk_%s_parent", table)
-	uqConstraint := fmt.Sprintf("uq_%s_parent", table)
-	chkConstraint := fmt.Sprintf("chk_%s_parent_neq_revision", table)
-	nullParentIndex := fmt.Sprintf("idx_%s_one_null_parent", table)
+	fkConstraint := fmt.Sprintf("fk_%s_previous", table)
+	uqConstraint := fmt.Sprintf("uq_%s_previous", table)
+	chkConstraint := fmt.Sprintf("chk_%s_previous_neq_revision", table)
+	nullPreviousIndex := fmt.Sprintf("idx_%s_one_null_previous", table)
 
 	provider := manager.Provider
 	return fmt.Sprintf(
@@ -77,7 +77,7 @@ func createMigrationsSQL(manager *Manager) string {
 		provider.QuoteIdentifier(fkConstraint),
 		provider.QuoteIdentifier(uqConstraint),
 		provider.QuoteIdentifier(chkConstraint),
-		provider.QuoteIdentifier(nullParentIndex),
+		provider.QuoteIdentifier(nullPreviousIndex),
 	)
 }
 

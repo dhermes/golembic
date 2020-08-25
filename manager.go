@@ -105,9 +105,9 @@ func (m *Manager) EnsureMigrationsTable(ctx context.Context) error {
 
 // InsertMigration inserts a migration into the migrations metadata table.
 func (m *Manager) InsertMigration(ctx context.Context, tx *sql.Tx, migration Migration) error {
-	if migration.Parent == "" {
+	if migration.Previous == "" {
 		statement := fmt.Sprintf(
-			"INSERT INTO %s (parent, revision) VALUES (NULL, $1);",
+			"INSERT INTO %s (previous, revision) VALUES (NULL, $1);",
 			m.Provider.QuoteIdentifier(m.MetadataTable),
 		)
 		_, err := tx.ExecContext(ctx, statement, migration.Revision)
@@ -115,10 +115,10 @@ func (m *Manager) InsertMigration(ctx context.Context, tx *sql.Tx, migration Mig
 	}
 
 	statement := fmt.Sprintf(
-		"INSERT INTO %s (parent, revision) VALUES ($1, $2);",
+		"INSERT INTO %s (previous, revision) VALUES ($1, $2);",
 		m.Provider.QuoteIdentifier(m.MetadataTable),
 	)
-	_, err := tx.ExecContext(ctx, statement, migration.Parent, migration.Revision)
+	_, err := tx.ExecContext(ctx, statement, migration.Previous, migration.Revision)
 	return err
 }
 
@@ -302,7 +302,7 @@ func (m *Manager) Latest(ctx context.Context) (revision string, createdAt time.T
 	}
 
 	query := fmt.Sprintf(
-		"SELECT parent, revision, created_at FROM %s ORDER BY created_at DESC LIMIT 1;",
+		"SELECT previous, revision, created_at FROM %s ORDER BY created_at DESC LIMIT 1;",
 		m.Provider.QuoteIdentifier(m.MetadataTable),
 	)
 	rows, err := readAllMigration(ctx, tx, query)
@@ -383,7 +383,7 @@ func (m *Manager) GetVersion(ctx context.Context, opts ...ApplyOption) (*Migrati
 	}
 
 	withCreated := &Migration{
-		Parent:      migration.Parent,
+		Previous:    migration.Previous,
 		Revision:    migration.Revision,
 		Description: migration.Description,
 		CreatedAt:   createdAt,
@@ -438,7 +438,7 @@ func (m *Manager) Verify(ctx context.Context) (err error) {
 // error and include slices of the history and the registered migrations.
 func (m *Manager) verifyHistory(ctx context.Context, tx *sql.Tx) (history, registered []Migration, err error) {
 	query := fmt.Sprintf(
-		"SELECT parent, revision, created_at FROM %s ORDER BY created_at ASC;",
+		"SELECT previous, revision, created_at FROM %s ORDER BY created_at ASC;",
 		m.Provider.QuoteIdentifier(m.MetadataTable),
 	)
 	history, err = readAllMigration(ctx, tx, query)
@@ -499,7 +499,7 @@ func (m *Manager) Version(ctx context.Context, opts ...ApplyOption) error {
 // exists.
 func (m *Manager) IsApplied(ctx context.Context, tx *sql.Tx, migration Migration) (bool, error) {
 	query := fmt.Sprintf(
-		"SELECT parent, revision, created_at FROM %s WHERE revision = $1;",
+		"SELECT previous, revision, created_at FROM %s WHERE revision = $1;",
 		m.Provider.QuoteIdentifier(m.MetadataTable),
 	)
 	rows, err := readAllMigration(ctx, tx, query, migration.Revision)
@@ -517,13 +517,13 @@ func verifyMigration(rows []Migration, migration Migration) (bool, error) {
 
 	// NOTE: We don't verify that `len(rows) == 1` since we trust the UNIQUE
 	//       index in the `revision` column.
-	if rows[0].Parent != migration.Parent {
+	if rows[0].Previous != migration.Previous {
 		err := fmt.Errorf(
-			"%w; revision: %q, registered parent %q does not match parent %q from migrations table",
+			"%w; revision: %q, registered previous migration %q does not match %q from migrations table",
 			ErrMigrationMismatch,
 			migration.Revision,
-			migration.Parent,
-			rows[0].Parent,
+			migration.Previous,
+			rows[0].Previous,
 		)
 		return false, err
 	}

@@ -35,9 +35,9 @@ func readAllInt(ctx context.Context, tx *sql.Tx, query string, args ...interface
 
 // migrationFromQuery is intended to be used to construct a metadata row
 // from a pair of values read off of a `sql.Rows`.
-func migrationFromQuery(parent sql.NullString, revision string, createdAt time.Time) Migration {
-	if parent.Valid {
-		return Migration{Parent: parent.String, Revision: revision, CreatedAt: createdAt}
+func migrationFromQuery(previous sql.NullString, revision string, createdAt time.Time) Migration {
+	if previous.Valid {
+		return Migration{Previous: previous.String, Revision: revision, CreatedAt: createdAt}
 	}
 
 	// Handle NULL.
@@ -45,17 +45,17 @@ func migrationFromQuery(parent sql.NullString, revision string, createdAt time.T
 }
 
 // readAllMigration performs a SQL query and reads all rows into a
-// `Migration` slice, under the assumption that three columns -- parent,
+// `Migration` slice, under the assumption that three columns -- previous,
 // revision and created_at -- are being returned for the query (in that order).
 // For example, the query
 //
-//   SELECT parent, revision, created_at FROM golembic_migrations;
+//   SELECT previous, revision, created_at FROM golembic_migrations;
 //
 // would satisfy this. A more "focused" query would return the latest migration
 // applied
 //
 //   SELECT
-//       parent,
+//       previous,
 //       revision,
 //       created_at
 //   FROM
@@ -75,14 +75,14 @@ func readAllMigration(ctx context.Context, tx *sql.Tx, query string, args ...int
 	}
 
 	for rows.Next() {
-		var parent sql.NullString
+		var previous sql.NullString
 		var revision string
 		var createdAt time.Time
-		err = rows.Scan(&parent, &revision, &createdAt)
+		err = rows.Scan(&previous, &revision, &createdAt)
 		if err != nil {
 			return
 		}
-		result = append(result, migrationFromQuery(parent, revision, createdAt))
+		result = append(result, migrationFromQuery(previous, revision, createdAt))
 	}
 
 	return

@@ -10,10 +10,10 @@ import (
 // Migration represents an individual migration to be applied; typically as
 // a set of SQL statements.
 type Migration struct {
-	// Parent is the revision identifier for the migration immediately
+	// Previous is the revision identifier for the migration immediately
 	// preceding this one. If absent, this indicates that this migration is
 	// the "base" or "root" migration.
-	Parent string
+	Previous string
 	// Revision is an opaque name that uniquely identifies a migration. It
 	// is required for a migration to be valid.
 	Revision string
@@ -49,18 +49,18 @@ func NewMigration(opts ...MigrationOption) (*Migration, error) {
 	return m, nil
 }
 
-// Like is "almost" an equality check, it compares the `Parent` and `Revision`.
+// Like is "almost" an equality check, it compares the `Previous` and `Revision`.
 func (m Migration) Like(other Migration) bool {
-	return m.Parent == other.Parent && m.Revision == other.Revision
+	return m.Previous == other.Previous && m.Revision == other.Revision
 }
 
 // Compact gives a "limited" representation of the migration
 func (m Migration) Compact() string {
-	if m.Parent == "" {
+	if m.Previous == "" {
 		return fmt.Sprintf("%s:NULL", m.Revision)
 	}
 
-	return fmt.Sprintf("%s:%s", m.Revision, m.Parent)
+	return fmt.Sprintf("%s:%s", m.Revision, m.Previous)
 }
 
 // InvokeUp dispatches to `Up` or `UpConn`, depending on which is set. If both

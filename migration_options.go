@@ -6,10 +6,10 @@ import (
 	"io/ioutil"
 )
 
-// OptParent sets the parent on a migration.
-func OptParent(parent string) MigrationOption {
+// OptPrevious sets the previous on a migration.
+func OptPrevious(previous string) MigrationOption {
 	return func(m *Migration) error {
-		m.Parent = parent
+		m.Previous = previous
 		return nil
 	}
 }
