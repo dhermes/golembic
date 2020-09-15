@@ -55,13 +55,14 @@ pgIsReady() {
 
 exists "pg_isready"
 # Cap at 20 retries.
-i=0; while [ $i -le 20 ]
+i=0; while [ ${i} -le 20 ]
 do
   if pgIsReady
   then
     echo "Container ${DB_CONTAINER_NAME} accepting Postgres connections."
     exit 0
   fi
+  i=$((i+1))
   sleep "0.1"
 done
 

@@ -27,13 +27,14 @@ pgIsReady() {
 
 exists "pg_isready"
 # Cap at 20 retries.
-i=0; while [ $i -le 20 ]
+i=0; while [ ${i} -le 20 ]
 do
   if pgIsReady
   then
     exit 0
   fi
-  echo "Checking if PostgresSQL is ready on ${DB_HOST}:${DB_PORT}"
+  i=$((i+1))
+  echo "Checking if PostgresSQL is ready on ${DB_HOST}:${DB_PORT} (attempt $i)"
   sleep "0.1"
 done
 
