@@ -35,3 +35,16 @@ func OptManagerSequence(migrations *Migrations) ManagerOption {
 		return nil
 	}
 }
+
+// OptManagerLog sets the migrations sequence on a manager. If `log` is `nil`
+// the option will return an error.
+func OptManagerLog(log PrintfReceiver) ManagerOption {
+	return func(m *Manager) error {
+		if log == nil {
+			return ErrNilInterface
+		}
+
+		m.Log = log
+		return nil
+	}
+}
