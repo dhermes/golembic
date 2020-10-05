@@ -140,7 +140,7 @@ func (m *Manager) ApplyMigration(ctx context.Context, migration Migration) (err 
 		err = txFinalize(tx, err)
 	}()
 
-	m.Log.Printf("Applying %s: %s\n", migration.Revision, migration.Description)
+	m.Log.Printf("Applying %s: %s", migration.Revision, migration.Description)
 	pool, err := m.EnsureConnectionPool(ctx)
 	if err != nil {
 		return
@@ -184,7 +184,7 @@ func (m *Manager) filterMigrations(ctx context.Context, filter migrationsFilter,
 	}
 
 	if len(migrations) == 0 {
-		m.Log.Printf("No migrations to run; latest revision: %s\n", latest)
+		m.Log.Printf("No migrations to run; latest revision: %s", latest)
 		return nil, nil
 	}
 
@@ -418,12 +418,12 @@ func (m *Manager) Verify(ctx context.Context) (err error) {
 		if i < len(history) {
 			applied := history[i]
 			m.Log.Printf(
-				"%d | %s | %s (applied %s)\n",
+				"%d | %s | %s (applied %s)",
 				i, migration.Revision, migration.Description, applied.CreatedAt,
 			)
 		} else {
 			m.Log.Printf(
-				"%d | %s | %s (not yet applied)\n",
+				"%d | %s | %s (not yet applied)",
 				i, migration.Revision, migration.Description,
 			)
 		}
@@ -483,10 +483,10 @@ func (m *Manager) Version(ctx context.Context, opts ...ApplyOption) error {
 	}
 
 	if migration == nil {
-		m.Log.Printf("No migrations have been run\n")
+		m.Log.Printf("No migrations have been run")
 	} else {
 		m.Log.Printf(
-			"%s: %s (applied %s)\n",
+			"%s: %s (applied %s)",
 			migration.Revision, migration.Description, migration.CreatedAt,
 		)
 	}

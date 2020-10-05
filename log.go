@@ -14,5 +14,5 @@ var (
 type stdoutPrintf struct{}
 
 func (sp *stdoutPrintf) Printf(format string, a ...interface{}) (n int, err error) {
-	return fmt.Printf(format, a...)
+	return fmt.Printf(format+"\n", a...)
 }

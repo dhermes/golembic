@@ -278,7 +278,7 @@ func (m *Migrations) Describe(log PrintfReceiver) {
 	indexWidth := len(fmt.Sprintf("%d", len(dms)-1))
 	format := ("%" + fmt.Sprintf("%d", indexWidth) + "d " +
 		"| %" + fmt.Sprintf("%d", revisionWidth) + "s " +
-		"| %s\n")
+		"| %s")
 	for i, dm := range dms {
 		log.Printf(format, i, dm.Revision, dm.Description)
 	}

@@ -43,7 +43,9 @@ type EngineProvider interface {
 	TableExistsSQL() string
 }
 
-// PrintfReceiver is a generic interface for logging and printing.
+// PrintfReceiver is a generic interface for logging and printing. In cases
+// where a trailing newline is desired (e.g. STDOUT), the type implemented
+// `PrintfReceiver` must add the newline explicitly.
 type PrintfReceiver interface {
 	Printf(format string, a ...interface{}) (n int, err error)
 }
