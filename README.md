@@ -223,8 +223,8 @@ Applying f1be62155239: Seed data in users table
 Applying dce8812d7b6f: Add city column to users table
 Applying 0430566018cc: Rename the root user [MILESTONE]
 $
-$ make run-example-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 0430566018cc"
-No migrations to run; latest revision: 0501ccd1d98c
+$ make run-example-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision dce8812d7b6f"
+No migrations to run; latest revision: 0430566018cc [MILESTONE]
 $
 $ make run-example-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 432f690fcbda"
 Applying 0501ccd1d98c: Add index on user emails (concurrently)

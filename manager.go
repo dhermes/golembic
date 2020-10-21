@@ -191,9 +191,14 @@ func (m *Manager) filterMigrations(ctx context.Context, filter migrationsFilter,
 	}
 
 	if len(migrations) == 0 {
-		// TODO: Incorporate `milestoneSuffix` here. This requires a re-factor
-		//       of `m.latestMaybeVerify()` and potentially of `m.Latest()`.
 		format := "No migrations to run; latest revision: %s"
+
+		// Add `milestoneSuffix`, if we can detect `latest` is a milestone.
+		migration := m.Sequence.Get(latest)
+		if migration != nil && migration.Milestone {
+			format += milestoneSuffix
+		}
+
 		m.Log.Printf(format, latest)
 		return nil, nil
 	}
