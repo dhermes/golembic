@@ -257,6 +257,7 @@ func (m *Migrations) Revisions() []string {
 type describeMetadata struct {
 	Revision    string
 	Description string
+	Milestone   bool
 }
 
 // Describe displays all of the registered migrations (with descriptions).
@@ -269,7 +270,14 @@ func (m *Migrations) Describe(log PrintfReceiver) {
 	revisionWidth := 0
 	for _, revision := range revisions {
 		migration := m.sequence[revision]
-		dms = append(dms, describeMetadata{Revision: revision, Description: migration.Description})
+		dms = append(
+			dms,
+			describeMetadata{
+				Revision:    revision,
+				Description: migration.Description,
+				Milestone:   migration.Milestone,
+			},
+		)
 		if len(revision) > revisionWidth {
 			revisionWidth = len(revision)
 		}
@@ -280,7 +288,12 @@ func (m *Migrations) Describe(log PrintfReceiver) {
 		"| %" + fmt.Sprintf("%d", revisionWidth) + "s " +
 		"| %s")
 	for i, dm := range dms {
-		log.Printf(format, i, dm.Revision, dm.Description)
+		if dm.Milestone {
+			extended := fmt.Sprintf("%s [MILESTONE]", dm.Description)
+			log.Printf(format, i, dm.Revision, extended)
+		} else {
+			log.Printf(format, i, dm.Revision, dm.Description)
+		}
 	}
 }
 
