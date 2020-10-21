@@ -34,6 +34,14 @@ func OptDescription(description string) MigrationOption {
 	}
 }
 
+// OptMilestone sets the milestone flag on a migration.
+func OptMilestone(milestone bool) MigrationOption {
+	return func(m *Migration) error {
+		m.Milestone = milestone
+		return nil
+	}
+}
+
 // OptUp sets the `up` function on a migration.
 func OptUp(up UpMigration) MigrationOption {
 	return func(m *Migration) error {

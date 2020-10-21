@@ -21,6 +21,16 @@ type Migration struct {
 	// performed. It is intended to be used in "describe" scenarios where
 	// a long form "history" of changes is presented.
 	Description string
+	// Milestone is a flag indicating if the current migration is a milestone.
+	// A milestone is a special migration that **must** be the last migration
+	// in a sequence whenever applied. This is intended to be used in situations
+	// where a change must be "staged" in two (or more parts) and one part
+	// must run and "stabilize" before the next migration runs. For example, in
+	// a rolling update deploy strategy some changes may not be compatible with
+	// "old" and "new" versions of the code that may run simultaneously, so a
+	// milestone marks the last point where old / new versions of application
+	// code should be expected to be able to interact with the current schema.
+	Milestone bool
 	// Up is the function to be executed when a migration is being applied. Either
 	// this field or `UpConn` are required (not both) and this field should be
 	// the default choice in most cases. This function will be run in a transaction
