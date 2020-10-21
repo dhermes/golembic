@@ -141,8 +141,17 @@ $ make run-example-cmd GOLEMBIC_CMD=up
 2020/10/20 21:53:57 If a migration sequence contains a milestone, it must be the last migration; revision 0430566018cc (4 / 7 migrations)
 exit status 1
 make: *** [run-example-cmd] Error 1
-
-# TODO: Add `--dev` flag which will ignore validation
+$
+$ make run-example-cmd GOLEMBIC_CMD=up GOLEMBIC_ARGS="--dev"
+Ignoring error in development mode
+  If a migration sequence contains a milestone, it must be the last migration; revision 0430566018cc (4 / 7 migrations)
+Applying c9b52448285b: Create users table
+Applying f1be62155239: Seed data in users table
+Applying dce8812d7b6f: Add city column to users table
+Applying 0430566018cc: Rename the root user [MILESTONE]
+Applying 0501ccd1d98c: Add index on user emails (concurrently)
+Applying e2d4eecb1841: Create books table
+Applying 432f690fcbda: Create movies table
 ```
 
 After creation, the next run does nothing
@@ -207,6 +216,7 @@ $ make run-example-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 0501ccd1d98c
 2020/10/20 22:04:01 If a migration sequence contains a milestone, it must be the last migration; revision 0430566018cc (4 / 5 migrations)
 exit status 1
 make: *** [run-example-cmd] Error 1
+$
 $ make run-example-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 0430566018cc"
 Applying c9b52448285b: Create users table
 Applying f1be62155239: Seed data in users table
@@ -237,10 +247,10 @@ No migrations have been run
 Then run **all** of the migrations and check the version
 
 ```
-$ make run-example-cmd GOLEMBIC_CMD=up
+$ make run-example-cmd GOLEMBIC_CMD=up GOLEMBIC_ARGS="--dev"
 ...
 $ make run-example-cmd GOLEMBIC_CMD=version
-432f690fcbda: Create movies table (applied 2020-08-25 00:40:34.86562 +0000 UTC)
+432f690fcbda: Create movies table (applied 2020-10-21 03:22:07.030096 +0000 UTC)
 ```
 
 ### `verify`
@@ -252,7 +262,7 @@ $ make run-example-cmd GOLEMBIC_CMD=verify
 0 | c9b52448285b | Create users table (not yet applied)
 1 | f1be62155239 | Seed data in users table (not yet applied)
 2 | dce8812d7b6f | Add city column to users table (not yet applied)
-3 | 0430566018cc | Rename the root user (not yet applied)
+3 | 0430566018cc | Rename the root user [MILESTONE] (not yet applied)
 4 | 0501ccd1d98c | Add index on user emails (concurrently) (not yet applied)
 5 | e2d4eecb1841 | Create books table (not yet applied)
 6 | 432f690fcbda | Create movies table (not yet applied)
@@ -261,10 +271,10 @@ $
 $ make run-example-cmd GOLEMBIC_CMD=up-one
 Applying c9b52448285b: Create users table
 $ make run-example-cmd GOLEMBIC_CMD=verify
-0 | c9b52448285b | Create users table (applied 2020-08-25 00:41:17.693211 +0000 UTC)
+0 | c9b52448285b | Create users table (applied 2020-10-21 03:24:55.79597 +0000 UTC)
 1 | f1be62155239 | Seed data in users table (not yet applied)
 2 | dce8812d7b6f | Add city column to users table (not yet applied)
-3 | 0430566018cc | Rename the root user (not yet applied)
+3 | 0430566018cc | Rename the root user [MILESTONE] (not yet applied)
 4 | 0501ccd1d98c | Add index on user emails (concurrently) (not yet applied)
 5 | e2d4eecb1841 | Create books table (not yet applied)
 6 | 432f690fcbda | Create movies table (not yet applied)
@@ -273,29 +283,31 @@ $
 $ make run-example-cmd GOLEMBIC_CMD=up-one
 Applying f1be62155239: Seed data in users table
 $ make run-example-cmd GOLEMBIC_CMD=verify
-0 | c9b52448285b | Create users table (applied 2020-08-25 00:41:17.693211 +0000 UTC)
-1 | f1be62155239 | Seed data in users table (applied 2020-08-25 00:41:33.571142 +0000 UTC)
+0 | c9b52448285b | Create users table (applied 2020-10-21 03:24:55.79597 +0000 UTC)
+1 | f1be62155239 | Seed data in users table (applied 2020-10-21 03:25:07.471862 +0000 UTC)
 2 | dce8812d7b6f | Add city column to users table (not yet applied)
-3 | 0430566018cc | Rename the root user (not yet applied)
+3 | 0430566018cc | Rename the root user [MILESTONE] (not yet applied)
 4 | 0501ccd1d98c | Add index on user emails (concurrently) (not yet applied)
 5 | e2d4eecb1841 | Create books table (not yet applied)
 6 | 432f690fcbda | Create movies table (not yet applied)
 $
 $
-$ make run-example-cmd GOLEMBIC_CMD=up
+$ make run-example-cmd GOLEMBIC_CMD=up GOLEMBIC_ARGS="--dev"
+Ignoring error in development mode
+  If a migration sequence contains a milestone, it must be the last migration; revision 0430566018cc (2 / 5 migrations)
 Applying dce8812d7b6f: Add city column to users table
-Applying 0430566018cc: Rename the root user
+Applying 0430566018cc: Rename the root user [MILESTONE]
 Applying 0501ccd1d98c: Add index on user emails (concurrently)
 Applying e2d4eecb1841: Create books table
 Applying 432f690fcbda: Create movies table
 $ make run-example-cmd GOLEMBIC_CMD=verify
-0 | c9b52448285b | Create users table (applied 2020-08-25 00:41:17.693211 +0000 UTC)
-1 | f1be62155239 | Seed data in users table (applied 2020-08-25 00:41:33.571142 +0000 UTC)
-2 | dce8812d7b6f | Add city column to users table (applied 2020-08-25 00:41:51.452623 +0000 UTC)
-3 | 0430566018cc | Rename the root user (applied 2020-08-25 00:41:51.459989 +0000 UTC)
-4 | 0501ccd1d98c | Add index on user emails (concurrently) (applied 2020-08-25 00:41:51.466887 +0000 UTC)
-5 | e2d4eecb1841 | Create books table (applied 2020-08-25 00:41:51.48781 +0000 UTC)
-6 | 432f690fcbda | Create movies table (applied 2020-08-25 00:41:51.496046 +0000 UTC)
+0 | c9b52448285b | Create users table (applied 2020-10-21 03:24:55.79597 +0000 UTC)
+1 | f1be62155239 | Seed data in users table (applied 2020-10-21 03:25:07.471862 +0000 UTC)
+2 | dce8812d7b6f | Add city column to users table (applied 2020-10-21 03:25:21.799527 +0000 UTC)
+3 | 0430566018cc | Rename the root user [MILESTONE] (applied 2020-10-21 03:25:21.805711 +0000 UTC)
+4 | 0501ccd1d98c | Add index on user emails (concurrently) (applied 2020-10-21 03:25:21.811445 +0000 UTC)
+5 | e2d4eecb1841 | Create books table (applied 2020-10-21 03:25:21.823134 +0000 UTC)
+6 | 432f690fcbda | Create movies table (applied 2020-10-21 03:25:21.828345 +0000 UTC)
 ```
 
 We can artificially introduce a "new" migration and see failure to verify
@@ -308,7 +320,7 @@ INSERT 0 1
 golembic=> \q
 $
 $ make run-example-cmd GOLEMBIC_CMD=verify
-2020/08/24 19:42:41 Migration stored in SQL doesn't match sequence; sequence has 7 migrations but 8 are stored in the table
+2020/10/20 22:26:43 Migration stored in SQL doesn't match sequence; sequence has 7 migrations but 8 are stored in the table
 exit status 1
 make: *** [run-example-cmd] Error 1
 ```
@@ -325,7 +337,7 @@ INSERT 0 1
 golembic=> \q
 $
 $ make run-example-cmd GOLEMBIC_CMD=verify
-2020/08/24 19:43:03 Migration stored in SQL doesn't match sequence; stored migration 6: "not-in-sequence:e2d4eecb1841" does not match migration "432f690fcbda:e2d4eecb1841" in sequence
+2020/10/20 22:27:03 Migration stored in SQL doesn't match sequence; stored migration 6: "not-in-sequence:e2d4eecb1841" does not match migration "432f690fcbda:e2d4eecb1841" in sequence
 exit status 1
 make: *** [run-example-cmd] Error 1
 ```

@@ -207,7 +207,7 @@ func (m *Manager) filterMigrations(ctx context.Context, filter migrationsFilter,
 	return migrations, nil
 }
 
-func validateMilestones(migrations []Migration) error {
+func (m *Manager) validateMilestones(migrations []Migration) error {
 	count := len(migrations)
 	if count == 0 {
 		return nil
@@ -224,6 +224,14 @@ func validateMilestones(migrations []Migration) error {
 			"%w; revision %s (%d / %d migrations)",
 			ErrCannotPassMilestone, migration.Revision, i+1, count,
 		)
+
+		// In development mode, log the error message but don't return an error.
+		if m.DevelopmentMode {
+			m.Log.Printf("Ignoring error in development mode")
+			m.Log.Printf("  %s", err)
+			continue
+		}
+
 		return err
 	}
 
@@ -246,7 +254,7 @@ func (m *Manager) Up(ctx context.Context, opts ...ApplyOption) error {
 		return nil
 	}
 
-	err = validateMilestones(migrations)
+	err = m.validateMilestones(migrations)
 	if err != nil {
 		return err
 	}
@@ -311,7 +319,7 @@ func (m *Manager) UpTo(ctx context.Context, opts ...ApplyOption) error {
 		return nil
 	}
 
-	err = validateMilestones(migrations)
+	err = m.validateMilestones(migrations)
 	if err != nil {
 		return err
 	}
@@ -464,16 +472,20 @@ func (m *Manager) Verify(ctx context.Context) (err error) {
 	}
 
 	for i, migration := range registered {
+		description := migration.Description
+		if migration.Milestone {
+			description += milestoneSuffix
+		}
 		if i < len(history) {
 			applied := history[i]
 			m.Log.Printf(
 				"%d | %s | %s (applied %s)",
-				i, migration.Revision, migration.Description, applied.CreatedAt,
+				i, migration.Revision, description, applied.CreatedAt,
 			)
 		} else {
 			m.Log.Printf(
 				"%d | %s | %s (not yet applied)",
-				i, migration.Revision, migration.Description,
+				i, migration.Revision, description,
 			)
 		}
 	}
