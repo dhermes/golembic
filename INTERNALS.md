@@ -34,7 +34,7 @@ $ make run-example-cmd GOLEMBIC_CMD=describe
 0 | c9b52448285b | Create users table
 1 | f1be62155239 | Seed data in users table
 2 | dce8812d7b6f | Add city column to users table
-3 | 0430566018cc | Rename the root user
+3 | 0430566018cc | Rename the root user [MILESTONE]
 4 | 0501ccd1d98c | Add index on user emails (concurrently)
 5 | e2d4eecb1841 | Create books table
 6 | 432f690fcbda | Create movies table
@@ -83,11 +83,13 @@ golembic=> \q
 ## Run Some Migrations
 
 ```
-$ make run-example-cmd GOLEMBIC_CMD=up
+$ make run-example-cmd GOLEMBIC_CMD=up GOLEMBIC_ARGS="--dev"
+Ignoring error in development mode
+  If a migration sequence contains a milestone, it must be the last migration; revision 0430566018cc (4 / 7 migrations)
 Applying c9b52448285b: Create users table
 Applying f1be62155239: Seed data in users table
 Applying dce8812d7b6f: Add city column to users table
-Applying 0430566018cc: Rename the root user
+Applying 0430566018cc: Rename the root user [MILESTONE]
 Applying 0501ccd1d98c: Add index on user emails (concurrently)
 Applying e2d4eecb1841: Create books table
 Applying 432f690fcbda: Create movies table
@@ -160,20 +162,20 @@ And see how these migrations are tracked
 
 ```
 $ make run-example-cmd GOLEMBIC_CMD=version
-432f690fcbda: Create movies table (applied 2020-08-25 00:33:51.541202 +0000 UTC)
+432f690fcbda: Create movies table (applied 2020-10-21 03:47:58.213055 +0000 UTC)
 $
 $ make psql
 ...
 golembic=> SELECT * FROM golembic_migrations;
    revision   |   previous   |          created_at
 --------------+--------------+-------------------------------
- c9b52448285b |              | 2020-08-25 00:33:51.470838+00
- f1be62155239 | c9b52448285b | 2020-08-25 00:33:51.484907+00
- dce8812d7b6f | f1be62155239 | 2020-08-25 00:33:51.493709+00
- 0430566018cc | dce8812d7b6f | 2020-08-25 00:33:51.50215+00
- 0501ccd1d98c | 0430566018cc | 2020-08-25 00:33:51.511767+00
- e2d4eecb1841 | 0501ccd1d98c | 2020-08-25 00:33:51.531623+00
- 432f690fcbda | e2d4eecb1841 | 2020-08-25 00:33:51.541202+00
+ c9b52448285b |              | 2020-10-21 03:47:58.165544+00
+ f1be62155239 | c9b52448285b | 2020-10-21 03:47:58.174448+00
+ dce8812d7b6f | f1be62155239 | 2020-10-21 03:47:58.179869+00
+ 0430566018cc | dce8812d7b6f | 2020-10-21 03:47:58.184826+00
+ 0501ccd1d98c | 0430566018cc | 2020-10-21 03:47:58.191106+00
+ e2d4eecb1841 | 0501ccd1d98c | 2020-10-21 03:47:58.205654+00
+ 432f690fcbda | e2d4eecb1841 | 2020-10-21 03:47:58.213055+00
 (7 rows)
 
 golembic=> \q
