@@ -12,7 +12,6 @@ func AllMigrations(sqlDirectory string) (*golembic.Migrations, error) {
 	root, err := golembic.NewMigration(
 		golembic.OptRevision("c9b52448285b"),
 		golembic.OptDescription("Create users table"),
-		golembic.OptMilestone(true),
 		golembic.OptUpFromFile(filepath.Join(sqlDirectory, "0001_create_users_table.sql")),
 	)
 	if err != nil {
@@ -40,6 +39,7 @@ func AllMigrations(sqlDirectory string) (*golembic.Migrations, error) {
 			golembic.OptPrevious("dce8812d7b6f"),
 			golembic.OptRevision("0430566018cc"),
 			golembic.OptDescription("Rename the root user"),
+			golembic.OptMilestone(true),
 			golembic.OptUpFromFile(filepath.Join(sqlDirectory, "0004_rename_root.sql")),
 		},
 		[]golembic.MigrationOption{

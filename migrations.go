@@ -288,12 +288,11 @@ func (m *Migrations) Describe(log PrintfReceiver) {
 		"| %" + fmt.Sprintf("%d", revisionWidth) + "s " +
 		"| %s")
 	for i, dm := range dms {
+		localFormat := format
 		if dm.Milestone {
-			extended := fmt.Sprintf("%s [MILESTONE]", dm.Description)
-			log.Printf(format, i, dm.Revision, extended)
-		} else {
-			log.Printf(format, i, dm.Revision, dm.Description)
+			localFormat += milestoneSuffix
 		}
+		log.Printf(localFormat, i, dm.Revision, dm.Description)
 	}
 }
 

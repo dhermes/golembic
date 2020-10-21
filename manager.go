@@ -11,6 +11,8 @@ const (
 	// DefaultMetadataTable is the default name for the table used to store
 	// metadata about migrations.
 	DefaultMetadataTable = "golembic_migrations"
+
+	milestoneSuffix = " [MILESTONE]"
 )
 
 // NewManager creates a new manager for orchestrating migrations.
@@ -140,7 +142,11 @@ func (m *Manager) ApplyMigration(ctx context.Context, migration Migration) (err 
 		err = txFinalize(tx, err)
 	}()
 
-	m.Log.Printf("Applying %s: %s", migration.Revision, migration.Description)
+	format := "Applying %s: %s"
+	if migration.Milestone {
+		format += milestoneSuffix
+	}
+	m.Log.Printf(format, migration.Revision, migration.Description)
 	pool, err := m.EnsureConnectionPool(ctx)
 	if err != nil {
 		return
@@ -184,7 +190,10 @@ func (m *Manager) filterMigrations(ctx context.Context, filter migrationsFilter,
 	}
 
 	if len(migrations) == 0 {
-		m.Log.Printf("No migrations to run; latest revision: %s", latest)
+		// TODO: Incorporate `milestoneSuffix` here. This requires a re-factor
+		//       of `m.latestMaybeVerify()` and potentially of `m.Latest()`.
+		format := "No migrations to run; latest revision: %s"
+		m.Log.Printf(format, latest)
 		return nil, nil
 	}
 

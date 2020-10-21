@@ -135,13 +135,11 @@ Global Flags:
 $ make restart-db
 ...
 $ make run-example-cmd GOLEMBIC_CMD=up
-Applying c9b52448285b: Create users table
-Applying f1be62155239: Seed data in users table
-Applying dce8812d7b6f: Add city column to users table
-Applying 0430566018cc: Rename the root user
-Applying 0501ccd1d98c: Add index on user emails (concurrently)
-Applying e2d4eecb1841: Create books table
-Applying 432f690fcbda: Create movies table
+2020/10/20 21:53:57 If a migration sequence contains a milestone, it must be the last migration; revision 0430566018cc (4 / 7 migrations)
+exit status 1
+make: *** [run-example-cmd] Error 1
+
+# TODO: Add `--dev` flag which will ignore validation
 ```
 
 After creation, the next run does nothing
@@ -182,7 +180,7 @@ $ make run-example-cmd GOLEMBIC_CMD=up-one
 Applying dce8812d7b6f: Add city column to users table
 $
 $ make run-example-cmd GOLEMBIC_CMD=up-one
-Applying 0430566018cc: Rename the root user
+Applying 0430566018cc: Rename the root user [MILESTONE]
 $
 $ make run-example-cmd GOLEMBIC_CMD=up-one
 Applying 0501ccd1d98c: Add index on user emails (concurrently)
@@ -202,19 +200,21 @@ No migrations to run; latest revision: 432f690fcbda
 ```
 $ make restart-db
 ...
-$ make run-example-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision dce8812d7b6f"
+$ make run-example-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 0501ccd1d98c"
+2020/10/20 22:04:01 If a migration sequence contains a milestone, it must be the last migration; revision 0430566018cc (4 / 5 migrations)
+exit status 1
+make: *** [run-example-cmd] Error 1
+$ make run-example-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 0430566018cc"
 Applying c9b52448285b: Create users table
 Applying f1be62155239: Seed data in users table
 Applying dce8812d7b6f: Add city column to users table
-$
-$ make run-example-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 0501ccd1d98c"
-Applying 0430566018cc: Rename the root user
-Applying 0501ccd1d98c: Add index on user emails (concurrently)
+Applying 0430566018cc: Rename the root user [MILESTONE]
 $
 $ make run-example-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 0430566018cc"
 No migrations to run; latest revision: 0501ccd1d98c
 $
 $ make run-example-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 432f690fcbda"
+Applying 0501ccd1d98c: Add index on user emails (concurrently)
 Applying e2d4eecb1841: Create books table
 Applying 432f690fcbda: Create movies table
 $
@@ -346,7 +346,7 @@ $ make run-example-cmd GOLEMBIC_CMD=describe
 0 | c9b52448285b | Create users table
 1 | f1be62155239 | Seed data in users table
 2 | dce8812d7b6f | Add city column to users table
-3 | 0430566018cc | Rename the root user
+3 | 0430566018cc | Rename the root user [MILESTONE]
 4 | 0501ccd1d98c | Add index on user emails (concurrently)
 5 | e2d4eecb1841 | Create books table
 6 | 432f690fcbda | Create movies table
