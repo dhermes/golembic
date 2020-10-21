@@ -36,4 +36,7 @@ var (
 	// ErrCannotInvokeUp is the error returned when a migration cannot invoke the
 	// up function (e.g. if it is `nil`).
 	ErrCannotInvokeUp = errors.New("Cannot invoke up function for a migration")
+	// ErrCannotPassMilestone is the error returned when a migration sequence
+	// contains a milestone migration that is **NOT** the last step.
+	ErrCannotPassMilestone = errors.New("If a migration sequence contains a milestone, it must be the last migration")
 )

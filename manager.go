@@ -191,6 +191,29 @@ func (m *Manager) filterMigrations(ctx context.Context, filter migrationsFilter,
 	return migrations, nil
 }
 
+func validateMilestones(migrations []Migration) error {
+	count := len(migrations)
+	if count == 0 {
+		return nil
+	}
+
+	// Ensure all (but the last) are not a milestone.
+	for i := 0; i < count-1; i++ {
+		migration := migrations[i]
+		if !migration.Milestone {
+			continue
+		}
+
+		err := fmt.Errorf(
+			"%w; revision %s (%d / %d migrations)",
+			ErrCannotPassMilestone, migration.Revision, i+1, count,
+		)
+		return err
+	}
+
+	return nil
+}
+
 // Up applies all migrations that have not yet been applied.
 func (m *Manager) Up(ctx context.Context, opts ...ApplyOption) error {
 	ac, err := NewApplyConfig(opts...)
@@ -205,6 +228,11 @@ func (m *Manager) Up(ctx context.Context, opts ...ApplyOption) error {
 
 	if migrations == nil {
 		return nil
+	}
+
+	err = validateMilestones(migrations)
+	if err != nil {
+		return err
 	}
 
 	for _, migration := range migrations {
@@ -265,6 +293,11 @@ func (m *Manager) UpTo(ctx context.Context, opts ...ApplyOption) error {
 
 	if migrations == nil {
 		return nil
+	}
+
+	err = validateMilestones(migrations)
+	if err != nil {
+		return err
 	}
 
 	for _, migration := range migrations {
