@@ -11,8 +11,6 @@ const (
 	// DefaultMetadataTable is the default name for the table used to store
 	// metadata about migrations.
 	DefaultMetadataTable = "golembic_migrations"
-
-	milestoneSuffix = " [MILESTONE]"
 )
 
 // NewManager creates a new manager for orchestrating migrations.
@@ -149,11 +147,7 @@ func (m *Manager) ApplyMigration(ctx context.Context, migration Migration) (err 
 		err = txFinalize(tx, err)
 	}()
 
-	format := "Applying %s: %s"
-	if migration.Milestone {
-		format += milestoneSuffix
-	}
-	m.Log.Printf(format, migration.Revision, migration.Description)
+	m.Log.Printf("Applying %s: %s", migration.Revision, migration.ExtendedDescription())
 	pool, err := m.EnsureConnectionPool(ctx)
 	if err != nil {
 		return
@@ -472,10 +466,7 @@ func (m *Manager) Verify(ctx context.Context) (err error) {
 	}
 
 	for i, migration := range registered {
-		description := migration.Description
-		if migration.Milestone {
-			description += milestoneSuffix
-		}
+		description := migration.ExtendedDescription()
 		if i < len(history) {
 			applied := history[i]
 			m.Log.Printf(
