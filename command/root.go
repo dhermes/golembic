@@ -58,6 +58,13 @@ func MakeRootCommand(rm RegisterMigrations) (*cobra.Command, error) {
 		"Path to a directory containing \".sql\" migration files",
 	)
 
+	cmd.PersistentFlags().BoolVar(
+		&manager.DevelopmentMode,
+		"dev",
+		false,
+		"Flag indicating that the migrations should be run in development mode",
+	)
+
 	// Add provider specific sub-commands.
 	postgres, err := postgresSubCommand(manager, cmd)
 	if err != nil {

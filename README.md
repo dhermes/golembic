@@ -41,6 +41,7 @@ Available Commands:
   postgres    Manage database migrations for a PostgreSQL database
 
 Flags:
+      --dev                     Flag indicating that the migrations should be run in development mode
   -h, --help                    help for golembic
       --metadata-table string   The name of the table that stores migration metadata (default "golembic_migrations")
       --sql-directory string    Path to a directory containing ".sql" migration files
@@ -85,6 +86,7 @@ Flags:
       --username string              The username to use when connecting to PostgreSQL
 
 Global Flags:
+      --dev                     Flag indicating that the migrations should be run in development mode
       --metadata-table string   The name of the table that stores migration metadata (default "golembic_migrations")
       --sql-directory string    Path to a directory containing ".sql" migration files
 
@@ -109,6 +111,7 @@ Flags:
 Global Flags:
       --connect-timeout duration     The timeout to use when waiting on a new connection to PostgreSQL, must be exactly convertible to seconds
       --dbname string                The database name to use when connecting to PostgreSQL (default "postgres")
+      --dev                          Flag indicating that the migrations should be run in development mode
       --driver-name string           The name of SQL driver to be used when creating a new database connection pool (default "postgres")
       --host string                  The host to use when connecting to PostgreSQL (default "localhost")
       --idle-connections int         The maximum number of idle connections (in a connection pool) to PostgreSQL (default 16)
