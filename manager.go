@@ -208,10 +208,6 @@ func (m *Manager) filterMigrations(ctx context.Context, filter migrationsFilter,
 
 func (m *Manager) validateMilestones(migrations []Migration) error {
 	count := len(migrations)
-	if count == 0 {
-		return nil
-	}
-
 	// Ensure all (but the last) are not a milestone.
 	for i := 0; i < count-1; i++ {
 		migration := migrations[i]
