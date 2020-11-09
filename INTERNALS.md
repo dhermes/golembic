@@ -17,7 +17,7 @@ $
 $
 $ docker ps
 CONTAINER ID        IMAGE                  COMMAND                  CREATED             STATUS              PORTS                     NAMES
-b9d1eb78aab5        postgres:10.6-alpine   "docker-entrypoint.s…"   6 seconds ago       Up 5 seconds        0.0.0.0:18426->5432/tcp   dev-postgres-golembic
+58cc44f21752        postgres:10.6-alpine   "docker-entrypoint.s…"   13 seconds ago      Up 11 seconds       0.0.0.0:18426->5432/tcp   dev-postgres-golembic
 ```
 
 ## Run `./examples/cmd/main.go`
@@ -58,6 +58,7 @@ golembic=> \d+ golembic_migrations
                                             Table "public.golembic_migrations"
    Column   |           Type           | Collation | Nullable |      Default      | Storage  | Stats target | Description
 ------------+--------------------------+-----------+----------+-------------------+----------+--------------+-------------
+ serial_id  | integer                  |           | not null |                   | plain    |              |
  revision   | character varying(32)    |           | not null |                   | extended |              |
  previous   | character varying(32)    |           |          |                   | extended |              |
  created_at | timestamp with time zone |           |          | CURRENT_TIMESTAMP | plain    |              |
@@ -65,7 +66,9 @@ Indexes:
     "pk_golembic_migrations_revision" PRIMARY KEY, btree (revision)
     "idx_golembic_migrations_one_null_previous" UNIQUE, btree ((previous IS NULL)) WHERE previous IS NULL
     "uq_golembic_migrations_previous" UNIQUE CONSTRAINT, btree (previous)
+    "uq_golembic_migrations_serial_id" UNIQUE CONSTRAINT, btree (serial_id)
 Check constraints:
+    "chk_golembic_migrations_previous" CHECK (serial_id >= 0)
     "chk_golembic_migrations_previous_neq_revision" CHECK (previous::text <> revision::text)
 Foreign-key constraints:
     "fk_golembic_migrations_previous" FOREIGN KEY (previous) REFERENCES golembic_migrations(revision)
@@ -73,8 +76,8 @@ Referenced by:
     TABLE "golembic_migrations" CONSTRAINT "fk_golembic_migrations_previous" FOREIGN KEY (previous) REFERENCES golembic_migrations(revision)
 
 golembic=> SELECT * FROM golembic_migrations;
- revision | previous | created_at
-----------+----------+------------
+ serial_id | revision | previous | created_at
+-----------+----------+----------+------------
 (0 rows)
 
 golembic=> \q
@@ -162,20 +165,20 @@ And see how these migrations are tracked
 
 ```
 $ make run-example-cmd GOLEMBIC_CMD=version
-432f690fcbda: Create movies table (applied 2020-10-21 03:47:58.213055 +0000 UTC)
+432f690fcbda: Create movies table (applied 2020-11-09 04:57:48.028216 +0000 UTC)
 $
 $ make psql
 ...
 golembic=> SELECT * FROM golembic_migrations;
-   revision   |   previous   |          created_at
---------------+--------------+-------------------------------
- c9b52448285b |              | 2020-10-21 03:47:58.165544+00
- f1be62155239 | c9b52448285b | 2020-10-21 03:47:58.174448+00
- dce8812d7b6f | f1be62155239 | 2020-10-21 03:47:58.179869+00
- 0430566018cc | dce8812d7b6f | 2020-10-21 03:47:58.184826+00
- 0501ccd1d98c | 0430566018cc | 2020-10-21 03:47:58.191106+00
- e2d4eecb1841 | 0501ccd1d98c | 2020-10-21 03:47:58.205654+00
- 432f690fcbda | e2d4eecb1841 | 2020-10-21 03:47:58.213055+00
+ serial_id |   revision   |   previous   |          created_at
+-----------+--------------+--------------+-------------------------------
+         0 | c9b52448285b |              | 2020-11-09 04:57:47.965223+00
+         1 | f1be62155239 | c9b52448285b | 2020-11-09 04:57:47.97607+00
+         2 | dce8812d7b6f | f1be62155239 | 2020-11-09 04:57:47.985118+00
+         3 | 0430566018cc | dce8812d7b6f | 2020-11-09 04:57:47.993313+00
+         4 | 0501ccd1d98c | 0430566018cc | 2020-11-09 04:57:48.002736+00
+         5 | e2d4eecb1841 | 0501ccd1d98c | 2020-11-09 04:57:48.020294+00
+         6 | 432f690fcbda | e2d4eecb1841 | 2020-11-09 04:57:48.028216+00
 (7 rows)
 
 golembic=> \q
@@ -186,7 +189,7 @@ golembic=> \q
 ```
 $ docker ps
 CONTAINER ID        IMAGE                  COMMAND                  CREATED             STATUS              PORTS                     NAMES
-b9d1eb78aab5        postgres:10.6-alpine   "docker-entrypoint.s…"   3 minutes ago       Up 3 minutes        0.0.0.0:18426->5432/tcp   dev-postgres-golembic
+58cc44f21752        postgres:10.6-alpine   "docker-entrypoint.s…"   2 minutes ago       Up 2 minutes        0.0.0.0:18426->5432/tcp   dev-postgres-golembic
 $ make stop-db
 Container dev-postgres-golembic stopped.
 $ docker ps
