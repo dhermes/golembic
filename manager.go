@@ -115,7 +115,7 @@ func (m *Manager) EnsureMigrationsTable(ctx context.Context) error {
 func (m *Manager) InsertMigration(ctx context.Context, tx *sql.Tx, migration Migration) error {
 	if migration.Previous == "" {
 		statement := fmt.Sprintf(
-			"INSERT INTO %s (serial_id, revision, previous) VALUES (0, $1, NULL);",
+			"INSERT INTO %s (serial_id, revision, previous) VALUES (0, $1, NULL)",
 			m.Provider.QuoteIdentifier(m.MetadataTable),
 		)
 		_, err := tx.ExecContext(ctx, statement, migration.Revision)
@@ -124,7 +124,7 @@ func (m *Manager) InsertMigration(ctx context.Context, tx *sql.Tx, migration Mig
 
 	serialID := rand.Int31() // TODO: Pull `serialID` from `migration`
 	statement := fmt.Sprintf(
-		"INSERT INTO %s (serial_id, revision, previous) VALUES ($1, $2, $3);",
+		"INSERT INTO %s (serial_id, revision, previous) VALUES ($1, $2, $3)",
 		m.Provider.QuoteIdentifier(m.MetadataTable),
 	)
 	_, err := tx.ExecContext(ctx, statement, serialID, migration.Revision, migration.Previous)
@@ -356,7 +356,7 @@ func (m *Manager) Latest(ctx context.Context) (revision string, createdAt time.T
 	}
 
 	query := fmt.Sprintf(
-		"SELECT previous, revision, created_at FROM %s ORDER BY created_at DESC LIMIT 1;",
+		"SELECT previous, revision, created_at FROM %s ORDER BY created_at DESC LIMIT 1",
 		m.Provider.QuoteIdentifier(m.MetadataTable),
 	)
 	rows, err := readAllMigration(ctx, tx, query)
@@ -493,7 +493,7 @@ func (m *Manager) Verify(ctx context.Context) (err error) {
 // error and include slices of the history and the registered migrations.
 func (m *Manager) verifyHistory(ctx context.Context, tx *sql.Tx) (history, registered []Migration, err error) {
 	query := fmt.Sprintf(
-		"SELECT previous, revision, created_at FROM %s ORDER BY created_at ASC;",
+		"SELECT previous, revision, created_at FROM %s ORDER BY created_at ASC",
 		m.Provider.QuoteIdentifier(m.MetadataTable),
 	)
 	history, err = readAllMigration(ctx, tx, query)
@@ -554,7 +554,7 @@ func (m *Manager) Version(ctx context.Context, opts ...ApplyOption) error {
 // exists.
 func (m *Manager) IsApplied(ctx context.Context, tx *sql.Tx, migration Migration) (bool, error) {
 	query := fmt.Sprintf(
-		"SELECT previous, revision, created_at FROM %s WHERE revision = $1;",
+		"SELECT previous, revision, created_at FROM %s WHERE revision = $1",
 		m.Provider.QuoteIdentifier(m.MetadataTable),
 	)
 	rows, err := readAllMigration(ctx, tx, query, migration.Revision)

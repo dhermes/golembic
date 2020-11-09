@@ -43,7 +43,7 @@ ALTER TABLE %s
 	singleRootMigrationsTableSQL = `
 CREATE UNIQUE INDEX %[2]s
   ON %[1]s
-  ((previous IS NULL)) WHERE previous IS NULL;
+  ((previous IS NULL)) WHERE previous IS NULL
 `
 )
 
