@@ -37,11 +37,11 @@ func readAllInt(ctx context.Context, tx *sql.Tx, query string, args ...interface
 // from a pair of values read off of a `sql.Rows`.
 func migrationFromQuery(previous sql.NullString, revision string, createdAt time.Time) Migration {
 	if previous.Valid {
-		return Migration{Previous: previous.String, Revision: revision, CreatedAt: createdAt}
+		return Migration{Previous: previous.String, Revision: revision, createdAt: createdAt}
 	}
 
 	// Handle NULL.
-	return Migration{Revision: revision, CreatedAt: createdAt}
+	return Migration{Revision: revision, createdAt: createdAt}
 }
 
 // readAllMigration performs a SQL query and reads all rows into a

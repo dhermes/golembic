@@ -45,9 +45,11 @@ type Migration struct {
 	// rare situations where a migration cannot run inside a transaction, e.g.
 	// a `CREATE UNIQUE INDEX CONCURRENTLY` statement.
 	UpConn UpMigrationConn
-	// CreatedAt is stored in the migrations metadata table and represents the
-	// moment when the migration was inserted into the table.
-	CreatedAt time.Time
+	// createdAt is stored in the migrations metadata table and represents the
+	// moment when the migration was inserted into the table.  It is **not**
+	// exported because it is internal to the implementation and should not be
+	// specified by calling code.
+	createdAt time.Time
 	// serialID is an integer used for sorting migrations and will be stored
 	// in the migrations table. It is intended to be used for migrations
 	// retrieved via a SQL query to the migrations metadata table. It is

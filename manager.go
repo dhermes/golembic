@@ -375,7 +375,7 @@ func (m *Manager) Latest(ctx context.Context) (revision string, createdAt time.T
 	// NOTE: Here we trust that the query is sufficient to guarantee that
 	//       `len(rows) == 1`.
 	revision = rows[0].Revision
-	createdAt = rows[0].CreatedAt
+	createdAt = rows[0].createdAt
 	return
 }
 
@@ -407,7 +407,7 @@ func (m *Manager) latestMaybeVerify(ctx context.Context, verifyHistory bool) (re
 	}
 
 	revision = history[len(history)-1].Revision
-	createdAt = history[len(history)-1].CreatedAt
+	createdAt = history[len(history)-1].createdAt
 	err = tx.Commit()
 	return
 }
@@ -444,7 +444,7 @@ func (m *Manager) GetVersion(ctx context.Context, opts ...ApplyOption) (*Migrati
 		Previous:    migration.Previous,
 		Revision:    migration.Revision,
 		Description: migration.Description,
-		CreatedAt:   createdAt,
+		createdAt:   createdAt,
 	}
 	return withCreated, nil
 }
@@ -478,7 +478,7 @@ func (m *Manager) Verify(ctx context.Context) (err error) {
 			applied := history[i]
 			m.Log.Printf(
 				"%d | %s | %s (applied %s)",
-				i, migration.Revision, description, applied.CreatedAt,
+				i, migration.Revision, description, applied.createdAt,
 			)
 		} else {
 			m.Log.Printf(
@@ -546,7 +546,7 @@ func (m *Manager) Version(ctx context.Context, opts ...ApplyOption) error {
 	} else {
 		m.Log.Printf(
 			"%s: %s (applied %s)",
-			migration.Revision, migration.Description, migration.CreatedAt,
+			migration.Revision, migration.Description, migration.createdAt,
 		)
 	}
 	return nil
