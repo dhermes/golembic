@@ -61,6 +61,8 @@ func (m *Migrations) Register(migration Migration) error {
 		return fmt.Errorf("%w; revision: %q", ErrAlreadyRegistered, migration.Revision)
 	}
 
+	// NOTE: This crucially relies on `m.sequence` being locked.
+	migration.serialID = uint32(len(m.sequence))
 	m.sequence[migration.Revision] = migration
 	return nil
 }
