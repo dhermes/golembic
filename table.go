@@ -8,21 +8,31 @@ import (
 
 const (
 	createMigrationsTableSQL = `
-CREATE TABLE IF NOT EXISTS %[1]s (
+CREATE TABLE IF NOT EXISTS %s (
   revision   VARCHAR(32) NOT NULL,
   previous   VARCHAR(32),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
+)
+`
+	pkMigrationsTableSQL = `
+ALTER TABLE %s
+  ADD CONSTRAINT %s PRIMARY KEY (revision)
+`
+	fkPreviousMigrationsTableSQL = `
 ALTER TABLE %[1]s
-  ADD CONSTRAINT %[2]s PRIMARY KEY (revision);
-ALTER TABLE %[1]s
-  ADD CONSTRAINT %[3]s FOREIGN KEY (previous)
-  REFERENCES %[1]s(revision);
-ALTER TABLE %[1]s
-  ADD CONSTRAINT %[4]s UNIQUE (previous);
-ALTER TABLE %[1]s
-  ADD CONSTRAINT %[5]s CHECK (previous != revision);
-CREATE UNIQUE INDEX %[6]s
+  ADD CONSTRAINT %[2]s FOREIGN KEY (previous)
+  REFERENCES %[1]s(revision)
+`
+	uqPreviousMigrationsTableSQL = `
+ALTER TABLE %s
+  ADD CONSTRAINT %s UNIQUE (previous)
+`
+	noCyclesMigrationsTableSQL = `
+ALTER TABLE %s
+  ADD CONSTRAINT %s CHECK (previous != revision)
+`
+	singleRootMigrationsTableSQL = `
+CREATE UNIQUE INDEX %[2]s
   ON %[1]s
   ((previous IS NULL)) WHERE previous IS NULL;
 `
@@ -57,26 +67,97 @@ func CreateMigrationsTable(ctx context.Context, manager *Manager) (err error) {
 		return
 	}
 
+	_, err = tx.ExecContext(ctx, pkMigrationsSQL(manager))
+	if err != nil {
+		return
+	}
+
+	_, err = tx.ExecContext(ctx, fkPreviousMigrationsSQL(manager))
+	if err != nil {
+		return
+	}
+
+	_, err = tx.ExecContext(ctx, uqPreviousMigrationsSQL(manager))
+	if err != nil {
+		return
+	}
+
+	_, err = tx.ExecContext(ctx, noCyclesMigrationsSQL(manager))
+	if err != nil {
+		return
+	}
+
+	_, err = tx.ExecContext(ctx, singleRootMigrationsSQL(manager))
+	if err != nil {
+		return
+	}
+
 	err = tx.Commit()
 	return
 }
 
 func createMigrationsSQL(manager *Manager) string {
 	table := manager.MetadataTable
+	provider := manager.Provider
+	return fmt.Sprintf(createMigrationsTableSQL, provider.QuoteIdentifier(table))
+}
+
+func pkMigrationsSQL(manager *Manager) string {
+	table := manager.MetadataTable
 	pkConstraint := fmt.Sprintf("pk_%s_revision", table)
+
+	provider := manager.Provider
+	return fmt.Sprintf(
+		pkMigrationsTableSQL,
+		provider.QuoteIdentifier(table),
+		pkConstraint,
+	)
+}
+
+func fkPreviousMigrationsSQL(manager *Manager) string {
+	table := manager.MetadataTable
 	fkConstraint := fmt.Sprintf("fk_%s_previous", table)
+
+	provider := manager.Provider
+	return fmt.Sprintf(
+		fkPreviousMigrationsTableSQL,
+		provider.QuoteIdentifier(table),
+		fkConstraint,
+	)
+}
+
+func uqPreviousMigrationsSQL(manager *Manager) string {
+	table := manager.MetadataTable
 	uqConstraint := fmt.Sprintf("uq_%s_previous", table)
+
+	provider := manager.Provider
+	return fmt.Sprintf(
+		uqPreviousMigrationsTableSQL,
+		provider.QuoteIdentifier(table),
+		uqConstraint,
+	)
+}
+
+func noCyclesMigrationsSQL(manager *Manager) string {
+	table := manager.MetadataTable
 	chkConstraint := fmt.Sprintf("chk_%s_previous_neq_revision", table)
+
+	provider := manager.Provider
+	return fmt.Sprintf(
+		noCyclesMigrationsTableSQL,
+		provider.QuoteIdentifier(table),
+		chkConstraint,
+	)
+}
+
+func singleRootMigrationsSQL(manager *Manager) string {
+	table := manager.MetadataTable
 	nullPreviousIndex := fmt.Sprintf("idx_%s_one_null_previous", table)
 
 	provider := manager.Provider
 	return fmt.Sprintf(
-		createMigrationsTableSQL,
+		singleRootMigrationsTableSQL,
 		provider.QuoteIdentifier(table),
-		provider.QuoteIdentifier(pkConstraint),
-		provider.QuoteIdentifier(fkConstraint),
-		provider.QuoteIdentifier(uqConstraint),
-		provider.QuoteIdentifier(chkConstraint),
 		provider.QuoteIdentifier(nullPreviousIndex),
 	)
 }
