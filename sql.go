@@ -45,24 +45,24 @@ func migrationFromQuery(previous sql.NullString, revision string, createdAt time
 }
 
 // readAllMigration performs a SQL query and reads all rows into a
-// `Migration` slice, under the assumption that three columns -- previous,
-// revision and created_at -- are being returned for the query (in that order).
+// `Migration` slice, under the assumption that three columns -- revision,
+// previous and created_at -- are being returned for the query (in that order).
 // For example, the query
 //
-//   SELECT previous, revision, created_at FROM golembic_migrations;
+//   SELECT revision, previous, created_at FROM golembic_migrations
 //
 // would satisfy this. A more "focused" query would return the latest migration
 // applied
 //
 //   SELECT
-//       previous,
-//       revision,
-//       created_at
+//     revision,
+//     previous,
+//     created_at
 //   FROM
-//       golembic_migrations
+//     golembic_migrations
 //   ORDER BY
-//       created_at DESC
-//   LIMIT 1;
+//     serial_id DESC
+//   LIMIT 1
 func readAllMigration(ctx context.Context, tx *sql.Tx, query string, args ...interface{}) (result []Migration, err error) {
 	var rows *sql.Rows
 	defer func() {
@@ -75,10 +75,10 @@ func readAllMigration(ctx context.Context, tx *sql.Tx, query string, args ...int
 	}
 
 	for rows.Next() {
-		var previous sql.NullString
 		var revision string
+		var previous sql.NullString
 		var createdAt time.Time
-		err = rows.Scan(&previous, &revision, &createdAt)
+		err = rows.Scan(&revision, &previous, &createdAt)
 		if err != nil {
 			return
 		}

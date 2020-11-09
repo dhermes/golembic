@@ -360,7 +360,7 @@ func (m *Manager) Latest(ctx context.Context) (revision string, createdAt time.T
 	}
 
 	query := fmt.Sprintf(
-		"SELECT previous, revision, created_at FROM %s ORDER BY created_at DESC LIMIT 1",
+		"SELECT revision, previous, created_at FROM %s ORDER BY serial_id DESC LIMIT 1",
 		m.Provider.QuoteIdentifier(m.MetadataTable),
 	)
 	rows, err := readAllMigration(ctx, tx, query)
@@ -497,7 +497,7 @@ func (m *Manager) Verify(ctx context.Context) (err error) {
 // error and include slices of the history and the registered migrations.
 func (m *Manager) verifyHistory(ctx context.Context, tx *sql.Tx) (history, registered []Migration, err error) {
 	query := fmt.Sprintf(
-		"SELECT previous, revision, created_at FROM %s ORDER BY created_at ASC",
+		"SELECT revision, previous, created_at FROM %s ORDER BY serial_id ASC",
 		m.Provider.QuoteIdentifier(m.MetadataTable),
 	)
 	history, err = readAllMigration(ctx, tx, query)
@@ -558,7 +558,7 @@ func (m *Manager) Version(ctx context.Context, opts ...ApplyOption) error {
 // exists.
 func (m *Manager) IsApplied(ctx context.Context, tx *sql.Tx, migration Migration) (bool, error) {
 	query := fmt.Sprintf(
-		"SELECT previous, revision, created_at FROM %s WHERE revision = $1",
+		"SELECT revision, previous, created_at FROM %s WHERE revision = $1",
 		m.Provider.QuoteIdentifier(m.MetadataTable),
 	)
 	rows, err := readAllMigration(ctx, tx, query, migration.Revision)
