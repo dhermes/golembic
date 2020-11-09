@@ -9,6 +9,7 @@ import (
 const (
 	createMigrationsTableSQL = `
 CREATE TABLE IF NOT EXISTS %s (
+  serial_id  INTEGER NOT NULL,
   revision   VARCHAR(32) NOT NULL,
   previous   VARCHAR(32),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -26,6 +27,14 @@ ALTER TABLE %[1]s
 	uqPreviousMigrationsTableSQL = `
 ALTER TABLE %s
   ADD CONSTRAINT %s UNIQUE (previous)
+`
+	uqSerialIDSQL = `
+ALTER TABLE %s
+  ADD CONSTRAINT %s UNIQUE (serial_id)
+`
+	nonNegativeSerialIDSQL = `
+ALTER TABLE %s
+  ADD CONSTRAINT %s CHECK (serial_id >= 0)
 `
 	noCyclesMigrationsTableSQL = `
 ALTER TABLE %s
@@ -77,6 +86,16 @@ func CreateMigrationsTable(ctx context.Context, manager *Manager) (err error) {
 		return
 	}
 
+	_, err = tx.ExecContext(ctx, uqSerialID(manager))
+	if err != nil {
+		return
+	}
+
+	_, err = tx.ExecContext(ctx, nonNegativeSerialID(manager))
+	if err != nil {
+		return
+	}
+
 	_, err = tx.ExecContext(ctx, uqPreviousMigrationsSQL(manager))
 	if err != nil {
 		return
@@ -123,6 +142,30 @@ func fkPreviousMigrationsSQL(manager *Manager) string {
 		fkPreviousMigrationsTableSQL,
 		provider.QuoteIdentifier(table),
 		fkConstraint,
+	)
+}
+
+func uqSerialID(manager *Manager) string {
+	table := manager.MetadataTable
+	uqConstraint := fmt.Sprintf("uq_%s_serial_id", table)
+
+	provider := manager.Provider
+	return fmt.Sprintf(
+		uqSerialIDSQL,
+		provider.QuoteIdentifier(table),
+		uqConstraint,
+	)
+}
+
+func nonNegativeSerialID(manager *Manager) string {
+	table := manager.MetadataTable
+	chkConstraint := fmt.Sprintf("chk_%s_previous", table)
+
+	provider := manager.Provider
+	return fmt.Sprintf(
+		nonNegativeSerialIDSQL,
+		provider.QuoteIdentifier(table),
+		chkConstraint,
 	)
 }
 

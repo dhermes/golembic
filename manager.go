@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"math/rand"
 	"time"
 )
 
@@ -114,18 +115,19 @@ func (m *Manager) EnsureMigrationsTable(ctx context.Context) error {
 func (m *Manager) InsertMigration(ctx context.Context, tx *sql.Tx, migration Migration) error {
 	if migration.Previous == "" {
 		statement := fmt.Sprintf(
-			"INSERT INTO %s (previous, revision) VALUES (NULL, $1);",
+			"INSERT INTO %s (serial_id, revision, previous) VALUES (0, $1, NULL);",
 			m.Provider.QuoteIdentifier(m.MetadataTable),
 		)
 		_, err := tx.ExecContext(ctx, statement, migration.Revision)
 		return err
 	}
 
+	serialID := rand.Int31() // TODO: Pull `serialID` from `migration`
 	statement := fmt.Sprintf(
-		"INSERT INTO %s (previous, revision) VALUES ($1, $2);",
+		"INSERT INTO %s (serial_id, revision, previous) VALUES ($1, $2, $3);",
 		m.Provider.QuoteIdentifier(m.MetadataTable),
 	)
-	_, err := tx.ExecContext(ctx, statement, migration.Previous, migration.Revision)
+	_, err := tx.ExecContext(ctx, statement, serialID, migration.Revision, migration.Previous)
 	return err
 }
 
