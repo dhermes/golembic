@@ -159,7 +159,7 @@ func uqSerialID(manager *Manager) string {
 
 func nonNegativeSerialID(manager *Manager) string {
 	table := manager.MetadataTable
-	chkConstraint := fmt.Sprintf("chk_%s_previous", table)
+	chkConstraint := fmt.Sprintf("chk_%s_serial_id", table)
 
 	provider := manager.Provider
 	return fmt.Sprintf(
