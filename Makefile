@@ -14,6 +14,12 @@ help:
 	@echo '   make psql                   Connects to currently running PostgreSQL DB via `psql`'
 	@echo '   make run-example-cmd        Run `./examples/cmd/main.go`'
 	@echo '   make run-example-script     Run `./examples/script/main.go`'
+	@echo 'MySQL-specific Targets:'
+	@echo '   make start-mysql            Starts a MySQL database running in a Docker container and set up users'
+	@echo '   make stop-mysql             Stops the MySQL database running in a Docker container'
+	@echo '   make restart-mysql          Stops the MySQL database (if running) and starts a fresh Docker container'
+	@echo '   make require-mysql          Determine if MySQL database is running; fail if not'
+	@echo '   make mysql                  Connects to currently running MySQL DB via `mysql`'
 	@echo ''
 
 ################################################################################
@@ -71,6 +77,10 @@ endif
 .PHONY: shellcheck
 shellcheck: _require-shellcheck
 	shellcheck --exclude SC1090 ./_bin/*.sh
+
+################################################################################
+# PostgreSQL
+################################################################################
 
 .PHONY: start-postgres
 start-postgres:
@@ -136,3 +146,50 @@ run-example-script: require-postgres
 	  PGPASSWORD=$(DB_ADMIN_PASSWORD) \
 	  DB_SSLMODE=$(DB_SSLMODE) \
 	  go run ./examples/script/main.go
+
+################################################################################
+# MySQL
+################################################################################
+
+.PHONY: start-mysql
+start-mysql:
+	@DB_NETWORK_NAME=$(DB_NETWORK_NAME) \
+	  DB_CONTAINER_NAME=$(DB_CONTAINER_NAME) \
+	  DB_HOST=$(DB_HOST) \
+	  DB_PORT=$(DB_PORT) \
+	  DB_SUPERUSER_NAME=$(DB_SUPERUSER_NAME) \
+	  DB_SUPERUSER_USER=$(DB_SUPERUSER_USER) \
+	  DB_SUPERUSER_PASSWORD=$(DB_SUPERUSER_PASSWORD) \
+	  DB_NAME=$(DB_NAME) \
+	  DB_ADMIN_USER=$(DB_ADMIN_USER) \
+	  DB_ADMIN_PASSWORD=$(DB_ADMIN_PASSWORD) \
+	  ./_bin/start_mysql.sh
+
+.PHONY: stop-mysql
+stop-mysql:
+	@DB_NETWORK_NAME=$(DB_NETWORK_NAME) \
+	  DB_CONTAINER_NAME=$(DB_CONTAINER_NAME) \
+	  ./_bin/stop_db.sh
+
+.PHONY: restart-mysql
+restart-mysql: stop-mysql start-mysql
+
+.PHONY: require-mysql
+require-mysql:
+	@DB_HOST=$(DB_HOST) \
+	  DB_PORT=$(DB_PORT) \
+	  DB_NAME=$(DB_NAME) \
+	  DB_ADMIN_USER=$(DB_ADMIN_USER) \
+	  DB_ADMIN_PASSWORD=$(DB_ADMIN_PASSWORD) \
+	  ./_bin/require_mysql.sh
+
+.PHONY: mysql
+mysql: require-mysql
+	@echo "Running mysql against port $(DB_PORT)"
+	mysql \
+	  --protocol tcp \
+	  --user $(DB_ADMIN_USER) \
+	  --password=$(DB_ADMIN_PASSWORD) \
+	  --database $(DB_NAME) \
+	  --port $(DB_PORT) \
+	  --host $(DB_HOST)

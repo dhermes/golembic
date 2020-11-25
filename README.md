@@ -385,6 +385,12 @@ PostgreSQL-specific Targets:
    make psql                   Connects to currently running PostgreSQL DB via `psql`
    make run-example-cmd        Run `./examples/cmd/main.go`
    make run-example-script     Run `./examples/script/main.go`
+MySQL-specific Targets:
+   make start-mysql            Starts a MySQL database running in a Docker container and set up users
+   make stop-mysql             Stops the MySQL database running in a Docker container
+   make restart-mysql          Stops the MySQL database (if running) and starts a fresh Docker container
+   make require-mysql          Determine if MySQL database is running; fail if not
+   make mysql                  Connects to currently running MySQL DB via `mysql`
 
 ```
 

@@ -30,9 +30,9 @@ fi
 
 # Get the absolute path to the config file (for Docker)
 exists "python"
-CONF_FILE="$(dirname "${0}")/../_docker/pg_hba.conf"
+CONF_DIR="$(dirname "${0}")/../_docker/mysql-conf.d"
 # macOS workaround for `readlink`; see https://stackoverflow.com/q/3572030/1068170
-CONF_FILE=$(python -c "import os; print(os.path.realpath('${CONF_FILE}'))")
+CONF_DIR=$(python -c "import os; print(os.path.realpath('${CONF_DIR}'))")
 
 requireEnvVar "DB_HOST"
 requireEnvVar "DB_PORT"
@@ -42,15 +42,14 @@ requireEnvVar "DB_SUPERUSER_PASSWORD"
 docker run \
   --detach \
   --hostname "${DB_HOST}" \
-  --publish "${DB_PORT}:5432" \
+  --publish "${DB_PORT}:3306" \
   --name "${DB_CONTAINER_NAME}" \
-  --env POSTGRES_DB="${DB_SUPERUSER_NAME}" \
-  --env POSTGRES_USER="${DB_SUPERUSER_USER}" \
-  --env POSTGRES_PASSWORD="${DB_SUPERUSER_PASSWORD}" \
-  --env POSTGRES_INITDB_ARGS="--auth-host=scram-sha-256 --auth-local=scram-sha-256" \
-  --volume "${CONF_FILE}":/etc/postgresql/pg_hba.conf \
-  postgres:12.3-alpine \
-  -c 'hba_file=/etc/postgresql/pg_hba.conf' \
+  --env MYSQL_DATABASE="${DB_SUPERUSER_NAME}" \
+  --env MYSQL_USER="${DB_SUPERUSER_USER}" \
+  --env MYSQL_PASSWORD="${DB_SUPERUSER_PASSWORD}" \
+  --env MYSQL_ROOT_PASSWORD="${DB_SUPERUSER_PASSWORD}" \
+  --volume "${CONF_DIR}":/etc/mysql/conf.d \
+  mysql:8.0.22 \
   > /dev/null
 
 echo "Container ${DB_CONTAINER_NAME} started on port ${DB_PORT}."
@@ -63,43 +62,44 @@ docker network connect "${DB_NETWORK_NAME}" "${DB_CONTAINER_NAME}"
 echo "Container ${DB_CONTAINER_NAME} added to network ${DB_NETWORK_NAME}."
 
 ##########################################################
-## Don't exit until `pg_isready` returns 0 in container ##
+## Don't exit until `mysqladmin` returns 0 in container ##
 ##########################################################
 
 # NOTE: This is used strictly for the status code to determine readiness.
-pgIsReadyFull() {
-  PGPASSWORD="${DB_SUPERUSER_PASSWORD}" pg_isready \
-    --dbname "${DB_SUPERUSER_NAME}" \
-    --username "${DB_SUPERUSER_USER}" \
+mysqladminStatusFull() {
+  mysqladmin status \
+    --protocol tcp \
+    --user "${DB_SUPERUSER_USER}" \
+    --password="${DB_SUPERUSER_PASSWORD}" \
     --host "${DB_HOST}" \
     --port "${DB_PORT}"
 }
 
-pgIsReady() {
-  pgIsReadyFull > /dev/null 2>&1
+mysqladminStatus() {
+  mysqladminStatusFull > /dev/null 2>&1
 }
 
-exists "pg_isready"
-# Cap at 50 retries / 5 seconds (by default).
-if [ -z "${PG_ISREADY_RETRIES}" ]; then
-  PG_ISREADY_RETRIES=50
+exists "mysqladmin"
+# Cap at 300 retries / 30 seconds (by default).
+if [ -z "${MYSQLADMIN_STATUS_RETRIES}" ]; then
+  MYSQLADMIN_STATUS_RETRIES=300
 fi
-i=0; while [ ${i} -le ${PG_ISREADY_RETRIES} ]
+i=0; while [ ${i} -le ${MYSQLADMIN_STATUS_RETRIES} ]
 do
-  if pgIsReady
+  if mysqladminStatus
   then
-    echo "Container ${DB_CONTAINER_NAME} accepting Postgres connections."
+    echo "Container ${DB_CONTAINER_NAME} accepting MySQL connections."
     break
   fi
   i=$((i+1))
   sleep "0.1"
 done
 
-if [ ${i} -ge ${PG_ISREADY_RETRIES} ]; then
-  echo "Container ${DB_CONTAINER_NAME} not accepting Postgres connections."
-  echo "  pg_isready: $(pgIsReadyFull)"
+if [ ${i} -ge ${MYSQLADMIN_STATUS_RETRIES} ]; then
+  echo "Container ${DB_CONTAINER_NAME} not accepting MySQL connections."
+  echo "  mysqladmin: $(mysqladminStatusFull)"
   exit 1
 fi
 
 # Run the superuser migrations
-. "$(dirname "${0}")/superuser_migrations_postgres.sh"
+. "$(dirname "${0}")/superuser_migrations_mysql.sh"
