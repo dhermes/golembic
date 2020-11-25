@@ -38,10 +38,13 @@ SHELLCHECK_PRESENT := $(shell command -v shellcheck 2> /dev/null)
 # Environment variable defaults
 ################################################################################
 DB_HOST ?= 127.0.0.1
-DB_PORT ?= 18426
 DB_SSLMODE ?= disable
-DB_CONTAINER_NAME ?= dev-postgres-golembic
 DB_NETWORK_NAME ?= dev-network-golembic
+
+POSTGRES_PORT ?= 18426
+POSTGRES_CONTAINER_NAME ?= dev-postgres-golembic
+MYSQL_PORT ?= 30892
+MYSQL_CONTAINER_NAME ?= dev-mysql-golembic
 
 DB_SUPERUSER_NAME ?= superuser_db
 DB_SUPERUSER_USER ?= superuser
@@ -85,9 +88,9 @@ shellcheck: _require-shellcheck
 .PHONY: start-postgres
 start-postgres:
 	@DB_NETWORK_NAME=$(DB_NETWORK_NAME) \
-	  DB_CONTAINER_NAME=$(DB_CONTAINER_NAME) \
+	  DB_CONTAINER_NAME=$(POSTGRES_CONTAINER_NAME) \
 	  DB_HOST=$(DB_HOST) \
-	  DB_PORT=$(DB_PORT) \
+	  DB_PORT=$(POSTGRES_PORT) \
 	  DB_SUPERUSER_NAME=$(DB_SUPERUSER_NAME) \
 	  DB_SUPERUSER_USER=$(DB_SUPERUSER_USER) \
 	  DB_SUPERUSER_PASSWORD=$(DB_SUPERUSER_PASSWORD) \
@@ -99,7 +102,7 @@ start-postgres:
 .PHONY: stop-postgres
 stop-postgres:
 	@DB_NETWORK_NAME=$(DB_NETWORK_NAME) \
-	  DB_CONTAINER_NAME=$(DB_CONTAINER_NAME) \
+	  DB_CONTAINER_NAME=$(POSTGRES_CONTAINER_NAME) \
 	  ./_bin/stop_db.sh
 
 .PHONY: restart-postgres
@@ -108,7 +111,7 @@ restart-postgres: stop-postgres start-postgres
 .PHONY: require-postgres
 require-postgres:
 	@DB_HOST=$(DB_HOST) \
-	  DB_PORT=$(DB_PORT) \
+	  DB_PORT=$(POSTGRES_PORT) \
 	  DB_NAME=$(DB_NAME) \
 	  DB_ADMIN_USER=$(DB_ADMIN_USER) \
 	  DB_ADMIN_PASSWORD=$(DB_ADMIN_PASSWORD) \
@@ -116,11 +119,11 @@ require-postgres:
 
 .PHONY: psql
 psql: require-postgres
-	@echo "Running psql against port $(DB_PORT)"
+	@echo "Running psql against port $(POSTGRES_PORT)"
 	PGPASSWORD=$(DB_ADMIN_PASSWORD) psql \
 	  --username $(DB_ADMIN_USER) \
 	  --dbname $(DB_NAME) \
-	  --port $(DB_PORT) \
+	  --port $(POSTGRES_PORT) \
 	  --host $(DB_HOST)
 
 .PHONY: run-example-cmd
@@ -131,7 +134,7 @@ run-example-cmd: require-postgres
 	  postgres \
 	  --dbname $(DB_NAME) \
 	  --host $(DB_HOST) \
-	  --port $(DB_PORT) \
+	  --port $(POSTGRES_PORT) \
 	  --ssl-mode $(DB_SSLMODE) \
 	  --username $(DB_ADMIN_USER) \
 	  $(GOLEMBIC_CMD) $(GOLEMBIC_ARGS)
@@ -140,7 +143,7 @@ run-example-cmd: require-postgres
 run-example-script: require-postgres
 	@GOLEMBIC_SQL_DIR=$(GOLEMBIC_SQL_DIR) \
 	  DB_HOST=$(DB_HOST) \
-	  DB_PORT=$(DB_PORT) \
+	  DB_PORT=$(POSTGRES_PORT) \
 	  DB_NAME=$(DB_NAME) \
 	  DB_USER=$(DB_ADMIN_USER) \
 	  PGPASSWORD=$(DB_ADMIN_PASSWORD) \
@@ -154,9 +157,9 @@ run-example-script: require-postgres
 .PHONY: start-mysql
 start-mysql:
 	@DB_NETWORK_NAME=$(DB_NETWORK_NAME) \
-	  DB_CONTAINER_NAME=$(DB_CONTAINER_NAME) \
+	  DB_CONTAINER_NAME=$(MYSQL_CONTAINER_NAME) \
 	  DB_HOST=$(DB_HOST) \
-	  DB_PORT=$(DB_PORT) \
+	  DB_PORT=$(MYSQL_PORT) \
 	  DB_SUPERUSER_NAME=$(DB_SUPERUSER_NAME) \
 	  DB_SUPERUSER_USER=$(DB_SUPERUSER_USER) \
 	  DB_SUPERUSER_PASSWORD=$(DB_SUPERUSER_PASSWORD) \
@@ -168,7 +171,7 @@ start-mysql:
 .PHONY: stop-mysql
 stop-mysql:
 	@DB_NETWORK_NAME=$(DB_NETWORK_NAME) \
-	  DB_CONTAINER_NAME=$(DB_CONTAINER_NAME) \
+	  DB_CONTAINER_NAME=$(MYSQL_CONTAINER_NAME) \
 	  ./_bin/stop_db.sh
 
 .PHONY: restart-mysql
@@ -177,7 +180,7 @@ restart-mysql: stop-mysql start-mysql
 .PHONY: require-mysql
 require-mysql:
 	@DB_HOST=$(DB_HOST) \
-	  DB_PORT=$(DB_PORT) \
+	  DB_PORT=$(MYSQL_PORT) \
 	  DB_NAME=$(DB_NAME) \
 	  DB_ADMIN_USER=$(DB_ADMIN_USER) \
 	  DB_ADMIN_PASSWORD=$(DB_ADMIN_PASSWORD) \
@@ -185,11 +188,11 @@ require-mysql:
 
 .PHONY: mysql
 mysql: require-mysql
-	@echo "Running mysql against port $(DB_PORT)"
+	@echo "Running mysql against port $(MYSQL_PORT)"
 	mysql \
 	  --protocol tcp \
 	  --user $(DB_ADMIN_USER) \
 	  --password=$(DB_ADMIN_PASSWORD) \
 	  --database $(DB_NAME) \
-	  --port $(DB_PORT) \
+	  --port $(MYSQL_PORT) \
 	  --host $(DB_HOST)
