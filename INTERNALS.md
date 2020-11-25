@@ -7,7 +7,7 @@ $ docker ps
 CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
 $
 $
-$ make start-db
+$ make start-postgres
 Container dev-postgres-golembic started on port 18426.
 Container dev-postgres-golembic accepting Postgres connections.
 CREATE ROLE golembic_admin
@@ -190,10 +190,10 @@ golembic=> \q
 $ docker ps
 CONTAINER ID        IMAGE                  COMMAND                  CREATED             STATUS              PORTS                     NAMES
 58cc44f21752        postgres:10.6-alpine   "docker-entrypoint.s…"   2 minutes ago       Up 2 minutes        0.0.0.0:18426->5432/tcp   dev-postgres-golembic
-$ make stop-db
+$ make stop-postgres
 Container dev-postgres-golembic stopped.
 $ docker ps
 CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
-$ make stop-db
+$ make stop-postgres
 Container dev-postgres-golembic is not currently running.
 ```

@@ -135,7 +135,7 @@ Global Flags:
 > is `up`.
 
 ```
-$ make restart-db
+$ make restart-postgres
 ...
 $ make run-example-cmd GOLEMBIC_CMD=up
 2020/11/08 22:49:34 If a migration sequence contains a milestone, it must be the last migration; revision 0430566018cc (4 / 7 migrations)
@@ -180,7 +180,7 @@ Applying 432f690fcbda: Create movies table
 ### `up-one`
 
 ```
-$ make restart-db
+$ make restart-postgres
 ...
 $ make run-example-cmd GOLEMBIC_CMD=up-one
 Applying c9b52448285b: Create users table
@@ -210,7 +210,7 @@ No migrations to run; latest revision: 432f690fcbda
 ### `up-to`
 
 ```
-$ make restart-db
+$ make restart-postgres
 ...
 $ make run-example-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 0501ccd1d98c"
 2020/11/08 22:51:03 If a migration sequence contains a milestone, it must be the last migration; revision 0430566018cc (4 / 5 migrations)
@@ -238,7 +238,7 @@ No migrations to run; latest revision: 432f690fcbda
 ### `version`
 
 ```
-$ make restart-db
+$ make restart-postgres
 ...
 $ make run-example-cmd GOLEMBIC_CMD=version
 No migrations have been run
@@ -256,7 +256,7 @@ $ make run-example-cmd GOLEMBIC_CMD=version
 ### `verify`
 
 ```
-$ make restart-db
+$ make restart-postgres
 ...
 $ make run-example-cmd GOLEMBIC_CMD=verify
 0 | c9b52448285b | Create users table (not yet applied)
@@ -380,10 +380,10 @@ Usage:
 PostgreSQL-specific Targets:
    make start-docker-db        Starts a PostgreSQL database running in a Docker container
    make superuser-migration    Run superuser migration
-   make start-db               Run start-docker-db, and migration target(s)
-   make stop-db                Stops the PostgreSQL database running in a Docker container
-   make restart-db             Stops the PostgreSQL database (if running) and starts a fresh Docker container
-   make require-db             Determine if PostgreSQL database is running; fail if not
+   make start-postgres         Starts a PostgreSQL database running in a Docker container and set up users
+   make stop-postgres          Stops the PostgreSQL database running in a Docker container
+   make restart-postgres       Stops the PostgreSQL database (if running) and starts a fresh Docker container
+   make require-postgres       Determine if PostgreSQL database is running; fail if not
    make psql                   Connects to currently running PostgreSQL DB via `psql`
    make run-example-cmd        Run `./examples/cmd/main.go`
    make run-example-script     Run `./examples/script/main.go`

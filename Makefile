@@ -9,10 +9,10 @@ help:
 	@echo 'PostgreSQL-specific Targets:'
 	@echo '   make start-docker-db        Starts a PostgreSQL database running in a Docker container'
 	@echo '   make superuser-migration    Run superuser migration'
-	@echo '   make start-db               Run start-docker-db, and migration target(s)'
-	@echo '   make stop-db                Stops the PostgreSQL database running in a Docker container'
-	@echo '   make restart-db             Stops the PostgreSQL database (if running) and starts a fresh Docker container'
-	@echo '   make require-db             Determine if PostgreSQL database is running; fail if not'
+	@echo '   make start-postgres         Starts a PostgreSQL database running in a Docker container and set up users'
+	@echo '   make stop-postgres          Stops the PostgreSQL database running in a Docker container'
+	@echo '   make restart-postgres       Stops the PostgreSQL database (if running) and starts a fresh Docker container'
+	@echo '   make require-postgres       Determine if PostgreSQL database is running; fail if not'
 	@echo '   make psql                   Connects to currently running PostgreSQL DB via `psql`'
 	@echo '   make run-example-cmd        Run `./examples/cmd/main.go`'
 	@echo '   make run-example-script     Run `./examples/script/main.go`'
@@ -95,19 +95,19 @@ superuser-migration:
 	  DB_ADMIN_PASSWORD=$(DB_ADMIN_PASSWORD) \
 	  ./_bin/superuser_migrations.sh
 
-.PHONY: start-db
-start-db: start-docker-db superuser-migration
+.PHONY: start-postgres
+start-postgres: start-docker-db superuser-migration
 
-.PHONY: stop-db
-stop-db:
+.PHONY: stop-postgres
+stop-postgres:
 	@DB_CONTAINER_NAME=$(DB_CONTAINER_NAME) \
 	  ./_bin/stop_db.sh
 
-.PHONY: restart-db
-restart-db: stop-db start-db
+.PHONY: restart-postgres
+restart-postgres: stop-postgres start-postgres
 
-.PHONY: require-db
-require-db:
+.PHONY: require-postgres
+require-postgres:
 	@DB_HOST=$(DB_HOST) \
 	  DB_PORT=$(DB_PORT) \
 	  DB_NAME=$(DB_NAME) \
@@ -116,7 +116,7 @@ require-db:
 	  ./_bin/postgres/require_db.sh
 
 .PHONY: psql
-psql: require-db
+psql: require-postgres
 	@echo "Running psql against port $(DB_PORT)"
 	PGPASSWORD=$(DB_ADMIN_PASSWORD) psql \
 	  --username $(DB_ADMIN_USER) \
@@ -125,7 +125,7 @@ psql: require-db
 	  --host $(DB_HOST)
 
 .PHONY: run-example-cmd
-run-example-cmd: require-db
+run-example-cmd: require-postgres
 	@PGPASSWORD=$(DB_ADMIN_PASSWORD) \
 	  go run ./examples/cmd/main.go \
 	  --sql-directory $(GOLEMBIC_SQL_DIR) \
@@ -138,7 +138,7 @@ run-example-cmd: require-db
 	  $(GOLEMBIC_CMD) $(GOLEMBIC_ARGS)
 
 .PHONY: run-example-script
-run-example-script: require-db
+run-example-script: require-postgres
 	@GOLEMBIC_SQL_DIR=$(GOLEMBIC_SQL_DIR) \
 	  DB_HOST=$(DB_HOST) \
 	  DB_PORT=$(DB_PORT) \
