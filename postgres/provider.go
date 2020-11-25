@@ -44,13 +44,13 @@ type SQLProvider struct {
 
 // QuoteIdentifier quotes an identifier, such as a table name, for usage
 // in a query.
-func (sp *SQLProvider) QuoteIdentifier(name string) string {
+func (*SQLProvider) QuoteIdentifier(name string) string {
 	return golembic.QuoteIdentifier(name)
 }
 
 // QuoteLiteral quotes a literal, such as `2023-01-05 15:00:00Z`, for usage
 // in a query.
-func (sp *SQLProvider) QuoteLiteral(literal string) string {
+func (*SQLProvider) QuoteLiteral(literal string) string {
 	return golembic.QuoteLiteral(literal)
 }
 
@@ -61,8 +61,8 @@ func (sp *SQLProvider) Open() (*sql.DB, error) {
 		return nil, err
 	}
 
-	// NOTE: This requires that the `postgres` driver has been registered with
-	//       the `sql` package.
+	// NOTE: This requires that the `DriverName` (`postgres`) driver has been
+	//       registered with the `sql` package.
 	pool, err := sql.Open(sp.Config.DriverName, cs)
 	if err != nil {
 		return nil, err
