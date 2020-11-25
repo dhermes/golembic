@@ -71,7 +71,7 @@ endif
 
 .PHONY: shellcheck
 shellcheck: _require-shellcheck
-	shellcheck --exclude SC1090 ./_bin/*
+	shellcheck --exclude SC1090 ./_bin/*.sh ./_bin/**/*.sh
 
 .PHONY: start-docker-db
 start-docker-db:
