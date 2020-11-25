@@ -2,8 +2,8 @@
 
 set -e
 
-. "$(dirname "${0}")/exists.sh"
-. "$(dirname "${0}")/require_env_var.sh"
+. "$(dirname "${0}")/../exists.sh"
+. "$(dirname "${0}")/../require_env_var.sh"
 
 exists "docker"
 requireEnvVar "DB_CONTAINER_NAME"
@@ -15,7 +15,7 @@ fi
 
 # Get the absolute path to the config file (for Docker)
 exists "python"
-CONF_FILE="$(dirname "${0}")/../_docker/pg_hba.conf"
+CONF_FILE="$(dirname "${0}")/../../_docker/pg_hba.conf"
 # macOS workaround for `readlink`; see https://stackoverflow.com/q/3572030/1068170
 CONF_FILE=$(python -c "import os; print(os.path.realpath('${CONF_FILE}'))")
 
