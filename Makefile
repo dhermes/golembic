@@ -7,8 +7,6 @@ help:
 	@echo '   make vet                    Run `go vet` over source tree'
 	@echo '   make shellcheck             Run `shellcheck` on all shell files in `./_bin/`'
 	@echo 'PostgreSQL-specific Targets:'
-	@echo '   make start-docker-db        Starts a PostgreSQL database running in a Docker container'
-	@echo '   make superuser-migration    Run superuser migration'
 	@echo '   make start-postgres         Starts a PostgreSQL database running in a Docker container and set up users'
 	@echo '   make stop-postgres          Stops the PostgreSQL database running in a Docker container'
 	@echo '   make restart-postgres       Stops the PostgreSQL database (if running) and starts a fresh Docker container'
@@ -73,19 +71,10 @@ endif
 shellcheck: _require-shellcheck
 	shellcheck --exclude SC1090 ./_bin/*.sh ./_bin/**/*.sh
 
-.PHONY: start-docker-db
-start-docker-db:
+.PHONY: start-postgres
+start-postgres:
 	@DB_HOST=$(DB_HOST) \
 	  DB_CONTAINER_NAME=$(DB_CONTAINER_NAME) \
-	  DB_PORT=$(DB_PORT) \
-	  DB_SUPERUSER_NAME=$(DB_SUPERUSER_NAME) \
-	  DB_SUPERUSER_USER=$(DB_SUPERUSER_USER) \
-	  DB_SUPERUSER_PASSWORD=$(DB_SUPERUSER_PASSWORD) \
-	  ./_bin/postgres/start_db.sh
-
-.PHONY: superuser-migration
-superuser-migration:
-	@DB_HOST=$(DB_HOST) \
 	  DB_PORT=$(DB_PORT) \
 	  DB_SUPERUSER_NAME=$(DB_SUPERUSER_NAME) \
 	  DB_SUPERUSER_USER=$(DB_SUPERUSER_USER) \
@@ -93,10 +82,7 @@ superuser-migration:
 	  DB_NAME=$(DB_NAME) \
 	  DB_ADMIN_USER=$(DB_ADMIN_USER) \
 	  DB_ADMIN_PASSWORD=$(DB_ADMIN_PASSWORD) \
-	  ./_bin/superuser_migrations.sh
-
-.PHONY: start-postgres
-start-postgres: start-docker-db superuser-migration
+	  ./_bin/postgres/start_db.sh
 
 .PHONY: stop-postgres
 stop-postgres:

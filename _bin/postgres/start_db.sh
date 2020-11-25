@@ -44,26 +44,39 @@ echo "Container ${DB_CONTAINER_NAME} started on port ${DB_PORT}."
 ##########################################################
 
 # NOTE: This is used strictly for the status code to determine readiness.
-pgIsReady() {
+pgIsReadyFull() {
   PGPASSWORD="${DB_SUPERUSER_PASSWORD}" pg_isready \
     --dbname "${DB_SUPERUSER_NAME}" \
     --username "${DB_SUPERUSER_USER}" \
     --host "${DB_HOST}" \
-    --port "${DB_PORT}" \
-    > /dev/null 2>&1
+    --port "${DB_PORT}"
+}
+
+pgIsReady() {
+  pgIsReadyFull > /dev/null 2>&1
 }
 
 exists "pg_isready"
-# Cap at 20 retries.
-i=0; while [ ${i} -le 20 ]
+# Cap at 50 retries / 5 seconds (by default).
+if [ -z "${PG_ISREADY_RETRIES}" ]; then
+  PG_ISREADY_RETRIES=50
+fi
+i=0; while [ ${i} -le ${PG_ISREADY_RETRIES} ]
 do
   if pgIsReady
   then
     echo "Container ${DB_CONTAINER_NAME} accepting Postgres connections."
-    exit 0
+    break
   fi
   i=$((i+1))
   sleep "0.1"
 done
 
-exit 1
+if [ ${i} -ge ${PG_ISREADY_RETRIES} ]; then
+  echo "Container ${DB_CONTAINER_NAME} not accepting Postgres connections."
+  echo "  pg_isready: $(pgIsReadyFull)"
+  exit 1
+fi
+
+# Run the superuser migrations
+. "$(dirname "${0}")/superuser_migrations.sh"
