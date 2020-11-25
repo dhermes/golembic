@@ -377,9 +377,9 @@ Usage:
    make dev-deps               Install (or upgrade) development time dependencies
    make vet                    Run `go vet` over source tree
    make shellcheck             Run `shellcheck` on all shell files in `./_bin/`
+PostgreSQL-specific Targets:
    make start-docker-db        Starts a PostgreSQL database running in a Docker container
    make superuser-migration    Run superuser migration
-   make run-migrations         Run all migrations
    make start-db               Run start-docker-db, and migration target(s)
    make stop-db                Stops the PostgreSQL database running in a Docker container
    make restart-db             Stops the PostgreSQL database (if running) and starts a fresh Docker container

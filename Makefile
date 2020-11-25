@@ -6,9 +6,9 @@ help:
 	@echo '   make dev-deps               Install (or upgrade) development time dependencies'
 	@echo '   make vet                    Run `go vet` over source tree'
 	@echo '   make shellcheck             Run `shellcheck` on all shell files in `./_bin/`'
+	@echo 'PostgreSQL-specific Targets:'
 	@echo '   make start-docker-db        Starts a PostgreSQL database running in a Docker container'
 	@echo '   make superuser-migration    Run superuser migration'
-	@echo '   make run-migrations         Run all migrations'
 	@echo '   make start-db               Run start-docker-db, and migration target(s)'
 	@echo '   make stop-db                Stops the PostgreSQL database running in a Docker container'
 	@echo '   make restart-db             Stops the PostgreSQL database (if running) and starts a fresh Docker container'
@@ -95,11 +95,8 @@ superuser-migration:
 	  DB_ADMIN_PASSWORD=$(DB_ADMIN_PASSWORD) \
 	  ./_bin/superuser_migrations.sh
 
-.PHONY: run-migrations
-run-migrations: superuser-migration
-
 .PHONY: start-db
-start-db: start-docker-db run-migrations
+start-db: start-docker-db superuser-migration
 
 .PHONY: stop-db
 stop-db:
