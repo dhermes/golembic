@@ -378,8 +378,6 @@ Usage:
    make vet                    Run `go vet` over source tree
    make shellcheck             Run `shellcheck` on all shell files in `./_bin/`
 PostgreSQL-specific Targets:
-   make start-docker-db        Starts a PostgreSQL database running in a Docker container
-   make superuser-migration    Run superuser migration
    make start-postgres         Starts a PostgreSQL database running in a Docker container and set up users
    make stop-postgres          Stops the PostgreSQL database running in a Docker container
    make restart-postgres       Stops the PostgreSQL database (if running) and starts a fresh Docker container

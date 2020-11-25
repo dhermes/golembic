@@ -69,7 +69,7 @@ endif
 
 .PHONY: shellcheck
 shellcheck: _require-shellcheck
-	shellcheck --exclude SC1090 ./_bin/*.sh ./_bin/**/*.sh
+	shellcheck --exclude SC1090 ./_bin/*.sh
 
 .PHONY: start-postgres
 start-postgres:
@@ -82,7 +82,7 @@ start-postgres:
 	  DB_NAME=$(DB_NAME) \
 	  DB_ADMIN_USER=$(DB_ADMIN_USER) \
 	  DB_ADMIN_PASSWORD=$(DB_ADMIN_PASSWORD) \
-	  ./_bin/postgres/start_db.sh
+	  ./_bin/start_postgres.sh
 
 .PHONY: stop-postgres
 stop-postgres:
@@ -99,7 +99,7 @@ require-postgres:
 	  DB_NAME=$(DB_NAME) \
 	  DB_ADMIN_USER=$(DB_ADMIN_USER) \
 	  DB_ADMIN_PASSWORD=$(DB_ADMIN_PASSWORD) \
-	  ./_bin/postgres/require_db.sh
+	  ./_bin/require_postgres.sh
 
 .PHONY: psql
 psql: require-postgres
