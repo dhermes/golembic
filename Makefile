@@ -35,6 +35,7 @@ DB_HOST ?= 127.0.0.1
 DB_PORT ?= 18426
 DB_SSLMODE ?= disable
 DB_CONTAINER_NAME ?= dev-postgres-golembic
+DB_NETWORK_NAME ?= dev-network-golembic
 
 DB_SUPERUSER_NAME ?= superuser_db
 DB_SUPERUSER_USER ?= superuser
@@ -73,8 +74,9 @@ shellcheck: _require-shellcheck
 
 .PHONY: start-postgres
 start-postgres:
-	@DB_HOST=$(DB_HOST) \
+	@DB_NETWORK_NAME=$(DB_NETWORK_NAME) \
 	  DB_CONTAINER_NAME=$(DB_CONTAINER_NAME) \
+	  DB_HOST=$(DB_HOST) \
 	  DB_PORT=$(DB_PORT) \
 	  DB_SUPERUSER_NAME=$(DB_SUPERUSER_NAME) \
 	  DB_SUPERUSER_USER=$(DB_SUPERUSER_USER) \
@@ -86,7 +88,8 @@ start-postgres:
 
 .PHONY: stop-postgres
 stop-postgres:
-	@DB_CONTAINER_NAME=$(DB_CONTAINER_NAME) \
+	@DB_NETWORK_NAME=$(DB_NETWORK_NAME) \
+	  DB_CONTAINER_NAME=$(DB_CONTAINER_NAME) \
 	  ./_bin/stop_db.sh
 
 .PHONY: restart-postgres

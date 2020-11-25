@@ -7,11 +7,19 @@ set -e
 
 exists "docker"
 requireEnvVar "DB_CONTAINER_NAME"
-EXISTS=$(docker ps --quiet --filter "name=${DB_CONTAINER_NAME}")
-if [ -z "${EXISTS}" ]; then
-    echo "Container ${DB_CONTAINER_NAME} is not currently running."
-    exit
+CONTAINER_EXISTS=$(docker ps --quiet --filter "name=${DB_CONTAINER_NAME}")
+if [ -z "${CONTAINER_EXISTS}" ]; then
+  echo "Container ${DB_CONTAINER_NAME} is not currently running."
+else
+  docker rm --force "${DB_CONTAINER_NAME}" > /dev/null
+  echo "Container ${DB_CONTAINER_NAME} stopped."
 fi
 
-docker rm --force "${DB_CONTAINER_NAME}" > /dev/null
-echo "Container ${DB_CONTAINER_NAME} stopped."
+requireEnvVar "DB_NETWORK_NAME"
+NETWORK_EXISTS=$(docker network ls --quiet --filter "name=${DB_NETWORK_NAME}")
+if [ -z "${NETWORK_EXISTS}" ]; then
+  echo "Network ${DB_NETWORK_NAME} is not currently running."
+else
+  docker network rm "${DB_NETWORK_NAME}" > /dev/null
+  echo "Network ${DB_NETWORK_NAME} stopped."
+fi
