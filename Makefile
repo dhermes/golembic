@@ -80,7 +80,7 @@ start-docker-db:
 	  DB_SUPERUSER_NAME=$(DB_SUPERUSER_NAME) \
 	  DB_SUPERUSER_USER=$(DB_SUPERUSER_USER) \
 	  DB_SUPERUSER_PASSWORD=$(DB_SUPERUSER_PASSWORD) \
-	  ./_bin/start_db.sh
+	  ./_bin/postgres/start_db.sh
 
 .PHONY: superuser-migration
 superuser-migration:
@@ -115,7 +115,7 @@ require-db:
 	  DB_NAME=$(DB_NAME) \
 	  DB_ADMIN_USER=$(DB_ADMIN_USER) \
 	  DB_ADMIN_PASSWORD=$(DB_ADMIN_PASSWORD) \
-	  ./_bin/require_db.sh
+	  ./_bin/postgres/require_db.sh
 
 .PHONY: psql
 psql: require-db
