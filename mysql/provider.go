@@ -73,7 +73,7 @@ func (sp *SQLProvider) Open() (*sql.DB, error) {
 // table exists.
 func (sp *SQLProvider) TableExistsSQL() string {
 	return fmt.Sprintf(
-		"SELECT 1 FROM information_schema.tables WHERE table_name = $1 AND table_schema = %s",
+		"SELECT 1 FROM information_schema.tables WHERE table_name = ? AND table_schema = %s",
 		sp.QuoteLiteral(sp.Config.DBName),
 	)
 }
