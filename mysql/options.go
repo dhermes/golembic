@@ -24,6 +24,14 @@ func OptPassword(password string) Option {
 	}
 }
 
+// OptNet sets the `Net` on a `Config`.
+func OptNet(net string) Option {
+	return func(sp *SQLProvider) error {
+		sp.Config.Net = net
+		return nil
+	}
+}
+
 // OptHostPort sets the `Addr` on a `Config`.
 func OptHostPort(host string, port int) Option {
 	return func(sp *SQLProvider) error {
