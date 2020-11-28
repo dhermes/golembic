@@ -3,23 +3,23 @@ help:
 	@echo 'Makefile for `golembic` project'
 	@echo ''
 	@echo 'Usage:'
-	@echo '   make dev-deps               Install (or upgrade) development time dependencies'
-	@echo '   make vet                    Run `go vet` over source tree'
-	@echo '   make shellcheck             Run `shellcheck` on all shell files in `./_bin/`'
+	@echo '   make dev-deps                Install (or upgrade) development time dependencies'
+	@echo '   make vet                     Run `go vet` over source tree'
+	@echo '   make shellcheck              Run `shellcheck` on all shell files in `./_bin/`'
 	@echo 'PostgreSQL-specific Targets:'
-	@echo '   make start-postgres         Starts a PostgreSQL database running in a Docker container and set up users'
-	@echo '   make stop-postgres          Stops the PostgreSQL database running in a Docker container'
-	@echo '   make restart-postgres       Stops the PostgreSQL database (if running) and starts a fresh Docker container'
-	@echo '   make require-postgres       Determine if PostgreSQL database is running; fail if not'
-	@echo '   make psql                   Connects to currently running PostgreSQL DB via `psql`'
-	@echo '   make run-example-cmd        Run `./examples/cmd/main.go`'
-	@echo '   make run-example-script     Run `./examples/script/main.go`'
+	@echo '   make start-postgres          Starts a PostgreSQL database running in a Docker container and set up users'
+	@echo '   make stop-postgres           Stops the PostgreSQL database running in a Docker container'
+	@echo '   make restart-postgres        Stops the PostgreSQL database (if running) and starts a fresh Docker container'
+	@echo '   make require-postgres        Determine if PostgreSQL database is running; fail if not'
+	@echo '   make psql                    Connects to currently running PostgreSQL DB via `psql`'
+	@echo '   make run-example-cmd         Run `./examples/cmd/main.go`'
+	@echo '   make run-postgres-example    Run `./examples/postgres-script/main.go`'
 	@echo 'MySQL-specific Targets:'
-	@echo '   make start-mysql            Starts a MySQL database running in a Docker container and set up users'
-	@echo '   make stop-mysql             Stops the MySQL database running in a Docker container'
-	@echo '   make restart-mysql          Stops the MySQL database (if running) and starts a fresh Docker container'
-	@echo '   make require-mysql          Determine if MySQL database is running; fail if not'
-	@echo '   make mysql                  Connects to currently running MySQL DB via `mysql`'
+	@echo '   make start-mysql             Starts a MySQL database running in a Docker container and set up users'
+	@echo '   make stop-mysql              Stops the MySQL database running in a Docker container'
+	@echo '   make restart-mysql           Stops the MySQL database (if running) and starts a fresh Docker container'
+	@echo '   make require-mysql           Determine if MySQL database is running; fail if not'
+	@echo '   make mysql                   Connects to currently running MySQL DB via `mysql`'
 	@echo ''
 
 ################################################################################
@@ -157,7 +157,7 @@ run-example-script: require-postgres
 	  DB_USER=$(DB_ADMIN_USER) \
 	  PGPASSWORD=$(DB_ADMIN_PASSWORD) \
 	  DB_SSLMODE=$(DB_SSLMODE) \
-	  go run ./examples/script/main.go
+	  go run ./examples/postgres-script/main.go
 
 ################################################################################
 # MySQL

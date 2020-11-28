@@ -24,7 +24,7 @@ func main() {
 ```
 
 > **NOTE**: For usage in Go code (vs. as a binary), see
-> `examples/script/main.go`.
+> `examples/postgres-script/main.go`.
 
 The root command of this binary has a subcommand for each provider
 
@@ -374,23 +374,23 @@ $ make
 Makefile for `golembic` project
 
 Usage:
-   make dev-deps               Install (or upgrade) development time dependencies
-   make vet                    Run `go vet` over source tree
-   make shellcheck             Run `shellcheck` on all shell files in `./_bin/`
+   make dev-deps                Install (or upgrade) development time dependencies
+   make vet                     Run `go vet` over source tree
+   make shellcheck              Run `shellcheck` on all shell files in `./_bin/`
 PostgreSQL-specific Targets:
-   make start-postgres         Starts a PostgreSQL database running in a Docker container and set up users
-   make stop-postgres          Stops the PostgreSQL database running in a Docker container
-   make restart-postgres       Stops the PostgreSQL database (if running) and starts a fresh Docker container
-   make require-postgres       Determine if PostgreSQL database is running; fail if not
-   make psql                   Connects to currently running PostgreSQL DB via `psql`
-   make run-example-cmd        Run `./examples/cmd/main.go`
-   make run-example-script     Run `./examples/script/main.go`
+   make start-postgres          Starts a PostgreSQL database running in a Docker container and set up users
+   make stop-postgres           Stops the PostgreSQL database running in a Docker container
+   make restart-postgres        Stops the PostgreSQL database (if running) and starts a fresh Docker container
+   make require-postgres        Determine if PostgreSQL database is running; fail if not
+   make psql                    Connects to currently running PostgreSQL DB via `psql`
+   make run-example-cmd         Run `./examples/cmd/main.go`
+   make run-postgres-example    Run `./examples/postgres-script/main.go`
 MySQL-specific Targets:
-   make start-mysql            Starts a MySQL database running in a Docker container and set up users
-   make stop-mysql             Stops the MySQL database running in a Docker container
-   make restart-mysql          Stops the MySQL database (if running) and starts a fresh Docker container
-   make require-mysql          Determine if MySQL database is running; fail if not
-   make mysql                  Connects to currently running MySQL DB via `mysql`
+   make start-mysql             Starts a MySQL database running in a Docker container and set up users
+   make stop-mysql              Stops the MySQL database running in a Docker container
+   make restart-mysql           Stops the MySQL database (if running) and starts a fresh Docker container
+   make require-mysql           Determine if MySQL database is running; fail if not
+   make mysql                   Connects to currently running MySQL DB via `mysql`
 
 ```
 
