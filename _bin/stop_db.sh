@@ -27,5 +27,5 @@ if [ "${NETWORK_CONTAINERS}" = "0" ]; then
   docker network rm "${DB_NETWORK_NAME}" > /dev/null
   echo "Network ${DB_NETWORK_NAME} stopped."
 else
-  echo "Network ${DB_NETWORK_NAME} still has ${NETWORK_CONTAINERS} running."
+  echo "Network ${DB_NETWORK_NAME} still has ${NETWORK_CONTAINERS} container(s) running."
 fi

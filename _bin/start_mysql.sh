@@ -45,8 +45,6 @@ docker run \
   --publish "${DB_PORT}:3306" \
   --name "${DB_CONTAINER_NAME}" \
   --env MYSQL_DATABASE="${DB_SUPERUSER_NAME}" \
-  --env MYSQL_USER="${DB_SUPERUSER_USER}" \
-  --env MYSQL_PASSWORD="${DB_SUPERUSER_PASSWORD}" \
   --env MYSQL_ROOT_PASSWORD="${DB_SUPERUSER_PASSWORD}" \
   --volume "${CONF_DIR}":/etc/mysql/conf.d \
   mysql:8.0.22 \
@@ -69,7 +67,7 @@ echo "Container ${DB_CONTAINER_NAME} added to network ${DB_NETWORK_NAME}."
 mysqladminStatusFull() {
   mysqladmin status \
     --protocol tcp \
-    --user "${DB_SUPERUSER_USER}" \
+    --user root \
     --password="${DB_SUPERUSER_PASSWORD}" \
     --host "${DB_HOST}" \
     --port "${DB_PORT}"

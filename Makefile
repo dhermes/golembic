@@ -126,6 +126,15 @@ psql: require-postgres
 	  --port $(POSTGRES_PORT) \
 	  --host $(DB_HOST)
 
+.PHONY: psql-superuser
+psql-superuser: require-postgres
+	@echo "Running psql against port $(POSTGRES_PORT)"
+	PGPASSWORD="$(DB_SUPERUSER_PASSWORD)" psql \
+	  --username $(DB_SUPERUSER_USER) \
+	  --dbname $(DB_NAME) \
+	  --port $(POSTGRES_PORT) \
+	  --host $(DB_HOST)
+
 .PHONY: run-example-cmd
 run-example-cmd: require-postgres
 	@PGPASSWORD=$(DB_ADMIN_PASSWORD) \
@@ -193,6 +202,17 @@ mysql: require-mysql
 	  --protocol tcp \
 	  --user $(DB_ADMIN_USER) \
 	  --password=$(DB_ADMIN_PASSWORD) \
+	  --database $(DB_NAME) \
+	  --port $(MYSQL_PORT) \
+	  --host $(DB_HOST)
+
+.PHONY: mysql-superuser
+mysql-superuser: require-mysql
+	@echo "Running mysql against port $(MYSQL_PORT)"
+	mysql \
+	  --protocol tcp \
+	  --user $(DB_SUPERUSER_USER) \
+	  --password=$(DB_SUPERUSER_PASSWORD) \
 	  --database $(DB_NAME) \
 	  --port $(MYSQL_PORT) \
 	  --host $(DB_HOST)
