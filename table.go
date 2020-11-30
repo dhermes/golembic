@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS %s (
   serial_id  INTEGER NOT NULL,
   revision   VARCHAR(32) NOT NULL,
   previous   VARCHAR(32),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )
 `
 	pkMigrationsTableSQL = `
@@ -41,9 +41,12 @@ ALTER TABLE %s
   ADD CONSTRAINT %s CHECK (previous != revision)
 `
 	singleRootMigrationsTableSQL = `
-CREATE UNIQUE INDEX %[2]s
-  ON %[1]s
-  ((previous IS NULL)) WHERE previous IS NULL
+ALTER TABLE %s
+  ADD CONSTRAINT %s CHECK
+  (
+    (serial_id = 0 AND previous IS NULL) OR
+    (serial_id != 0 AND previous IS NOT NULL)
+  )
 `
 )
 
@@ -195,7 +198,7 @@ func noCyclesMigrationsSQL(manager *Manager) string {
 
 func singleRootMigrationsSQL(manager *Manager) string {
 	table := manager.MetadataTable
-	nullPreviousIndex := fmt.Sprintf("idx_%s_one_null_previous", table)
+	nullPreviousIndex := fmt.Sprintf("chk_%s_null_previous", table)
 
 	provider := manager.Provider
 	return fmt.Sprintf(
