@@ -6,9 +6,30 @@ import (
 	"github.com/dhermes/golembic"
 )
 
+type config struct {
+	AddUsersEmailFile string
+}
+
+type configOption = func(*config)
+
+// OptAddUsersEmailFile sets the filename of the migration intended to set
+// an index on the `users.email` migration concurrently.
+func OptAddUsersEmailFile(filename string) configOption {
+	return func(cfg *config) {
+		cfg.AddUsersEmailFile = filename
+	}
+}
+
 // AllMigrations returns a sequence of migrations based on a directory
 // containing `.sql` files.
-func AllMigrations(sqlDirectory string) (*golembic.Migrations, error) {
+func AllMigrations(sqlDirectory string, opts ...configOption) (*golembic.Migrations, error) {
+	cfg := config{
+		AddUsersEmailFile: "0005_add_users_email_index_concurrently.sql",
+	}
+	for _, opt := range opts {
+		opt(&cfg)
+	}
+
 	root, err := golembic.NewMigration(
 		golembic.OptRevision("c9b52448285b"),
 		golembic.OptDescription("Create users table"),
@@ -46,7 +67,7 @@ func AllMigrations(sqlDirectory string) (*golembic.Migrations, error) {
 			golembic.OptPrevious("0430566018cc"),
 			golembic.OptRevision("0501ccd1d98c"),
 			golembic.OptDescription("Add index on user emails (concurrently)"),
-			golembic.OptUpConnFromFile(filepath.Join(sqlDirectory, "0005_add_users_email_index_concurrently.sql")),
+			golembic.OptUpConnFromFile(filepath.Join(sqlDirectory, cfg.AddUsersEmailFile)),
 		},
 		[]golembic.MigrationOption{
 			golembic.OptPrevious("0501ccd1d98c"),
