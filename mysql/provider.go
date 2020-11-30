@@ -3,6 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/dhermes/golembic"
@@ -43,7 +44,11 @@ type SQLProvider struct {
 // QuoteIdentifier quotes an identifier, such as a table name, for usage
 // in a query.
 func (*SQLProvider) QuoteIdentifier(name string) string {
-	return golembic.QuoteIdentifier(name)
+	end := strings.IndexRune(name, 0)
+	if end > -1 {
+		name = name[:end]
+	}
+	return "`" + strings.Replace(name, "`", "``", -1) + "`"
 }
 
 // QuoteLiteral quotes a literal, such as `2023-01-05 15:00:00Z`, for usage
