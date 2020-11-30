@@ -22,6 +22,7 @@ help:
 	@echo '   make require-mysql           Determine if MySQL database is running; fail if not'
 	@echo '   make mysql                   Connects to currently running MySQL DB via `mysql`'
 	@echo '   make mysql-superuser         Connects to currently running MySQL DB via `mysql` as superuser'
+	@echo '   make run-mysql-cmd           Run `./examples/cmd/main.go` with `mysql` subcommand'
 	@echo '   make run-mysql-example       Run `./examples/mysql-script/main.go`'
 	@echo ''
 
@@ -219,6 +220,18 @@ mysql-superuser: require-mysql
 	  --database $(DB_NAME) \
 	  --port $(MYSQL_PORT) \
 	  --host $(DB_HOST)
+
+.PHONY: run-mysql-cmd
+run-mysql-cmd: require-mysql
+	@DB_PASSWORD=$(DB_ADMIN_PASSWORD) \
+	  go run ./examples/cmd/main.go \
+	  --sql-directory $(GOLEMBIC_SQL_DIR) \
+	  mysql \
+	  --dbname $(DB_NAME) \
+	  --host $(DB_HOST) \
+	  --port $(MYSQL_PORT) \
+	  --user $(DB_ADMIN_USER) \
+	  $(GOLEMBIC_CMD) $(GOLEMBIC_ARGS)
 
 .PHONY: run-mysql-example
 run-mysql-example: require-mysql
