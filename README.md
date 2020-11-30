@@ -383,6 +383,7 @@ PostgreSQL-specific Targets:
    make restart-postgres        Stops the PostgreSQL database (if running) and starts a fresh Docker container
    make require-postgres        Determine if PostgreSQL database is running; fail if not
    make psql                    Connects to currently running PostgreSQL DB via `psql`
+   make psql-superuser          Connects to currently running PostgreSQL DB via `psql` as superuser
    make run-example-cmd         Run `./examples/cmd/main.go`
    make run-postgres-example    Run `./examples/postgres-script/main.go`
 MySQL-specific Targets:
@@ -391,6 +392,8 @@ MySQL-specific Targets:
    make restart-mysql           Stops the MySQL database (if running) and starts a fresh Docker container
    make require-mysql           Determine if MySQL database is running; fail if not
    make mysql                   Connects to currently running MySQL DB via `mysql`
+   make mysql-superuser         Connects to currently running MySQL DB via `mysql` as superuser
+   make run-mysql-example       Run `./examples/mysql-script/main.go`
 
 ```
 

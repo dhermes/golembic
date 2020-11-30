@@ -12,6 +12,7 @@ help:
 	@echo '   make restart-postgres        Stops the PostgreSQL database (if running) and starts a fresh Docker container'
 	@echo '   make require-postgres        Determine if PostgreSQL database is running; fail if not'
 	@echo '   make psql                    Connects to currently running PostgreSQL DB via `psql`'
+	@echo '   make psql-superuser          Connects to currently running PostgreSQL DB via `psql` as superuser'
 	@echo '   make run-example-cmd         Run `./examples/cmd/main.go`'
 	@echo '   make run-postgres-example    Run `./examples/postgres-script/main.go`'
 	@echo 'MySQL-specific Targets:'
@@ -20,6 +21,8 @@ help:
 	@echo '   make restart-mysql           Stops the MySQL database (if running) and starts a fresh Docker container'
 	@echo '   make require-mysql           Determine if MySQL database is running; fail if not'
 	@echo '   make mysql                   Connects to currently running MySQL DB via `mysql`'
+	@echo '   make mysql-superuser         Connects to currently running MySQL DB via `mysql` as superuser'
+	@echo '   make run-mysql-example       Run `./examples/mysql-script/main.go`'
 	@echo ''
 
 ################################################################################
@@ -216,3 +219,13 @@ mysql-superuser: require-mysql
 	  --database $(DB_NAME) \
 	  --port $(MYSQL_PORT) \
 	  --host $(DB_HOST)
+
+.PHONY: run-mysql-example
+run-mysql-example: require-mysql
+	@GOLEMBIC_SQL_DIR=$(GOLEMBIC_SQL_DIR) \
+	  DB_HOST=$(DB_HOST) \
+	  DB_PORT=$(MYSQL_PORT) \
+	  DB_NAME=$(DB_NAME) \
+	  DB_USER=$(DB_ADMIN_USER) \
+	  DB_PASSWORD=$(DB_ADMIN_PASSWORD) \
+	  go run ./examples/mysql-script/main.go
