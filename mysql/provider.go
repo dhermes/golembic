@@ -18,7 +18,7 @@ var (
 // New creates a MySQL-specific database engine provider from some
 // options.
 func New(opts ...Option) (*SQLProvider, error) {
-	sp := &SQLProvider{Config: &Config{}}
+	sp := &SQLProvider{Config: &Config{ParseTime: true}}
 	for _, opt := range opts {
 		err := opt(sp)
 		if err != nil {
