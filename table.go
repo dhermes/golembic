@@ -12,7 +12,7 @@ CREATE TABLE %s (
   serial_id  INTEGER NOT NULL,
   revision   VARCHAR(32) NOT NULL,
   previous   VARCHAR(32),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at %s
 )
 `
 	pkMigrationsTableSQL = `
@@ -121,7 +121,8 @@ func CreateMigrationsTable(ctx context.Context, manager *Manager) (err error) {
 func createMigrationsSQL(manager *Manager) string {
 	table := manager.MetadataTable
 	provider := manager.Provider
-	return fmt.Sprintf(createMigrationsTableSQL, provider.QuoteIdentifier(table))
+	timestampColumn := provider.TimestampColumn()
+	return fmt.Sprintf(createMigrationsTableSQL, provider.QuoteIdentifier(table), timestampColumn)
 }
 
 func pkMigrationsSQL(manager *Manager) string {

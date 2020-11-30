@@ -48,6 +48,12 @@ func (*SQLProvider) QueryParameter(index int) string {
 	return fmt.Sprintf("$%d", index)
 }
 
+// TimestampColumn produces the SQL used to define a timestamp column with
+// a default of "now".
+func (*SQLProvider) TimestampColumn() string {
+	return "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP"
+}
+
 // QuoteIdentifier quotes an identifier, such as a table name, for usage
 // in a query.
 func (*SQLProvider) QuoteIdentifier(name string) string {

@@ -32,6 +32,9 @@ type EngineProvider interface {
 	// QueryParameter produces a placeholder like `$1` or `?` for a numbered
 	// parameter in a SQL query.
 	QueryParameter(index int) string
+	// TimestampColumn produces the SQL used to define a timestamp column with
+	// a default of "now".
+	TimestampColumn() string
 	// QuoteIdentifier quotes an identifier, such as a table name, for usage
 	// in a query.
 	QuoteIdentifier(name string) string

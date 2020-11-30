@@ -47,6 +47,12 @@ func (*SQLProvider) QueryParameter(_ int) string {
 	return "?"
 }
 
+// TimestampColumn produces the SQL used to define a timestamp column with
+// a default of "now".
+func (*SQLProvider) TimestampColumn() string {
+	return "TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6)"
+}
+
 // QuoteIdentifier quotes an identifier, such as a table name, for usage
 // in a query.
 func (*SQLProvider) QuoteIdentifier(name string) string {
