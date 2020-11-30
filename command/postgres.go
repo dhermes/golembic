@@ -29,7 +29,7 @@ func postgresPasswordFromEnv(cfg *postgres.Config) {
 	cfg.Password = password
 }
 
-func postgresSubCommand(manager *golembic.Manager, parent *cobra.Command) (*cobra.Command, error) {
+func postgresSubCommand(manager *golembic.Manager, parent *cobra.Command, engine *string) (*cobra.Command, error) {
 	provider, err := postgres.New()
 	if err != nil {
 		return nil, err
@@ -47,6 +47,8 @@ func postgresSubCommand(manager *golembic.Manager, parent *cobra.Command) (*cobr
 		Short: short,
 		Long:  long,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			*engine = "postgres"
+
 			// NOTE: Manually invoke `PersistentPreRunE` on the parent to enable
 			//       chaining (the behavior in `cobra` is to replace as the
 			//       tree is traversed). See:

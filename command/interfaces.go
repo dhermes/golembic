@@ -5,8 +5,8 @@ import (
 )
 
 // RegisterMigrations defines a function interface that registers an entire
-// sequence of migrations. The only input is a directory where `.sql` files
-// may be stored. Functions satisfying this interface are intended to be used
-// to lazily create migrations after flag parsing provides the SQL directory
-// as input.
-type RegisterMigrations = func(sqlDirectory string) (*golembic.Migrations, error)
+// sequence of migrations. The inputs are a directory where `.sql` files
+// may be stored and the database engine (i.e. `postgres` or `mysql`). Functions
+// satisfying this interface are intended to be used to lazily create migrations
+// after flag parsing provides the SQL directory and engine as input.
+type RegisterMigrations = func(sqlDirectory, engine string) (*golembic.Migrations, error)

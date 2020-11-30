@@ -31,7 +31,7 @@ func deferredClose(manager *golembic.Manager) {
 
 func run() error {
 	sqlDirectory := mustEnvVar("GOLEMBIC_SQL_DIR")
-	migrations, err := examples.AllMigrations(sqlDirectory)
+	migrations, err := examples.AllMigrations(sqlDirectory, "postgres")
 	if err != nil {
 		return err
 	}

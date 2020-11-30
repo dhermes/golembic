@@ -17,6 +17,7 @@ func MakeRootCommand(rm RegisterMigrations) (*cobra.Command, error) {
 	}
 
 	manager, err := golembic.NewManager()
+	engine := ""
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +35,7 @@ func MakeRootCommand(rm RegisterMigrations) (*cobra.Command, error) {
 			//       if necessary and invoke this function. See:
 			//       - https://github.com/spf13/cobra/issues/216
 			//       - https://github.com/spf13/cobra/issues/252
-			migrations, err := rm(sqlDirectory)
+			migrations, err := rm(sqlDirectory, engine)
 			if err != nil {
 				return err
 			}
@@ -66,14 +67,14 @@ func MakeRootCommand(rm RegisterMigrations) (*cobra.Command, error) {
 	)
 
 	// Add PostgreSQL specific sub-commands.
-	postgres, err := postgresSubCommand(manager, cmd)
+	postgres, err := postgresSubCommand(manager, cmd, &engine)
 	if err != nil {
 		return nil, err
 	}
 	cmd.AddCommand(postgres)
 	registerProviderSubcommands(postgres, manager)
 	// Add MySQL specific sub-commands.
-	mysql, err := mysqlSubCommand(manager, cmd)
+	mysql, err := mysqlSubCommand(manager, cmd, &engine)
 	if err != nil {
 		return nil, err
 	}

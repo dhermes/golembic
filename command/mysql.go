@@ -27,7 +27,7 @@ func mysqlPasswordFromEnv(cfg *mysql.Config) {
 	cfg.Passwd = password
 }
 
-func mysqlSubCommand(manager *golembic.Manager, parent *cobra.Command) (*cobra.Command, error) {
+func mysqlSubCommand(manager *golembic.Manager, parent *cobra.Command, engine *string) (*cobra.Command, error) {
 	provider, err := mysql.New()
 	if err != nil {
 		return nil, err
@@ -48,6 +48,8 @@ func mysqlSubCommand(manager *golembic.Manager, parent *cobra.Command) (*cobra.C
 		Short: short,
 		Long:  long,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			*engine = "mysql"
+
 			// NOTE: Manually invoke `PersistentPreRunE` on the parent to enable
 			//       chaining (the behavior in `cobra` is to replace as the
 			//       tree is traversed). See:
