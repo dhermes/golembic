@@ -138,12 +138,12 @@ Global Flags:
 ```
 $ make restart-postgres
 ...
-$ make run-example-cmd GOLEMBIC_CMD=up
+$ make run-postgres-cmd GOLEMBIC_CMD=up
 2020/11/08 22:49:34 If a migration sequence contains a milestone, it must be the last migration; revision 0430566018cc (4 / 7 migrations)
 exit status 1
-make: *** [run-example-cmd] Error 1
+make: *** [run-postgres-cmd] Error 1
 $
-$ make run-example-cmd GOLEMBIC_CMD=up GOLEMBIC_ARGS="--dev"
+$ make run-postgres-cmd GOLEMBIC_CMD=up GOLEMBIC_ARGS="--dev"
 Ignoring error in development mode
   If a migration sequence contains a milestone, it must be the last migration; revision 0430566018cc (4 / 7 migrations)
 Applying c9b52448285b: Create users table
@@ -158,7 +158,7 @@ Applying 432f690fcbda: Create movies table
 After creation, the next run does nothing
 
 ```
-$ make run-example-cmd GOLEMBIC_CMD=up
+$ make run-postgres-cmd GOLEMBIC_CMD=up
 No migrations to run; latest revision: 432f690fcbda
 ```
 
@@ -174,7 +174,7 @@ DROP TABLE
 golembic=> \q
 $
 $
-$ make run-example-cmd GOLEMBIC_CMD=up
+$ make run-postgres-cmd GOLEMBIC_CMD=up
 Applying 432f690fcbda: Create movies table
 ```
 
@@ -183,28 +183,28 @@ Applying 432f690fcbda: Create movies table
 ```
 $ make restart-postgres
 ...
-$ make run-example-cmd GOLEMBIC_CMD=up-one
+$ make run-postgres-cmd GOLEMBIC_CMD=up-one
 Applying c9b52448285b: Create users table
 $
-$ make run-example-cmd GOLEMBIC_CMD=up-one
+$ make run-postgres-cmd GOLEMBIC_CMD=up-one
 Applying f1be62155239: Seed data in users table
 $
-$ make run-example-cmd GOLEMBIC_CMD=up-one
+$ make run-postgres-cmd GOLEMBIC_CMD=up-one
 Applying dce8812d7b6f: Add city column to users table
 $
-$ make run-example-cmd GOLEMBIC_CMD=up-one
+$ make run-postgres-cmd GOLEMBIC_CMD=up-one
 Applying 0430566018cc: Rename the root user [MILESTONE]
 $
-$ make run-example-cmd GOLEMBIC_CMD=up-one
+$ make run-postgres-cmd GOLEMBIC_CMD=up-one
 Applying 0501ccd1d98c: Add index on user emails (concurrently)
 $
-$ make run-example-cmd GOLEMBIC_CMD=up-one
+$ make run-postgres-cmd GOLEMBIC_CMD=up-one
 Applying e2d4eecb1841: Create books table
 $
-$ make run-example-cmd GOLEMBIC_CMD=up-one
+$ make run-postgres-cmd GOLEMBIC_CMD=up-one
 Applying 432f690fcbda: Create movies table
 $
-$ make run-example-cmd GOLEMBIC_CMD=up-one
+$ make run-postgres-cmd GOLEMBIC_CMD=up-one
 No migrations to run; latest revision: 432f690fcbda
 ```
 
@@ -213,26 +213,26 @@ No migrations to run; latest revision: 432f690fcbda
 ```
 $ make restart-postgres
 ...
-$ make run-example-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 0501ccd1d98c"
+$ make run-postgres-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 0501ccd1d98c"
 2020/11/08 22:51:03 If a migration sequence contains a milestone, it must be the last migration; revision 0430566018cc (4 / 5 migrations)
 exit status 1
-make: *** [run-example-cmd] Error 1
+make: *** [run-postgres-cmd] Error 1
 $
-$ make run-example-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 0430566018cc"
+$ make run-postgres-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 0430566018cc"
 Applying c9b52448285b: Create users table
 Applying f1be62155239: Seed data in users table
 Applying dce8812d7b6f: Add city column to users table
 Applying 0430566018cc: Rename the root user [MILESTONE]
 $
-$ make run-example-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision dce8812d7b6f"
+$ make run-postgres-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision dce8812d7b6f"
 No migrations to run; latest revision: 0430566018cc [MILESTONE]
 $
-$ make run-example-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 432f690fcbda"
+$ make run-postgres-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 432f690fcbda"
 Applying 0501ccd1d98c: Add index on user emails (concurrently)
 Applying e2d4eecb1841: Create books table
 Applying 432f690fcbda: Create movies table
 $
-$ make run-example-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 432f690fcbda"
+$ make run-postgres-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 432f690fcbda"
 No migrations to run; latest revision: 432f690fcbda
 ```
 
@@ -241,16 +241,16 @@ No migrations to run; latest revision: 432f690fcbda
 ```
 $ make restart-postgres
 ...
-$ make run-example-cmd GOLEMBIC_CMD=version
+$ make run-postgres-cmd GOLEMBIC_CMD=version
 No migrations have been run
 ```
 
 Then run **all** of the migrations and check the version
 
 ```
-$ make run-example-cmd GOLEMBIC_CMD=up GOLEMBIC_ARGS="--dev"
+$ make run-postgres-cmd GOLEMBIC_CMD=up GOLEMBIC_ARGS="--dev"
 ...
-$ make run-example-cmd GOLEMBIC_CMD=version
+$ make run-postgres-cmd GOLEMBIC_CMD=version
 432f690fcbda: Create movies table (applied 2020-11-09 04:52:00.62402 +0000 UTC)
 ```
 
@@ -259,7 +259,7 @@ $ make run-example-cmd GOLEMBIC_CMD=version
 ```
 $ make restart-postgres
 ...
-$ make run-example-cmd GOLEMBIC_CMD=verify
+$ make run-postgres-cmd GOLEMBIC_CMD=verify
 0 | c9b52448285b | Create users table (not yet applied)
 1 | f1be62155239 | Seed data in users table (not yet applied)
 2 | dce8812d7b6f | Add city column to users table (not yet applied)
@@ -269,9 +269,9 @@ $ make run-example-cmd GOLEMBIC_CMD=verify
 6 | 432f690fcbda | Create movies table (not yet applied)
 $
 $
-$ make run-example-cmd GOLEMBIC_CMD=up-one
+$ make run-postgres-cmd GOLEMBIC_CMD=up-one
 Applying c9b52448285b: Create users table
-$ make run-example-cmd GOLEMBIC_CMD=verify
+$ make run-postgres-cmd GOLEMBIC_CMD=verify
 0 | c9b52448285b | Create users table (applied 2020-11-09 04:52:40.802991 +0000 UTC)
 1 | f1be62155239 | Seed data in users table (not yet applied)
 2 | dce8812d7b6f | Add city column to users table (not yet applied)
@@ -281,9 +281,9 @@ $ make run-example-cmd GOLEMBIC_CMD=verify
 6 | 432f690fcbda | Create movies table (not yet applied)
 $
 $
-$ make run-example-cmd GOLEMBIC_CMD=up-one
+$ make run-postgres-cmd GOLEMBIC_CMD=up-one
 Applying f1be62155239: Seed data in users table
-$ make run-example-cmd GOLEMBIC_CMD=verify
+$ make run-postgres-cmd GOLEMBIC_CMD=verify
 0 | c9b52448285b | Create users table (applied 2020-11-09 04:52:40.802991 +0000 UTC)
 1 | f1be62155239 | Seed data in users table (applied 2020-11-09 04:52:55.611001 +0000 UTC)
 2 | dce8812d7b6f | Add city column to users table (not yet applied)
@@ -293,7 +293,7 @@ $ make run-example-cmd GOLEMBIC_CMD=verify
 6 | 432f690fcbda | Create movies table (not yet applied)
 $
 $
-$ make run-example-cmd GOLEMBIC_CMD=up GOLEMBIC_ARGS="--dev"
+$ make run-postgres-cmd GOLEMBIC_CMD=up GOLEMBIC_ARGS="--dev"
 Ignoring error in development mode
   If a migration sequence contains a milestone, it must be the last migration; revision 0430566018cc (2 / 5 migrations)
 Applying dce8812d7b6f: Add city column to users table
@@ -301,7 +301,7 @@ Applying 0430566018cc: Rename the root user [MILESTONE]
 Applying 0501ccd1d98c: Add index on user emails (concurrently)
 Applying e2d4eecb1841: Create books table
 Applying 432f690fcbda: Create movies table
-$ make run-example-cmd GOLEMBIC_CMD=verify
+$ make run-postgres-cmd GOLEMBIC_CMD=verify
 0 | c9b52448285b | Create users table (applied 2020-11-09 04:52:40.802991 +0000 UTC)
 1 | f1be62155239 | Seed data in users table (applied 2020-11-09 04:52:55.611001 +0000 UTC)
 2 | dce8812d7b6f | Add city column to users table (applied 2020-11-09 04:53:17.942662 +0000 UTC)
@@ -320,10 +320,10 @@ golembic=> INSERT INTO golembic_migrations (serial_id, revision, previous) VALUE
 INSERT 0 1
 golembic=> \q
 $
-$ make run-example-cmd GOLEMBIC_CMD=verify
+$ make run-postgres-cmd GOLEMBIC_CMD=verify
 2020/11/08 22:54:20 Migration stored in SQL doesn't match sequence; sequence has 7 migrations but 8 are stored in the table
 exit status 1
-make: *** [run-example-cmd] Error 1
+make: *** [run-postgres-cmd] Error 1
 ```
 
 Similarly, if we can introduce an unknown entry "in sequence"
@@ -337,10 +337,10 @@ golembic=> INSERT INTO golembic_migrations (serial_id, revision, previous) VALUE
 INSERT 0 1
 golembic=> \q
 $
-$ make run-example-cmd GOLEMBIC_CMD=verify
+$ make run-postgres-cmd GOLEMBIC_CMD=verify
 2020/11/08 22:55:18 Migration stored in SQL doesn't match sequence; stored migration 6: "not-in-sequence:e2d4eecb1841" does not match migration "432f690fcbda:e2d4eecb1841" in sequence
 exit status 1
-make: *** [run-example-cmd] Error 1
+make: *** [run-postgres-cmd] Error 1
 ```
 
 Luckily more painful cases such as one migration being deleted "in the middle"
@@ -358,7 +358,7 @@ golembic=> \q
 ### `describe`
 
 ```
-$ make run-example-cmd GOLEMBIC_CMD=describe
+$ make run-postgres-cmd GOLEMBIC_CMD=describe
 0 | c9b52448285b | Create users table
 1 | f1be62155239 | Seed data in users table
 2 | dce8812d7b6f | Add city column to users table
@@ -385,7 +385,7 @@ PostgreSQL-specific Targets:
    make require-postgres        Determine if PostgreSQL database is running; fail if not
    make psql                    Connects to currently running PostgreSQL DB via `psql`
    make psql-superuser          Connects to currently running PostgreSQL DB via `psql` as superuser
-   make run-example-cmd         Run `./examples/cmd/main.go`
+   make run-postgres-cmd        Run `./examples/cmd/main.go` with `postgres` subcommand
    make run-postgres-example    Run `./examples/postgres-script/main.go`
 MySQL-specific Targets:
    make start-mysql             Starts a MySQL database running in a Docker container and set up users

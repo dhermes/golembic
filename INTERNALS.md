@@ -30,7 +30,7 @@ Did not find any relations.
 golembic=> \q
 $
 $
-$ make run-example-cmd GOLEMBIC_CMD=describe
+$ make run-postgres-cmd GOLEMBIC_CMD=describe
 0 | c9b52448285b | Create users table
 1 | f1be62155239 | Seed data in users table
 2 | dce8812d7b6f | Add city column to users table
@@ -38,7 +38,7 @@ $ make run-example-cmd GOLEMBIC_CMD=describe
 4 | 0501ccd1d98c | Add index on user emails (concurrently)
 5 | e2d4eecb1841 | Create books table
 6 | 432f690fcbda | Create movies table
-$ make run-example-cmd GOLEMBIC_CMD=version
+$ make run-postgres-cmd GOLEMBIC_CMD=version
 No migrations have been run
 ```
 
@@ -86,7 +86,7 @@ golembic=> \q
 ## Run Some Migrations
 
 ```
-$ make run-example-cmd GOLEMBIC_CMD=up GOLEMBIC_ARGS="--dev"
+$ make run-postgres-cmd GOLEMBIC_CMD=up GOLEMBIC_ARGS="--dev"
 Ignoring error in development mode
   If a migration sequence contains a milestone, it must be the last migration; revision 0430566018cc (4 / 7 migrations)
 Applying c9b52448285b: Create users table
@@ -164,7 +164,7 @@ golembic=> \q
 And see how these migrations are tracked
 
 ```
-$ make run-example-cmd GOLEMBIC_CMD=version
+$ make run-postgres-cmd GOLEMBIC_CMD=version
 432f690fcbda: Create movies table (applied 2020-11-09 04:57:48.028216 +0000 UTC)
 $
 $ make psql

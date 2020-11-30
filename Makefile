@@ -13,7 +13,7 @@ help:
 	@echo '   make require-postgres        Determine if PostgreSQL database is running; fail if not'
 	@echo '   make psql                    Connects to currently running PostgreSQL DB via `psql`'
 	@echo '   make psql-superuser          Connects to currently running PostgreSQL DB via `psql` as superuser'
-	@echo '   make run-example-cmd         Run `./examples/cmd/main.go`'
+	@echo '   make run-postgres-cmd        Run `./examples/cmd/main.go` with `postgres` subcommand'
 	@echo '   make run-postgres-example    Run `./examples/postgres-script/main.go`'
 	@echo 'MySQL-specific Targets:'
 	@echo '   make start-mysql             Starts a MySQL database running in a Docker container and set up users'
@@ -138,8 +138,8 @@ psql-superuser: require-postgres
 	  --port $(POSTGRES_PORT) \
 	  --host $(DB_HOST)
 
-.PHONY: run-example-cmd
-run-example-cmd: require-postgres
+.PHONY: run-postgres-cmd
+run-postgres-cmd: require-postgres
 	@PGPASSWORD=$(DB_ADMIN_PASSWORD) \
 	  go run ./examples/cmd/main.go \
 	  --sql-directory $(GOLEMBIC_SQL_DIR) \
