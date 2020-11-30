@@ -8,7 +8,7 @@ import (
 
 const (
 	createMigrationsTableSQL = `
-CREATE TABLE IF NOT EXISTS %s (
+CREATE TABLE %s (
   serial_id  INTEGER NOT NULL,
   revision   VARCHAR(32) NOT NULL,
   previous   VARCHAR(32),
