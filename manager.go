@@ -114,23 +114,27 @@ func (m *Manager) EnsureMigrationsTable(ctx context.Context) error {
 func (m *Manager) InsertMigration(ctx context.Context, tx *sql.Tx, migration Migration) error {
 	if migration.Previous == "" {
 		statement := fmt.Sprintf(
-			"INSERT INTO %s (serial_id, revision, previous) VALUES (0, $1, NULL)",
+			"INSERT INTO %s (serial_id, revision, previous) VALUES (0, %s, NULL)",
 			m.Provider.QuoteIdentifier(m.MetadataTable),
+			m.Provider.QueryParameter(1),
 		)
 		_, err := tx.ExecContext(ctx, statement, migration.Revision)
 		return err
 	}
 
 	statement := fmt.Sprintf(
-		"INSERT INTO %s (serial_id, revision, previous) VALUES ($1, $2, $3)",
+		"INSERT INTO %s (serial_id, revision, previous) VALUES (%s, %s, %s)",
 		m.Provider.QuoteIdentifier(m.MetadataTable),
+		m.Provider.QueryParameter(1),
+		m.Provider.QueryParameter(2),
+		m.Provider.QueryParameter(3),
 	)
 	_, err := tx.ExecContext(
 		ctx,
 		statement,
-		migration.serialID, // $1
-		migration.Revision, // $2
-		migration.Previous, // $3
+		migration.serialID, // Parameter 1
+		migration.Revision, // Parameter 2
+		migration.Previous, // Parameter 3
 	)
 	return err
 }
@@ -558,8 +562,9 @@ func (m *Manager) Version(ctx context.Context, opts ...ApplyOption) error {
 // exists.
 func (m *Manager) IsApplied(ctx context.Context, tx *sql.Tx, migration Migration) (bool, error) {
 	query := fmt.Sprintf(
-		"SELECT revision, previous, created_at FROM %s WHERE revision = $1",
+		"SELECT revision, previous, created_at FROM %s WHERE revision = %s",
 		m.Provider.QuoteIdentifier(m.MetadataTable),
+		m.Provider.QueryParameter(1),
 	)
 	rows, err := readAllMigration(ctx, tx, query, migration.Revision)
 	if err != nil {

@@ -41,6 +41,12 @@ type SQLProvider struct {
 	MaxLifetime time.Duration
 }
 
+// QueryParameter produces the placeholder `?` for a numbered
+// parameter in a PostgreSQL query.
+func (*SQLProvider) QueryParameter(_ int) string {
+	return "?"
+}
+
 // QuoteIdentifier quotes an identifier, such as a table name, for usage
 // in a query.
 func (*SQLProvider) QuoteIdentifier(name string) string {

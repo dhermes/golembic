@@ -29,6 +29,9 @@ type migrationsFilter = func(latest string) ([]Migration, error)
 
 // EngineProvider describes the interface required for a database engine.
 type EngineProvider interface {
+	// QueryParameter produces a placeholder like `$1` or `?` for a numbered
+	// parameter in a SQL query.
+	QueryParameter(index int) string
 	// QuoteIdentifier quotes an identifier, such as a table name, for usage
 	// in a query.
 	QuoteIdentifier(name string) string
@@ -39,7 +42,7 @@ type EngineProvider interface {
 	Open() (*sql.DB, error)
 	// TableExistsSQL returns a SQL query that can be used to determine if a
 	// table exists. It is expected to use a clause such as `WHERE tablename = $1`
-	// to filter results.
+	// or `WHERE tablename = ?` to filter results.
 	TableExistsSQL() string
 }
 

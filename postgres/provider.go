@@ -42,6 +42,12 @@ type SQLProvider struct {
 	Config *Config
 }
 
+// QueryParameter produces a placeholder like `$1` for a numbered
+// parameter in a PostgreSQL query.
+func (*SQLProvider) QueryParameter(index int) string {
+	return fmt.Sprintf("$%d", index)
+}
+
 // QuoteIdentifier quotes an identifier, such as a table name, for usage
 // in a query.
 func (*SQLProvider) QuoteIdentifier(name string) string {
