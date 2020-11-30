@@ -65,13 +65,20 @@ func MakeRootCommand(rm RegisterMigrations) (*cobra.Command, error) {
 		"Flag indicating that the migrations should be run in development mode",
 	)
 
-	// Add provider specific sub-commands.
+	// Add PostgreSQL specific sub-commands.
 	postgres, err := postgresSubCommand(manager, cmd)
 	if err != nil {
 		return nil, err
 	}
 	cmd.AddCommand(postgres)
 	registerProviderSubcommands(postgres, manager)
+	// Add MySQL specific sub-commands.
+	mysql, err := mysqlSubCommand(manager, cmd)
+	if err != nil {
+		return nil, err
+	}
+	cmd.AddCommand(mysql)
+	registerProviderSubcommands(mysql, manager)
 
 	return cmd, nil
 }

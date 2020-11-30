@@ -33,7 +33,7 @@ func deferredClose(manager *golembic.Manager) {
 func main() {
 	sqlDirectory := mustEnvVar("GOLEMBIC_SQL_DIR")
 	opt := examples.OptAddUsersEmailFile("0005_add_users_email_index_lock_none.sql")
-	migrations, err := examples.AllMigrations(sqlDirectory, opt)
+	migrations, err := examples.AllMigrationsWithOptions(sqlDirectory, opt)
 	if err != nil {
 		log.Fatal(err)
 	}

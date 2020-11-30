@@ -22,7 +22,13 @@ func OptAddUsersEmailFile(filename string) configOption {
 
 // AllMigrations returns a sequence of migrations based on a directory
 // containing `.sql` files.
-func AllMigrations(sqlDirectory string, opts ...configOption) (*golembic.Migrations, error) {
+func AllMigrations(sqlDirectory string) (*golembic.Migrations, error) {
+	return AllMigrationsWithOptions(sqlDirectory)
+}
+
+// AllMigrationsWithOptions implements `AllMigrations` but allows overriding
+// many defaults.
+func AllMigrationsWithOptions(sqlDirectory string, opts ...configOption) (*golembic.Migrations, error) {
 	cfg := config{
 		AddUsersEmailFile: "0005_add_users_email_index_concurrently.sql",
 	}

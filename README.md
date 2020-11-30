@@ -38,6 +38,7 @@ Usage:
 
 Available Commands:
   help        Help about any command
+  mysql       Manage database migrations for a MySQL database
   postgres    Manage database migrations for a PostgreSQL database
 
 Flags:
