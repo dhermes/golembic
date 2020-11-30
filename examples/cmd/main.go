@@ -16,13 +16,17 @@ var (
 	_ command.RegisterMigrations = examples.AllMigrations
 )
 
-func main() {
+func run() error {
 	cmd, err := command.MakeRootCommand(examples.AllMigrations)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	err = cmd.Execute()
+	return cmd.Execute()
+}
+
+func main() {
+	err := run()
 	if err != nil {
 		log.Fatal(err)
 	}

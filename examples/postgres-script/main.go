@@ -29,11 +29,11 @@ func deferredClose(manager *golembic.Manager) {
 	return
 }
 
-func main() {
+func run() error {
 	sqlDirectory := mustEnvVar("GOLEMBIC_SQL_DIR")
 	migrations, err := examples.AllMigrations(sqlDirectory)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	provider, err := postgres.New(
@@ -45,7 +45,7 @@ func main() {
 		postgres.OptSSLMode(mustEnvVar("DB_SSLMODE")),
 	)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	manager, err := golembic.NewManager(
@@ -54,12 +54,16 @@ func main() {
 		golembic.OptManagerSequence(migrations),
 	)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer deferredClose(manager)
 
 	ctx := context.Background()
-	err = manager.Up(ctx)
+	return manager.Up(ctx)
+}
+
+func main() {
+	err := run()
 	if err != nil {
 		log.Fatal(err)
 	}

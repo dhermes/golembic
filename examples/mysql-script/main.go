@@ -30,18 +30,18 @@ func deferredClose(manager *golembic.Manager) {
 	return
 }
 
-func main() {
+func run() error {
 	sqlDirectory := mustEnvVar("GOLEMBIC_SQL_DIR")
 	opt := examples.OptAddUsersEmailFile("0005_add_users_email_index_lock_none.sql")
 	migrations, err := examples.AllMigrationsWithOptions(sqlDirectory, opt)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	portStr := mustEnvVar("DB_PORT")
 	port, err := strconv.Atoi(portStr)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	provider, err := mysql.New(
@@ -52,7 +52,7 @@ func main() {
 		mysql.OptPassword(mustEnvVar("DB_PASSWORD")),
 	)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	manager, err := golembic.NewManager(
@@ -61,12 +61,16 @@ func main() {
 		golembic.OptManagerSequence(migrations),
 	)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer deferredClose(manager)
 
 	ctx := context.Background()
-	err = manager.Up(ctx)
+	return manager.Up(ctx)
+}
+
+func main() {
+	err := run()
 	if err != nil {
 		log.Fatal(err)
 	}
