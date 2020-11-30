@@ -30,9 +30,9 @@ fi
 
 # Get the absolute path to the config file (for Docker)
 exists "python"
-CONF_FILE="$(dirname "${0}")/../_docker/pg_hba.conf"
+CONF_DIR="$(dirname "${0}")/../_docker"
 # macOS workaround for `readlink`; see https://stackoverflow.com/q/3572030/1068170
-CONF_FILE=$(python -c "import os; print(os.path.realpath('${CONF_FILE}'))")
+CONF_DIR=$(python -c "import os; print(os.path.realpath('${CONF_DIR}'))")
 
 requireEnvVar "DB_HOST"
 requireEnvVar "DB_PORT"
@@ -48,9 +48,12 @@ docker run \
   --env POSTGRES_USER="${DB_SUPERUSER_USER}" \
   --env POSTGRES_PASSWORD="${DB_SUPERUSER_PASSWORD}" \
   --env POSTGRES_INITDB_ARGS="--auth-host=scram-sha-256 --auth-local=scram-sha-256" \
-  --volume "${CONF_FILE}":/etc/postgresql/pg_hba.conf \
-  postgres:12.3-alpine \
-  -c 'hba_file=/etc/postgresql/pg_hba.conf' \
+  --mount type=tmpfs,destination=/var/lib/postgresql/data \
+  --volume "${CONF_DIR}/postgresql.conf":/etc/postgresql/postgresql.conf \
+  --volume "${CONF_DIR}/pg_hba.conf":/etc/postgresql/pg_hba.conf \
+  postgres:13.1-alpine \
+  -c "config_file=/etc/postgresql/postgresql.conf" \
+  -c "hba_file=/etc/postgresql/pg_hba.conf" \
   > /dev/null
 
 echo "Container ${DB_CONTAINER_NAME} started on port ${DB_PORT}."
