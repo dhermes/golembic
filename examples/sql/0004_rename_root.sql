@@ -1,3 +1,3 @@
 UPDATE users
-  SET "name" = 'admin'
-  WHERE "name" = 'root';
+  SET username = 'admin'
+  WHERE username = 'root';

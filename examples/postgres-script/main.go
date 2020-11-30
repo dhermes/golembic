@@ -49,6 +49,7 @@ func main() {
 	}
 
 	manager, err := golembic.NewManager(
+		golembic.OptDevelopmentMode(true),
 		golembic.OptManagerProvider(provider),
 		golembic.OptManagerSequence(migrations),
 	)

@@ -148,8 +148,8 @@ run-example-cmd: require-postgres
 	  --username $(DB_ADMIN_USER) \
 	  $(GOLEMBIC_CMD) $(GOLEMBIC_ARGS)
 
-.PHONY: run-example-script
-run-example-script: require-postgres
+.PHONY: run-postgres-example
+run-postgres-example: require-postgres
 	@GOLEMBIC_SQL_DIR=$(GOLEMBIC_SQL_DIR) \
 	  DB_HOST=$(DB_HOST) \
 	  DB_PORT=$(POSTGRES_PORT) \
