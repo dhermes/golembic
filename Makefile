@@ -58,6 +58,10 @@ DB_NAME ?= golembic
 DB_ADMIN_USER ?= golembic_admin
 DB_ADMIN_PASSWORD ?= testpassword_admin
 
+# NOTE: This assumes the `DB_*_PASSWORD` values do not need to be URL encoded.
+POSTGRES_SUPERUSER_DSN ?= postgres://$(DB_SUPERUSER_USER):$(DB_SUPERUSER_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)
+POSTGRES_ADMIN_DSN ?= postgres://$(DB_ADMIN_USER):$(DB_ADMIN_PASSWORD)@$(DB_HOST):$(POSTGRES_PORT)/$(DB_NAME)
+
 GOLEMBIC_CMD ?= up
 GOLEMBIC_ARGS ?=
 GOLEMBIC_SQL_DIR ?= $(shell pwd)/examples/sql
@@ -116,28 +120,18 @@ restart-postgres: stop-postgres start-postgres
 require-postgres:
 	@DB_HOST=$(DB_HOST) \
 	  DB_PORT=$(POSTGRES_PORT) \
-	  DB_NAME=$(DB_NAME) \
-	  DB_ADMIN_USER=$(DB_ADMIN_USER) \
-	  DB_ADMIN_PASSWORD=$(DB_ADMIN_PASSWORD) \
+	  DB_ADMIN_DSN=$(POSTGRES_ADMIN_DSN) \
 	  ./_bin/require_postgres.sh
 
 .PHONY: psql
 psql: require-postgres
 	@echo "Running psql against port $(POSTGRES_PORT)"
-	PGPASSWORD=$(DB_ADMIN_PASSWORD) psql \
-	  --username $(DB_ADMIN_USER) \
-	  --dbname $(DB_NAME) \
-	  --port $(POSTGRES_PORT) \
-	  --host $(DB_HOST)
+	psql "$(POSTGRES_ADMIN_DSN)"
 
 .PHONY: psql-superuser
 psql-superuser: require-postgres
 	@echo "Running psql against port $(POSTGRES_PORT)"
-	PGPASSWORD="$(DB_SUPERUSER_PASSWORD)" psql \
-	  --username $(DB_SUPERUSER_USER) \
-	  --dbname $(DB_NAME) \
-	  --port $(POSTGRES_PORT) \
-	  --host $(DB_HOST)
+	psql "$(POSTGRES_SUPERUSER_DSN)"
 
 .PHONY: run-postgres-cmd
 run-postgres-cmd: require-postgres

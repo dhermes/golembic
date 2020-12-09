@@ -7,9 +7,7 @@ set -e
 
 requireEnvVar "DB_HOST"
 requireEnvVar "DB_PORT"
-requireEnvVar "DB_NAME"
-requireEnvVar "DB_ADMIN_USER"
-requireEnvVar "DB_ADMIN_PASSWORD"
+requireEnvVar "DB_ADMIN_DSN"
 
 ##########################################################
 ## Don't exit until `pg_isready` returns 0 in container ##
@@ -17,12 +15,7 @@ requireEnvVar "DB_ADMIN_PASSWORD"
 
 # NOTE: This is used strictly for the status code to determine readiness.
 pgIsReady() {
-  PGPASSWORD="${DB_ADMIN_PASSWORD}" pg_isready \
-    --dbname "${DB_NAME}" \
-    --username "${DB_ADMIN_USER}" \
-    --host "${DB_HOST}" \
-    --port "${DB_PORT}" \
-    > /dev/null 2>&1
+  pg_isready --dbname "${DB_ADMIN_DSN}" > /dev/null 2>&1
 }
 
 exists "pg_isready"
