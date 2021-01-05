@@ -16,7 +16,7 @@
 //
 // - Down migrations are not supported. The idea being that the risk of data loss
 // from a down migration is not worth it and that writing down migrations can
-// be more challening than writing up migrations.
+// be more challenging than writing up migrations.
 //
 // The design allows for running "arbitrary" code inside migrations
 // so that even non-SQL tasks can be tracked as a "run-once" migration.
