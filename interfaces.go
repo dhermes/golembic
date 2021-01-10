@@ -62,5 +62,5 @@ type ManagerOption = func(*Manager) error
 // MigrationOption describes options used to create a new migration.
 type MigrationOption = func(*Migration) error
 
-// ApplyOption describes options used to create a apply configuration.
+// ApplyOption describes options used to create an apply configuration.
 type ApplyOption = func(*ApplyConfig) error
