@@ -42,7 +42,7 @@ type SQLProvider struct {
 }
 
 // QueryParameter produces the placeholder `?` for a numbered
-// parameter in a PostgreSQL query.
+// parameter in a MySQL query.
 func (*SQLProvider) QueryParameter(_ int) string {
 	return "?"
 }
