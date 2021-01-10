@@ -10,13 +10,17 @@ If a `*golembic.Migrations` sequence has been formed, then a binary can be
 created as follows:
 
 ```go
-func main() {
+func run() error {
 	cmd, err := command.MakeRootCommand(examples.AllMigrations)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	err = cmd.Execute()
+	return cmd.Execute()
+}
+
+func main() {
+	err := run()
 	if err != nil {
 		log.Fatal(err)
 	}
