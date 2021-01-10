@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"os"
 
 	_ "github.com/lib/pq"
@@ -12,59 +12,127 @@ import (
 	"github.com/dhermes/golembic/postgres"
 )
 
-func mustEnvVar(name string) string {
+func requireEnvVar(name string) (string, error) {
 	value := os.Getenv(name)
 	if value == "" {
-		log.Fatalf("Required environment variable %q is not set.", name)
+		err := fmt.Errorf("Required environment variable %q is not set", name)
+		return "", err
 	}
-	return value
+	return value, nil
 }
 
-func deferredClose(manager *golembic.Manager) {
-	err := manager.CloseConnectionPool()
+func deferredClose(manager *golembic.Manager, err error) error {
+	if manager == nil {
+		return err
+	}
+
+	closeErr := manager.CloseConnectionPool()
+	if err == nil {
+		return closeErr
+	}
+	if closeErr == nil {
+		return err
+	}
+
+	return fmt.Errorf("%w; %v", err, closeErr)
+}
+
+type config struct {
+	GolembicSQLDir string
+	DBHost         string
+	DBPort         string
+	DBName         string
+	DBUser         string
+	DBPassword     string
+	DBSSLMode      string
+}
+
+func (c *config) Resolve() (err error) {
+	c.GolembicSQLDir, err = requireEnvVar("GOLEMBIC_SQL_DIR")
 	if err != nil {
-		log.Fatal(err)
+		return
+	}
+
+	c.DBHost, err = requireEnvVar("DB_HOST")
+	if err != nil {
+		return
+	}
+
+	c.DBPort, err = requireEnvVar("DB_PORT")
+	if err != nil {
+		return
+	}
+
+	c.DBName, err = requireEnvVar("DB_NAME")
+	if err != nil {
+		return
+	}
+
+	c.DBUser, err = requireEnvVar("DB_USER")
+	if err != nil {
+		return
+	}
+
+	c.DBPassword, err = requireEnvVar("PGPASSWORD")
+	if err != nil {
+		return
+	}
+
+	c.DBSSLMode, err = requireEnvVar("DB_SSLMODE")
+	if err != nil {
+		return
 	}
 
 	return
 }
 
-func run() error {
-	sqlDirectory := mustEnvVar("GOLEMBIC_SQL_DIR")
-	migrations, err := examples.AllMigrations(sqlDirectory, "postgres")
+func run() (err error) {
+	var manager *golembic.Manager
+	defer func() {
+		err = deferredClose(manager, err)
+	}()
+
+	c := config{}
+	err = c.Resolve()
 	if err != nil {
-		return err
+		return
+	}
+
+	migrations, err := examples.AllMigrations(c.GolembicSQLDir, "postgres")
+	if err != nil {
+		return
 	}
 
 	provider, err := postgres.New(
-		postgres.OptHost(mustEnvVar("DB_HOST")),
-		postgres.OptPort(mustEnvVar("DB_PORT")),
-		postgres.OptDatabase(mustEnvVar("DB_NAME")),
-		postgres.OptUsername(mustEnvVar("DB_USER")),
-		postgres.OptPassword(mustEnvVar("PGPASSWORD")),
-		postgres.OptSSLMode(mustEnvVar("DB_SSLMODE")),
+		postgres.OptHost(c.DBHost),
+		postgres.OptPort(c.DBPort),
+		postgres.OptDatabase(c.DBName),
+		postgres.OptUsername(c.DBUser),
+		postgres.OptPassword(c.DBPassword),
+		postgres.OptSSLMode(c.DBSSLMode),
 	)
 	if err != nil {
-		return err
+		return
 	}
 
-	manager, err := golembic.NewManager(
+	manager, err = golembic.NewManager(
 		golembic.OptDevelopmentMode(true),
 		golembic.OptManagerProvider(provider),
 		golembic.OptManagerSequence(migrations),
 	)
 	if err != nil {
-		return err
+		return
 	}
-	defer deferredClose(manager)
 
 	ctx := context.Background()
-	return manager.Up(ctx)
+	err = manager.Up(ctx)
+	return
 }
 
 func main() {
 	err := run()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+		os.Exit(1)
 	}
 }
