@@ -9,9 +9,9 @@ import (
 const (
 	createMigrationsTableSQL = `
 CREATE TABLE %s (
-  serial_id  INTEGER NOT NULL,
-  revision   VARCHAR(32) NOT NULL,
-  previous   VARCHAR(32),
+  serial_id  %s,
+  revision   %s,
+  previous   %s,
   created_at %s
 )
 `
@@ -55,13 +55,20 @@ ALTER TABLE %s
 // specify custom column types or add custom checks / constraints that are
 // engine specific.
 type CreateTableParameters struct {
+	SerialID  string
+	Revision  string
+	Previous  string
 	CreatedAt string
 }
 
 // NewCreateTableParameters populates a `CreateTableParameters` with a
 // basic set of defaults and allows optional overrides for all fields.
 func NewCreateTableParameters(opts ...CreateTableOption) CreateTableParameters {
-	ctp := CreateTableParameters{}
+	ctp := CreateTableParameters{
+		SerialID: "INTEGER NOT NULL",
+		Revision: "VARCHAR(32) NOT NULL",
+		Previous: "VARCHAR(32)",
+	}
 
 	for _, opt := range opts {
 		opt(&ctp)
@@ -146,6 +153,9 @@ func createMigrationsSQL(manager *Manager) string {
 	statement := fmt.Sprintf(
 		createMigrationsTableSQL,
 		provider.QuoteIdentifier(table),
+		ctp.SerialID,
+		ctp.Revision,
+		ctp.Previous,
 		ctp.CreatedAt,
 	)
 	return statement
