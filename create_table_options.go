@@ -31,3 +31,20 @@ func OptCreateTableCreatedAt(createdAt string) CreateTableOption {
 		return
 	}
 }
+
+// OptCreateTableConstraints sets the `Constraints` field in create table options.
+func OptCreateTableConstraints(constraints string) CreateTableOption {
+	return func(ctp *CreateTableParameters) {
+		ctp.Constraints = constraints
+		return
+	}
+}
+
+// OptCreateTableSkip sets the `SkipConstraintStatements` field in create
+// table options.
+func OptCreateTableSkip(skip bool) CreateTableOption {
+	return func(ctp *CreateTableParameters) {
+		ctp.SkipConstraintStatements = skip
+		return
+	}
+}

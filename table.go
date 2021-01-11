@@ -12,7 +12,7 @@ CREATE TABLE %s (
   serial_id  %s,
   revision   %s,
   previous   %s,
-  created_at %s
+  created_at %s%s
 )
 `
 	pkMigrationsTableSQL = `
@@ -55,10 +55,12 @@ ALTER TABLE %s
 // specify custom column types or add custom checks / constraints that are
 // engine specific.
 type CreateTableParameters struct {
-	SerialID  string
-	Revision  string
-	Previous  string
-	CreatedAt string
+	SerialID                 string
+	Revision                 string
+	Previous                 string
+	CreatedAt                string
+	Constraints              string
+	SkipConstraintStatements bool
 }
 
 // NewCreateTableParameters populates a `CreateTableParameters` with a
@@ -101,8 +103,14 @@ func CreateMigrationsTable(ctx context.Context, manager *Manager) (err error) {
 		return
 	}
 
-	_, err = tx.ExecContext(ctx, createMigrationsSQL(manager))
+	ctp, createStatement := createMigrationsSQL(manager)
+	_, err = tx.ExecContext(ctx, createStatement)
 	if err != nil {
+		return
+	}
+
+	if ctp.SkipConstraintStatements {
+		err = tx.Commit()
 		return
 	}
 
@@ -145,7 +153,7 @@ func CreateMigrationsTable(ctx context.Context, manager *Manager) (err error) {
 	return
 }
 
-func createMigrationsSQL(manager *Manager) string {
+func createMigrationsSQL(manager *Manager) (CreateTableParameters, string) {
 	table := manager.MetadataTable
 	provider := manager.Provider
 	ctp := provider.NewCreateTableParameters()
@@ -157,8 +165,9 @@ func createMigrationsSQL(manager *Manager) string {
 		ctp.Revision,
 		ctp.Previous,
 		ctp.CreatedAt,
+		ctp.Constraints,
 	)
-	return statement
+	return ctp, statement
 }
 
 func pkMigrationsSQL(manager *Manager) string {
