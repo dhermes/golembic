@@ -48,10 +48,12 @@ func (*SQLProvider) QueryParameter(index int) string {
 	return fmt.Sprintf("$%d", index)
 }
 
-// TimestampColumnSQL produces the SQL used to define a timestamp column with
-// a default of "now".
-func (*SQLProvider) TimestampColumnSQL() string {
-	return "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP"
+// NewCreateTableParameters produces the SQL expressions used in the
+// the `CREATE TABLE` statement used to create the migrations table.
+func (*SQLProvider) NewCreateTableParameters() golembic.CreateTableParameters {
+	return golembic.NewCreateTableParameters(
+		golembic.OptCreateTableCreatedAt("TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP"),
+	)
 }
 
 // TimestampColumn produces a value that can be used for reading / writing

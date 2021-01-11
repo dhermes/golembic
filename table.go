@@ -50,6 +50,26 @@ ALTER TABLE %s
 `
 )
 
+// CreateTableParameters specifies a set of parameters that are intended
+// to be used in a `CREATE TABLE` statement. This allows providers to
+// specify custom column types or add custom checks / constraints that are
+// engine specific.
+type CreateTableParameters struct {
+	CreatedAt string
+}
+
+// NewCreateTableParameters populates a `CreateTableParameters` with a
+// basic set of defaults and allows optional overrides for all fields.
+func NewCreateTableParameters(opts ...CreateTableOption) CreateTableParameters {
+	ctp := CreateTableParameters{}
+
+	for _, opt := range opts {
+		opt(&ctp)
+	}
+
+	return ctp
+}
+
 // CreateMigrationsTable invokes SQL statements required to create the metadata
 // table used to track migrations. If the table already exists (as detected by
 // `provider.TableExistsSQL()`), this function will not attempt to create a
@@ -121,8 +141,14 @@ func CreateMigrationsTable(ctx context.Context, manager *Manager) (err error) {
 func createMigrationsSQL(manager *Manager) string {
 	table := manager.MetadataTable
 	provider := manager.Provider
-	timestampColumn := provider.TimestampColumnSQL()
-	return fmt.Sprintf(createMigrationsTableSQL, provider.QuoteIdentifier(table), timestampColumn)
+	ctp := provider.NewCreateTableParameters()
+
+	statement := fmt.Sprintf(
+		createMigrationsTableSQL,
+		provider.QuoteIdentifier(table),
+		ctp.CreatedAt,
+	)
+	return statement
 }
 
 func pkMigrationsSQL(manager *Manager) string {

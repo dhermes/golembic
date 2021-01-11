@@ -47,10 +47,12 @@ func (*SQLProvider) QueryParameter(_ int) string {
 	return "?"
 }
 
-// TimestampColumnSQL produces the SQL used to define a timestamp column with
-// a default of "now".
-func (*SQLProvider) TimestampColumnSQL() string {
-	return "TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6)"
+// NewCreateTableParameters produces the SQL expressions used in the
+// the `CREATE TABLE` statement used to create the migrations table.
+func (*SQLProvider) NewCreateTableParameters() golembic.CreateTableParameters {
+	return golembic.NewCreateTableParameters(
+		golembic.OptCreateTableCreatedAt("TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6)"),
+	)
 }
 
 // TimestampColumn produces a value that can be used for reading / writing

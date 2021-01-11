@@ -33,9 +33,9 @@ type EngineProvider interface {
 	// QueryParameter produces a placeholder like `$1` or `?` for a numbered
 	// parameter in a SQL query.
 	QueryParameter(index int) string
-	// TimestampColumnSQL produces the SQL used to define a timestamp column with
-	// a default of "now".
-	TimestampColumnSQL() string
+	// NewCreateTableParameters produces column types and constraints for the
+	// `CREATE TABLE` statement used to create the migrations table.
+	NewCreateTableParameters() CreateTableParameters
 	// TimestampColumn produces a value that can be used for reading / writing
 	// the `created_at` column.
 	TimestampColumn() TimestampColumn
@@ -68,6 +68,9 @@ type MigrationOption = func(*Migration) error
 
 // ApplyOption describes options used to create an apply configuration.
 type ApplyOption = func(*ApplyConfig) error
+
+// CreateTableOption describes options used for create table parameters.
+type CreateTableOption = func(*CreateTableParameters)
 
 // TimestampColumn represents an abstract SQL column that stores a timestamp.
 type TimestampColumn interface {
