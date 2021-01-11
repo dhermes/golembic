@@ -3,6 +3,7 @@ package golembic
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	"time"
 )
 
@@ -71,6 +72,13 @@ type ApplyOption = func(*ApplyConfig) error
 
 // CreateTableOption describes options used for create table parameters.
 type CreateTableOption = func(*CreateTableParameters)
+
+// Column represents an abstract SQL column value; it requires a `Scan()`
+// interface for reading and a `Value()` interface for writing.
+type Column interface {
+	sql.Scanner
+	driver.Valuer
+}
 
 // TimestampColumn represents an abstract SQL column that stores a timestamp.
 type TimestampColumn interface {

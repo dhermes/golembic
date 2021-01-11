@@ -12,6 +12,8 @@ func AllMigrations(sqlDirectory, engine string) (*golembic.Migrations, error) {
 	addUsersEmailFile := "0005_add_users_email_index_concurrently.sql"
 	if engine == "mysql" {
 		addUsersEmailFile = "0005_add_users_email_index_lock_none.sql"
+	} else if engine == "sqlite3" {
+		addUsersEmailFile = "0005_add_users_email_index_locked.sql"
 	}
 
 	root, err := golembic.NewMigration(

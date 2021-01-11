@@ -401,6 +401,8 @@ MySQL-specific Targets:
    make mysql-superuser         Connects to currently running MySQL DB via `mysql` as superuser
    make run-mysql-cmd           Run `./examples/cmd/main.go` with `mysql` subcommand
    make run-mysql-example       Run `./examples/mysql-script/main.go`
+SQLite-specific Targets:
+   make run-sqlite3-example     Run `./examples/sqlite3-script/main.go`
 
 ```
 

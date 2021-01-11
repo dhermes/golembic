@@ -24,6 +24,8 @@ help:
 	@echo '   make mysql-superuser         Connects to currently running MySQL DB via `mysql` as superuser'
 	@echo '   make run-mysql-cmd           Run `./examples/cmd/main.go` with `mysql` subcommand'
 	@echo '   make run-mysql-example       Run `./examples/mysql-script/main.go`'
+	@echo 'SQLite-specific Targets:'
+	@echo '   make run-sqlite3-example     Run `./examples/sqlite3-script/main.go`'
 	@echo ''
 
 ################################################################################
@@ -72,6 +74,7 @@ dev-deps:
 	go get -v -u github.com/lib/pq
 	go get -v -u github.com/lib/pq/oid
 	go get -v -u github.com/lib/pq/scram
+	go get -v -u github.com/mattn/go-sqlite3
 	go get -v -u github.com/spf13/cobra
 	go get -v -u github.com/spf13/pflag
 
@@ -236,3 +239,13 @@ run-mysql-example: require-mysql
 	  DB_USER=$(DB_ADMIN_USER) \
 	  DB_PASSWORD=$(DB_ADMIN_PASSWORD) \
 	  go run ./examples/mysql-script/main.go
+
+################################################################################
+# SQLite
+################################################################################
+
+.PHONY: run-sqlite3-example
+run-sqlite3-example:
+	@GOLEMBIC_SQL_DIR=$(GOLEMBIC_SQL_DIR) \
+	  GOLEMBIC_SQLITE_DB=testing.sqlite3 \
+	  go run ./examples/sqlite3-script/main.go
