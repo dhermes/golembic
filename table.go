@@ -48,6 +48,14 @@ ALTER TABLE %s
     (serial_id != 0 AND previous IS NOT NULL)
   )
 `
+	createTableInlineConstraintsSQL = `,
+
+FOREIGN KEY(previous) REFERENCES revision
+CHECK (
+  (serial_id = 0 AND previous IS NULL) OR
+  (serial_id != 0 AND previous IS NOT NULL)
+)
+`
 )
 
 // CreateTableParameters specifies a set of parameters that are intended
@@ -66,17 +74,92 @@ type CreateTableParameters struct {
 // NewCreateTableParameters populates a `CreateTableParameters` with a
 // basic set of defaults and allows optional overrides for all fields.
 func NewCreateTableParameters(opts ...CreateTableOption) CreateTableParameters {
-	ctp := CreateTableParameters{
-		SerialID: "INTEGER NOT NULL",
-		Revision: "VARCHAR(32) NOT NULL",
-		Previous: "VARCHAR(32)",
-	}
-
+	ctp := CreateTableParameters{}
 	for _, opt := range opts {
 		opt(&ctp)
 	}
 
+	ctp.ensureSerialID()
+	ctp.ensureRevision()
+	ctp.ensurePrevious()
+	ctp.ensureConstraints()
+
 	return ctp
+}
+
+// ensureSerialID makes sure that `SerialID` is set on the current
+// `CreateTableParameters` receiver.
+func (ctp *CreateTableParameters) ensureSerialID() {
+	// Early exit if already set.
+	if ctp.SerialID != "" {
+		return
+	}
+
+	// If we are allowed to use `ALTER TABLE ... ADD CONSTRAINT ...` statements
+	// then the default column type can be simple.
+	if !ctp.SkipConstraintStatements {
+		ctp.SerialID = "INTEGER NOT NULL"
+		return
+	}
+
+	ctp.SerialID = "INTEGER NOT NULL UNIQUE CHECK (serial_id >= 0)"
+	return
+}
+
+// ensureSerialID makes sure that `Revision` is set on the current
+// `CreateTableParameters` receiver.
+func (ctp *CreateTableParameters) ensureRevision() {
+	// Early exit if already set.
+	if ctp.Revision != "" {
+		return
+	}
+
+	// If we are allowed to use `ALTER TABLE ... ADD CONSTRAINT ...` statements
+	// then the default column type can be simple.
+	if !ctp.SkipConstraintStatements {
+		ctp.Revision = "VARCHAR(32) NOT NULL"
+		return
+	}
+
+	ctp.Revision = "VARCHAR(32) NOT NULL PRIMARY KEY"
+	return
+}
+
+// ensureSerialID makes sure that `Previous` is set on the current
+// `CreateTableParameters` receiver.
+func (ctp *CreateTableParameters) ensurePrevious() {
+	// Early exit if already set.
+	if ctp.Previous != "" {
+		return
+	}
+
+	// If we are allowed to use `ALTER TABLE ... ADD CONSTRAINT ...` statements
+	// then the default column type can be simple.
+	if !ctp.SkipConstraintStatements {
+		ctp.Previous = "VARCHAR(32)"
+		return
+	}
+
+	ctp.Previous = "VARCHAR(32) UNIQUE CHECK (previous != revision)"
+	return
+}
+
+// ensureConstraints makes sure that `Constraints` is set on the current
+// `CreateTableParameters` receiver.
+func (ctp *CreateTableParameters) ensureConstraints() {
+	// Early exit if already set.
+	if ctp.Constraints != "" {
+		return
+	}
+
+	// If we are allowed to use `ALTER TABLE ... ADD CONSTRAINT ...` statements
+	// then no constraints are needed in the `CREATE TABLE` statement.
+	if !ctp.SkipConstraintStatements {
+		return
+	}
+
+	ctp.Constraints = createTableInlineConstraintsSQL
+	return
 }
 
 // CreateMigrationsTable invokes SQL statements required to create the metadata
