@@ -367,7 +367,8 @@ func (m *Manager) Latest(ctx context.Context) (revision string, createdAt time.T
 		"SELECT revision, previous, created_at FROM %s ORDER BY serial_id DESC LIMIT 1",
 		m.Provider.QuoteIdentifier(m.MetadataTable),
 	)
-	rows, err := readAllMigration(ctx, tx, query)
+	tc := m.Provider.TimestampColumn()
+	rows, err := readAllMigration(ctx, tx, query, tc)
 	if err != nil {
 		return
 	}
@@ -504,7 +505,8 @@ func (m *Manager) verifyHistory(ctx context.Context, tx *sql.Tx) (history, regis
 		"SELECT revision, previous, created_at FROM %s ORDER BY serial_id ASC",
 		m.Provider.QuoteIdentifier(m.MetadataTable),
 	)
-	history, err = readAllMigration(ctx, tx, query)
+	tc := m.Provider.TimestampColumn()
+	history, err = readAllMigration(ctx, tx, query, tc)
 	if err != nil {
 		return
 	}
@@ -566,7 +568,8 @@ func (m *Manager) IsApplied(ctx context.Context, tx *sql.Tx, migration Migration
 		m.Provider.QuoteIdentifier(m.MetadataTable),
 		m.Provider.QueryParameter(1),
 	)
-	rows, err := readAllMigration(ctx, tx, query, migration.Revision)
+	tc := m.Provider.TimestampColumn()
+	rows, err := readAllMigration(ctx, tx, query, tc, migration.Revision)
 	if err != nil {
 		return false, err
 	}

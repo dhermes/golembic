@@ -3,6 +3,7 @@ package golembic
 import (
 	"context"
 	"database/sql"
+	"time"
 )
 
 // UpMigration defines a function interface to be used for up / forward
@@ -32,9 +33,12 @@ type EngineProvider interface {
 	// QueryParameter produces a placeholder like `$1` or `?` for a numbered
 	// parameter in a SQL query.
 	QueryParameter(index int) string
-	// TimestampColumn produces the SQL used to define a timestamp column with
+	// TimestampColumnSQL produces the SQL used to define a timestamp column with
 	// a default of "now".
-	TimestampColumn() string
+	TimestampColumnSQL() string
+	// TimestampColumn produces a value that can be used for reading / writing
+	// the `created_at` column.
+	TimestampColumn() TimestampColumn
 	// QuoteIdentifier quotes an identifier, such as a table name, for usage
 	// in a query.
 	QuoteIdentifier(name string) string
@@ -64,3 +68,9 @@ type MigrationOption = func(*Migration) error
 
 // ApplyOption describes options used to create an apply configuration.
 type ApplyOption = func(*ApplyConfig) error
+
+// TimestampColumn represents an abstract SQL column that stores a timestamp.
+type TimestampColumn interface {
+	Pointer() interface{}
+	Timestamp() time.Time
+}

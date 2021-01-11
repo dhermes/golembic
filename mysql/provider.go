@@ -47,10 +47,16 @@ func (*SQLProvider) QueryParameter(_ int) string {
 	return "?"
 }
 
-// TimestampColumn produces the SQL used to define a timestamp column with
+// TimestampColumnSQL produces the SQL used to define a timestamp column with
 // a default of "now".
-func (*SQLProvider) TimestampColumn() string {
+func (*SQLProvider) TimestampColumnSQL() string {
 	return "TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6)"
+}
+
+// TimestampColumn produces a value that can be used for reading / writing
+// a `TIMESTAMP` column to a `time.Time` in MySQL.
+func (*SQLProvider) TimestampColumn() golembic.TimestampColumn {
+	return &golembic.TimeColumnPointer{}
 }
 
 // QuoteIdentifier quotes an identifier, such as a table name, for usage

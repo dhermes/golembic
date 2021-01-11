@@ -121,7 +121,7 @@ func CreateMigrationsTable(ctx context.Context, manager *Manager) (err error) {
 func createMigrationsSQL(manager *Manager) string {
 	table := manager.MetadataTable
 	provider := manager.Provider
-	timestampColumn := provider.TimestampColumn()
+	timestampColumn := provider.TimestampColumnSQL()
 	return fmt.Sprintf(createMigrationsTableSQL, provider.QuoteIdentifier(table), timestampColumn)
 }
 

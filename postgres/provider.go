@@ -48,10 +48,16 @@ func (*SQLProvider) QueryParameter(index int) string {
 	return fmt.Sprintf("$%d", index)
 }
 
-// TimestampColumn produces the SQL used to define a timestamp column with
+// TimestampColumnSQL produces the SQL used to define a timestamp column with
 // a default of "now".
-func (*SQLProvider) TimestampColumn() string {
+func (*SQLProvider) TimestampColumnSQL() string {
 	return "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP"
+}
+
+// TimestampColumn produces a value that can be used for reading / writing
+// a `TIMESTAMP` column to a `time.Time` in PostgreSQL.
+func (*SQLProvider) TimestampColumn() golembic.TimestampColumn {
+	return &golembic.TimeColumnPointer{}
 }
 
 // QuoteIdentifier quotes an identifier, such as a table name, for usage

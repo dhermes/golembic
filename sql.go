@@ -7,6 +7,12 @@ import (
 	"time"
 )
 
+// NOTE: Ensure that
+//       * `timeColumnPointer` satisfies `TimestampColumn`.
+var (
+	_ TimestampColumn = (*TimeColumnPointer)(nil)
+)
+
 // readAllInt performs a SQL query and reads all rows into an `int` slice,
 // under the assumption that a single (INTEGER) column is being returned for
 // the query.
@@ -63,7 +69,7 @@ func migrationFromQuery(previous sql.NullString, revision string, createdAt time
 //   ORDER BY
 //     serial_id DESC
 //   LIMIT 1
-func readAllMigration(ctx context.Context, tx *sql.Tx, query string, args ...interface{}) (result []Migration, err error) {
+func readAllMigration(ctx context.Context, tx *sql.Tx, query string, createdAt TimestampColumn, args ...interface{}) (result []Migration, err error) {
 	var rows *sql.Rows
 	defer func() {
 		err = rowsClose(rows, err)
@@ -74,15 +80,14 @@ func readAllMigration(ctx context.Context, tx *sql.Tx, query string, args ...int
 		return
 	}
 
+	var revision string
+	var previous sql.NullString
 	for rows.Next() {
-		var revision string
-		var previous sql.NullString
-		var createdAt time.Time
-		err = rows.Scan(&revision, &previous, &createdAt)
+		err = rows.Scan(&revision, &previous, createdAt.Pointer())
 		if err != nil {
 			return
 		}
-		result = append(result, migrationFromQuery(previous, revision, createdAt))
+		result = append(result, migrationFromQuery(previous, revision, createdAt.Timestamp()))
 	}
 
 	return
@@ -133,4 +138,19 @@ func maybeWrap(primary, secondary error, message string) error {
 	}
 
 	return fmt.Errorf("%w; %s: %v", primary, message, secondary)
+}
+
+// TimeColumnPointer provides the default implementation of `TimestampColumn`.
+type TimeColumnPointer struct {
+	Stored time.Time
+}
+
+// Pointer returns a pointer to the stored timestamp value.
+func (tcp *TimeColumnPointer) Pointer() interface{} {
+	return &tcp.Stored
+}
+
+// Timestamp returns the stored timestamp value.
+func (tcp TimeColumnPointer) Timestamp() time.Time {
+	return tcp.Stored
 }
