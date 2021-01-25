@@ -203,7 +203,7 @@ func (m *Manager) filterMigrations(ctx context.Context, filter migrationsFilter,
 
 	pastMigrationCount, migrations, err := filter(latest)
 	if err != nil {
-		return pastMigrationCount, nil, err
+		return 0, nil, err
 	}
 
 	if len(migrations) == 0 {
