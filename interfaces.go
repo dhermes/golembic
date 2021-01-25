@@ -80,6 +80,13 @@ type Column interface {
 	driver.Valuer
 }
 
+// sqlContext represents a `sql.Tx` or `sql.Conn` that can execute a
+// statement or query in a Go context.
+type sqlContext interface {
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
+}
+
 // TimestampColumn represents an abstract SQL column that stores a timestamp.
 type TimestampColumn interface {
 	Pointer() interface{}

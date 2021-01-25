@@ -56,3 +56,11 @@ func OptDevelopmentMode(mode bool) ManagerOption {
 		return nil
 	}
 }
+
+// OptVerbose sets the verbose  flag on a manager.
+func OptVerbose(verbose bool) ManagerOption {
+	return func(m *Manager) error {
+		m.Verbose = verbose
+		return nil
+	}
+}

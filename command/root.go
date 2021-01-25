@@ -66,6 +66,13 @@ func MakeRootCommand(rm RegisterMigrations) (*cobra.Command, error) {
 		"Flag indicating that the migrations should be run in development mode",
 	)
 
+	cmd.PersistentFlags().BoolVar(
+		&manager.Verbose,
+		"verbose",
+		false,
+		"Flag indicating that the migrations should be run in verbose mode",
+	)
+
 	// Add PostgreSQL specific sub-commands.
 	postgres, err := postgresSubCommand(manager, cmd, &engine)
 	if err != nil {

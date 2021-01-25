@@ -7,6 +7,10 @@ import (
 )
 
 const (
+	// NOTE: In order to make this portable across different SQL engines, the
+	//       constants are somewhat hard to understand without digging into the
+	//       code a bit more. To see which SQL statements are executed by
+	//       `golembic`, turn on verbose mode via the `OptVerbose()` manager option.
 	createMigrationsTableSQL = `
 CREATE TABLE %s (
   serial_id  %s,
@@ -187,6 +191,7 @@ func CreateMigrationsTable(ctx context.Context, manager *Manager) (err error) {
 	}
 
 	ctp, createStatement := createMigrationsSQL(manager)
+	// TODO: VERBOSE
 	_, err = tx.ExecContext(ctx, createStatement)
 	if err != nil {
 		return
@@ -197,36 +202,44 @@ func CreateMigrationsTable(ctx context.Context, manager *Manager) (err error) {
 		return
 	}
 
+
+	// TODO: VERBOSE
 	_, err = tx.ExecContext(ctx, pkMigrationsSQL(manager))
 	if err != nil {
 		return
 	}
 
+	// TODO: VERBOSE
 	_, err = tx.ExecContext(ctx, fkPreviousMigrationsSQL(manager))
 	if err != nil {
 		return
 	}
 
+	// TODO: VERBOSE
 	_, err = tx.ExecContext(ctx, uqSerialID(manager))
 	if err != nil {
 		return
 	}
 
+	// TODO: VERBOSE
 	_, err = tx.ExecContext(ctx, nonNegativeSerialID(manager))
 	if err != nil {
 		return
 	}
 
+	// TODO: VERBOSE
 	_, err = tx.ExecContext(ctx, uqPreviousMigrationsSQL(manager))
 	if err != nil {
 		return
 	}
 
+	// TODO: VERBOSE
 	_, err = tx.ExecContext(ctx, noCyclesMigrationsSQL(manager))
 	if err != nil {
 		return
 	}
 
+	// TODO: VERBOSE
 	_, err = tx.ExecContext(ctx, singleRootMigrationsSQL(manager))
 	if err != nil {
 		return

@@ -52,6 +52,9 @@ type Manager struct {
 	// and migrations will be applied from scratch (including milestones that
 	// may not come at the end).
 	DevelopmentMode bool
+	// Verbose is a flag indicating that the manager will run with verbose
+	// output, e.g. by printing out SQL statements before executing them.
+	Verbose bool
 	// Log is used for printing output
 	Log PrintfReceiver
 }
@@ -118,6 +121,7 @@ func (m *Manager) InsertMigration(ctx context.Context, tx *sql.Tx, migration Mig
 			m.Provider.QuoteIdentifier(m.MetadataTable),
 			m.Provider.QueryParameter(1),
 		)
+		// TODO: VERBOSE
 		_, err := tx.ExecContext(ctx, statement, migration.Revision)
 		return err
 	}
@@ -129,6 +133,7 @@ func (m *Manager) InsertMigration(ctx context.Context, tx *sql.Tx, migration Mig
 		m.Provider.QueryParameter(2),
 		m.Provider.QueryParameter(3),
 	)
+	// TODO: VERBOSE
 	_, err := tx.ExecContext(
 		ctx,
 		statement,

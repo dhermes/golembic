@@ -58,6 +58,7 @@ func OptUp(up UpMigration) MigrationOption {
 // SQL statement.
 func OptUpFromSQL(statement string) MigrationOption {
 	up := func(ctx context.Context, tx *sql.Tx) error {
+		// TODO: VERBOSE
 		_, err := tx.ExecContext(ctx, statement)
 		return err
 	}
@@ -95,6 +96,7 @@ func OptUpConn(up UpMigrationConn) MigrationOption {
 // function to execute a SQL statement.
 func OptUpConnFromSQL(statement string) MigrationOption {
 	up := func(ctx context.Context, conn *sql.Conn) error {
+		// TODO: VERBOSE
 		_, err := conn.ExecContext(ctx, statement)
 		return err
 	}

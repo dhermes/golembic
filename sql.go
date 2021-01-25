@@ -22,6 +22,7 @@ func readAllInt(ctx context.Context, tx *sql.Tx, query string, args ...interface
 		err = rowsClose(rows, err)
 	}()
 
+	// TODO: VERBOSE
 	rows, err = tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		return
@@ -75,6 +76,7 @@ func readAllMigration(ctx context.Context, tx *sql.Tx, query string, createdAt T
 		err = rowsClose(rows, err)
 	}()
 
+	// TODO: VERBOSE
 	rows, err = tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		return
@@ -125,6 +127,14 @@ func ignoreTxDone(err error) error {
 		return nil
 	}
 	return err
+}
+
+func sqlExecContext(ctx context.Context, sc sqlContext, verbose bool, query string, args ...interface{}) (sql.Result, error) {
+	return sc.ExecContext(ctx, query, args...)
+}
+
+func sqlQueryContext(ctx context.Context, sc sqlContext, verbose bool, query string, args ...interface{}) (*sql.Rows, error) {
+	return sc.QueryContext(ctx, query, args...)
 }
 
 // maybeWrap attempts to wrap a secondary error inside a primary one. If
