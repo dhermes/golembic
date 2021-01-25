@@ -26,8 +26,10 @@ type UpMigrationConn = func(context.Context, *sql.Conn) error
 
 // migrationsFilter defines a function interface that filters migrations
 // based on the `latest` revision. It's expected that a migrations filter
-// will enclose other state such as a `Manager`.
-type migrationsFilter = func(latest string) ([]Migration, error)
+// will enclose other state such as a `Manager`. In addition to returning
+// a slice of filtered migrations, it will also return a count of the
+// number of existing migrations that were filtered out.
+type migrationsFilter = func(latest string) (int, []Migration, error)
 
 // EngineProvider describes the interface required for a database engine.
 type EngineProvider interface {

@@ -7,6 +7,12 @@ import (
 	"time"
 )
 
+// NOTE: Ensure that
+//       * `Manager.sinceOrAll` satisfies `migrationsFilter`.
+var (
+	_ migrationsFilter = (*Manager)(nil).sinceOrAll
+)
+
 const (
 	// DefaultMetadataTable is the default name for the table used to store
 	// metadata about migrations.
@@ -184,20 +190,20 @@ func (m *Manager) ApplyMigration(ctx context.Context, migration Migration) (err 
 
 // filterMigrations applies a filter function that takes the revision of the
 // last applied migration to determine a set of migrations to run.
-func (m *Manager) filterMigrations(ctx context.Context, filter migrationsFilter, verifyHistory bool) ([]Migration, error) {
+func (m *Manager) filterMigrations(ctx context.Context, filter migrationsFilter, verifyHistory bool) (int, []Migration, error) {
 	err := m.EnsureMigrationsTable(ctx)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 
 	latest, _, err := m.latestMaybeVerify(ctx, verifyHistory)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 
-	migrations, err := filter(latest)
+	pastMigrationCount, migrations, err := filter(latest)
 	if err != nil {
-		return nil, err
+		return pastMigrationCount, nil, err
 	}
 
 	if len(migrations) == 0 {
@@ -210,13 +216,19 @@ func (m *Manager) filterMigrations(ctx context.Context, filter migrationsFilter,
 		}
 
 		m.Log.Printf(format, latest)
-		return nil, nil
+		return pastMigrationCount, nil, nil
 	}
 
-	return migrations, nil
+	return pastMigrationCount, migrations, nil
 }
 
-func (m *Manager) validateMilestones(migrations []Migration) error {
+func (m *Manager) validateMilestones(pastMigrationCount int, migrations []Migration) error {
+	// Early exit if no migrations have been run yet. This **assumes** that the
+	// database is being brought up from scratch.
+	if pastMigrationCount == 0 {
+		return nil
+	}
+
 	count := len(migrations)
 	// Ensure all (but the last) are not a milestone.
 	for i := 0; i < count-1; i++ {
@@ -250,7 +262,7 @@ func (m *Manager) Up(ctx context.Context, opts ...ApplyOption) error {
 		return err
 	}
 
-	migrations, err := m.filterMigrations(ctx, m.sinceOrAll, ac.VerifyHistory)
+	pastMigrationCount, migrations, err := m.filterMigrations(ctx, m.sinceOrAll, ac.VerifyHistory)
 	if err != nil {
 		return err
 	}
@@ -259,7 +271,7 @@ func (m *Manager) Up(ctx context.Context, opts ...ApplyOption) error {
 		return nil
 	}
 
-	err = m.validateMilestones(migrations)
+	err = m.validateMilestones(pastMigrationCount, migrations)
 	if err != nil {
 		return err
 	}
@@ -274,9 +286,9 @@ func (m *Manager) Up(ctx context.Context, opts ...ApplyOption) error {
 	return nil
 }
 
-func (m *Manager) sinceOrAll(revision string) ([]Migration, error) {
+func (m *Manager) sinceOrAll(revision string) (int, []Migration, error) {
 	if revision == "" {
-		return m.Sequence.All(), nil
+		return 0, m.Sequence.All(), nil
 	}
 
 	return m.Sequence.Since(revision)
@@ -289,7 +301,7 @@ func (m *Manager) UpOne(ctx context.Context, opts ...ApplyOption) error {
 		return err
 	}
 
-	migrations, err := m.filterMigrations(ctx, m.sinceOrAll, ac.VerifyHistory)
+	_, migrations, err := m.filterMigrations(ctx, m.sinceOrAll, ac.VerifyHistory)
 	if err != nil {
 		return err
 	}
@@ -311,11 +323,11 @@ func (m *Manager) UpTo(ctx context.Context, opts ...ApplyOption) error {
 		return err
 	}
 
-	filter := func(latest string) ([]Migration, error) {
+	var filter migrationsFilter = func(latest string) (int, []Migration, error) {
 		return m.betweenOrUntil(latest, ac.Revision)
 	}
 
-	migrations, err := m.filterMigrations(ctx, filter, ac.VerifyHistory)
+	pastMigrationCount, migrations, err := m.filterMigrations(ctx, filter, ac.VerifyHistory)
 	if err != nil {
 		return err
 	}
@@ -324,7 +336,7 @@ func (m *Manager) UpTo(ctx context.Context, opts ...ApplyOption) error {
 		return nil
 	}
 
-	err = m.validateMilestones(migrations)
+	err = m.validateMilestones(pastMigrationCount, migrations)
 	if err != nil {
 		return err
 	}
@@ -339,7 +351,7 @@ func (m *Manager) UpTo(ctx context.Context, opts ...ApplyOption) error {
 	return nil
 }
 
-func (m *Manager) betweenOrUntil(latest string, revision string) ([]Migration, error) {
+func (m *Manager) betweenOrUntil(latest string, revision string) (int, []Migration, error) {
 	if latest == "" {
 		return m.Sequence.Until(revision)
 	}

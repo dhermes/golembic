@@ -144,13 +144,6 @@ Global Flags:
 $ make restart-postgres
 ...
 $ make run-postgres-cmd GOLEMBIC_CMD=up
-2020/11/08 22:49:34 If a migration sequence contains a milestone, it must be the last migration; revision 0430566018cc (4 / 7 migrations)
-exit status 1
-make: *** [run-postgres-cmd] Error 1
-$
-$ make run-postgres-cmd GOLEMBIC_CMD=up GOLEMBIC_ARGS="--dev"
-Ignoring error in development mode
-  If a migration sequence contains a milestone, it must be the last migration; revision 0430566018cc (4 / 7 migrations)
 Applying c9b52448285b: Create users table
 Applying f1be62155239: Seed data in users table
 Applying dce8812d7b6f: Add city column to users table
@@ -218,13 +211,14 @@ No migrations to run; latest revision: 432f690fcbda
 ```
 $ make restart-postgres
 ...
+$ make run-postgres-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision c9b52448285b"
+Applying c9b52448285b: Create users table
 $ make run-postgres-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 0501ccd1d98c"
-2020/11/08 22:51:03 If a migration sequence contains a milestone, it must be the last migration; revision 0430566018cc (4 / 5 migrations)
+If a migration sequence contains a milestone, it must be the last migration; revision 0430566018cc (3 / 4 migrations)
 exit status 1
 make: *** [run-postgres-cmd] Error 1
 $
 $ make run-postgres-cmd GOLEMBIC_CMD=up-to GOLEMBIC_ARGS="--revision 0430566018cc"
-Applying c9b52448285b: Create users table
 Applying f1be62155239: Seed data in users table
 Applying dce8812d7b6f: Add city column to users table
 Applying 0430566018cc: Rename the root user [MILESTONE]
@@ -253,10 +247,10 @@ No migrations have been run
 Then run **all** of the migrations and check the version
 
 ```
-$ make run-postgres-cmd GOLEMBIC_CMD=up GOLEMBIC_ARGS="--dev"
+$ make run-postgres-cmd GOLEMBIC_CMD=up
 ...
 $ make run-postgres-cmd GOLEMBIC_CMD=version
-432f690fcbda: Create movies table (applied 2020-11-09 04:52:00.62402 +0000 UTC)
+432f690fcbda: Create movies table (applied 2021-01-25 17:21:25.984724 +0000 UTC)
 ```
 
 ### `verify`
@@ -277,7 +271,7 @@ $
 $ make run-postgres-cmd GOLEMBIC_CMD=up-one
 Applying c9b52448285b: Create users table
 $ make run-postgres-cmd GOLEMBIC_CMD=verify
-0 | c9b52448285b | Create users table (applied 2020-11-09 04:52:40.802991 +0000 UTC)
+0 | c9b52448285b | Create users table (applied 2021-01-25 17:21:54.717177 +0000 UTC)
 1 | f1be62155239 | Seed data in users table (not yet applied)
 2 | dce8812d7b6f | Add city column to users table (not yet applied)
 3 | 0430566018cc | Rename the root user [MILESTONE] (not yet applied)
@@ -289,8 +283,8 @@ $
 $ make run-postgres-cmd GOLEMBIC_CMD=up-one
 Applying f1be62155239: Seed data in users table
 $ make run-postgres-cmd GOLEMBIC_CMD=verify
-0 | c9b52448285b | Create users table (applied 2020-11-09 04:52:40.802991 +0000 UTC)
-1 | f1be62155239 | Seed data in users table (applied 2020-11-09 04:52:55.611001 +0000 UTC)
+0 | c9b52448285b | Create users table (applied 2021-01-25 17:21:54.717177 +0000 UTC)
+1 | f1be62155239 | Seed data in users table (applied 2021-01-25 17:22:11.223492 +0000 UTC)
 2 | dce8812d7b6f | Add city column to users table (not yet applied)
 3 | 0430566018cc | Rename the root user [MILESTONE] (not yet applied)
 4 | 0501ccd1d98c | Add index on user emails (concurrently) (not yet applied)
@@ -307,13 +301,13 @@ Applying 0501ccd1d98c: Add index on user emails (concurrently)
 Applying e2d4eecb1841: Create books table
 Applying 432f690fcbda: Create movies table
 $ make run-postgres-cmd GOLEMBIC_CMD=verify
-0 | c9b52448285b | Create users table (applied 2020-11-09 04:52:40.802991 +0000 UTC)
-1 | f1be62155239 | Seed data in users table (applied 2020-11-09 04:52:55.611001 +0000 UTC)
-2 | dce8812d7b6f | Add city column to users table (applied 2020-11-09 04:53:17.942662 +0000 UTC)
-3 | 0430566018cc | Rename the root user [MILESTONE] (applied 2020-11-09 04:53:17.94981 +0000 UTC)
-4 | 0501ccd1d98c | Add index on user emails (concurrently) (applied 2020-11-09 04:53:17.963828 +0000 UTC)
-5 | e2d4eecb1841 | Create books table (applied 2020-11-09 04:53:17.982124 +0000 UTC)
-6 | 432f690fcbda | Create movies table (applied 2020-11-09 04:53:17.991113 +0000 UTC)
+0 | c9b52448285b | Create users table (applied 2021-01-25 17:21:54.717177 +0000 UTC)
+1 | f1be62155239 | Seed data in users table (applied 2021-01-25 17:22:11.223492 +0000 UTC)
+2 | dce8812d7b6f | Add city column to users table (applied 2021-01-25 17:22:37.596732 +0000 UTC)
+3 | 0430566018cc | Rename the root user [MILESTONE] (applied 2021-01-25 17:22:37.606122 +0000 UTC)
+4 | 0501ccd1d98c | Add index on user emails (concurrently) (applied 2021-01-25 17:22:37.629871 +0000 UTC)
+5 | e2d4eecb1841 | Create books table (applied 2021-01-25 17:22:37.658585 +0000 UTC)
+6 | 432f690fcbda | Create movies table (applied 2021-01-25 17:22:37.685571 +0000 UTC)
 ```
 
 We can artificially introduce a "new" migration and see failure to verify
@@ -326,7 +320,7 @@ INSERT 0 1
 golembic=> \q
 $
 $ make run-postgres-cmd GOLEMBIC_CMD=verify
-2020/11/08 22:54:20 Migration stored in SQL doesn't match sequence; sequence has 7 migrations but 8 are stored in the table
+Migration stored in SQL doesn't match sequence; sequence has 7 migrations but 8 are stored in the table
 exit status 1
 make: *** [run-postgres-cmd] Error 1
 ```
@@ -343,7 +337,7 @@ INSERT 0 1
 golembic=> \q
 $
 $ make run-postgres-cmd GOLEMBIC_CMD=verify
-2020/11/08 22:55:18 Migration stored in SQL doesn't match sequence; stored migration 6: "not-in-sequence:e2d4eecb1841" does not match migration "432f690fcbda:e2d4eecb1841" in sequence
+Migration stored in SQL doesn't match sequence; stored migration 6: "not-in-sequence:e2d4eecb1841" does not match migration "432f690fcbda:e2d4eecb1841" in sequence
 exit status 1
 make: *** [run-postgres-cmd] Error 1
 ```
