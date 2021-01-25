@@ -5,6 +5,14 @@ import (
 	"sync"
 )
 
+// NOTE: Ensure that
+//       * `Migrations.Since` satisfies `migrationsFilter`.
+//       * `Migrations.Until` satisfies `migrationsFilter`.
+var (
+	_ migrationsFilter = (*Migrations)(nil).Since
+	_ migrationsFilter = (*Migrations)(nil).Until
+)
+
 // Migrations represents a sequence of migrations to be applied.
 type Migrations struct {
 	sequence map[string]Migration
@@ -124,9 +132,9 @@ func (m *Migrations) Root() Migration {
 // All produces the migrations in the sequence, in order.
 //
 // NOTE: This does not verify or enforce the invariant that there must be
-// exactly one migration without a previous migration. This invariant is enforced
-// by the exported methods such as `Register()` and `RegisterMany()` and the
-// constructor `NewSequence()`.
+//       exactly one migration without a previous migration. This invariant is
+//       enforced by the exported methods such as `Register()` and
+//       `RegisterMany()` and the constructor `NewSequence()`.
 func (m *Migrations) All() []Migration {
 	root := m.Root()
 
@@ -157,17 +165,19 @@ func (m *Migrations) All() []Migration {
 // matches `revision`. If none match, an error will be returned. If
 // `revision` is the **last** migration, the migrations returned will be an
 // empty slice.
-func (m *Migrations) Since(revision string) ([]Migration, error) {
+func (m *Migrations) Since(revision string) (int, []Migration, error) {
 	all := m.All()
 	found := false
 
 	result := []Migration{}
+	pastMigrationCount := 0
 	for _, migration := range all {
 		if found {
 			result = append(result, migration)
 			continue
 		}
 
+		pastMigrationCount++
 		if migration.Revision == revision {
 			found = true
 		}
@@ -175,17 +185,17 @@ func (m *Migrations) Since(revision string) ([]Migration, error) {
 
 	if !found {
 		err := fmt.Errorf("%w; revision: %q", ErrMigrationNotRegistered, revision)
-		return nil, err
+		return 0, nil, err
 	}
 
-	return result, nil
+	return pastMigrationCount, result, nil
 }
 
 // Until returns the migrations that occur **before** `revision`.
 //
 // This utilizes `All()` and returns all migrations up to and including the one
 // that matches `revision`. If none match, an error will be returned.
-func (m *Migrations) Until(revision string) ([]Migration, error) {
+func (m *Migrations) Until(revision string) (int, []Migration, error) {
 	all := m.All()
 	found := false
 
@@ -200,21 +210,25 @@ func (m *Migrations) Until(revision string) ([]Migration, error) {
 
 	if !found {
 		err := fmt.Errorf("%w; revision: %q", ErrMigrationNotRegistered, revision)
-		return nil, err
+		return 0, nil, err
 	}
 
-	return result, nil
+	// I.e. we are not filtering any migrations from the beginning of the
+	// sequence.
+	pastMigrationCount := 0
+	return pastMigrationCount, result, nil
 }
 
 // Between returns the migrations that occur between two revisions.
 //
 // This can be seen as a combination of `Since()` and `Until()`.
-func (m *Migrations) Between(since, until string) ([]Migration, error) {
+func (m *Migrations) Between(since, until string) (int, []Migration, error) {
 	all := m.All()
 	foundSince := false
 	foundUntil := false
 
 	result := []Migration{}
+	pastMigrationCount := 0
 	for _, migration := range all {
 		if foundSince {
 			if foundUntil {
@@ -223,6 +237,7 @@ func (m *Migrations) Between(since, until string) ([]Migration, error) {
 			result = append(result, migration)
 		}
 
+		pastMigrationCount++
 		if migration.Revision == since {
 			foundSince = true
 		}
@@ -234,15 +249,15 @@ func (m *Migrations) Between(since, until string) ([]Migration, error) {
 
 	if !foundSince {
 		err := fmt.Errorf("%w; revision: %q", ErrMigrationNotRegistered, since)
-		return nil, err
+		return 0, nil, err
 	}
 
 	if !foundUntil {
 		err := fmt.Errorf("%w; revision: %q", ErrMigrationNotRegistered, until)
-		return nil, err
+		return 0, nil, err
 	}
 
-	return result, nil
+	return pastMigrationCount, result, nil
 }
 
 // Revisions produces the revisions in the sequence, in order.

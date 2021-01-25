@@ -4,11 +4,13 @@
 
 ```
 $ docker ps
-CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
 $
 $
 $ make start-postgres
+Network dev-network-golembic created.
 Container dev-postgres-golembic started on port 18426.
+Container dev-postgres-golembic added to network dev-network-golembic.
 Container dev-postgres-golembic accepting Postgres connections.
 CREATE ROLE golembic_admin
 ...
@@ -16,8 +18,8 @@ REVOKE ROLE
 $
 $
 $ docker ps
-CONTAINER ID        IMAGE                  COMMAND                  CREATED             STATUS              PORTS                     NAMES
-58cc44f21752        postgres:10.6-alpine   "docker-entrypoint.s…"   13 seconds ago      Up 11 seconds       0.0.0.0:18426->5432/tcp   dev-postgres-golembic
+CONTAINER ID   IMAGE                  COMMAND                  CREATED          STATUS          PORTS                     NAMES
+5510cfdc52e4   postgres:13.1-alpine   "docker-entrypoint.s…"   22 seconds ago   Up 20 seconds   0.0.0.0:18426->5432/tcp   dev-postgres-golembic
 ```
 
 ## Run `./examples/cmd/main.go`
@@ -64,16 +66,17 @@ golembic=> \d+ golembic_migrations
  created_at | timestamp with time zone |           |          | CURRENT_TIMESTAMP | plain    |              |
 Indexes:
     "pk_golembic_migrations_revision" PRIMARY KEY, btree (revision)
-    "idx_golembic_migrations_one_null_previous" UNIQUE, btree ((previous IS NULL)) WHERE previous IS NULL
     "uq_golembic_migrations_previous" UNIQUE CONSTRAINT, btree (previous)
     "uq_golembic_migrations_serial_id" UNIQUE CONSTRAINT, btree (serial_id)
 Check constraints:
-    "chk_golembic_migrations_previous" CHECK (serial_id >= 0)
+    "chk_golembic_migrations_null_previous" CHECK (serial_id = 0 AND previous IS NULL OR serial_id <> 0 AND previous IS NOT NULL)
     "chk_golembic_migrations_previous_neq_revision" CHECK (previous::text <> revision::text)
+    "chk_golembic_migrations_serial_id" CHECK (serial_id >= 0)
 Foreign-key constraints:
     "fk_golembic_migrations_previous" FOREIGN KEY (previous) REFERENCES golembic_migrations(revision)
 Referenced by:
     TABLE "golembic_migrations" CONSTRAINT "fk_golembic_migrations_previous" FOREIGN KEY (previous) REFERENCES golembic_migrations(revision)
+Access method: heap
 
 golembic=> SELECT * FROM golembic_migrations;
  serial_id | revision | previous | created_at
@@ -86,9 +89,7 @@ golembic=> \q
 ## Run Some Migrations
 
 ```
-$ make run-postgres-cmd GOLEMBIC_CMD=up GOLEMBIC_ARGS="--dev"
-Ignoring error in development mode
-  If a migration sequence contains a milestone, it must be the last migration; revision 0430566018cc (4 / 7 migrations)
+$ make run-postgres-cmd GOLEMBIC_CMD=up
 Applying c9b52448285b: Create users table
 Applying f1be62155239: Seed data in users table
 Applying dce8812d7b6f: Add city column to users table
@@ -165,20 +166,20 @@ And see how these migrations are tracked
 
 ```
 $ make run-postgres-cmd GOLEMBIC_CMD=version
-432f690fcbda: Create movies table (applied 2020-11-09 04:57:48.028216 +0000 UTC)
+432f690fcbda: Create movies table (applied 2021-01-25 17:27:55.015148 +0000 UTC)
 $
 $ make psql
 ...
 golembic=> SELECT * FROM golembic_migrations;
  serial_id |   revision   |   previous   |          created_at
 -----------+--------------+--------------+-------------------------------
-         0 | c9b52448285b |              | 2020-11-09 04:57:47.965223+00
-         1 | f1be62155239 | c9b52448285b | 2020-11-09 04:57:47.97607+00
-         2 | dce8812d7b6f | f1be62155239 | 2020-11-09 04:57:47.985118+00
-         3 | 0430566018cc | dce8812d7b6f | 2020-11-09 04:57:47.993313+00
-         4 | 0501ccd1d98c | 0430566018cc | 2020-11-09 04:57:48.002736+00
-         5 | e2d4eecb1841 | 0501ccd1d98c | 2020-11-09 04:57:48.020294+00
-         6 | 432f690fcbda | e2d4eecb1841 | 2020-11-09 04:57:48.028216+00
+         0 | c9b52448285b |              | 2021-01-25 17:27:54.951363+00
+         1 | f1be62155239 | c9b52448285b | 2021-01-25 17:27:54.962251+00
+         2 | dce8812d7b6f | f1be62155239 | 2021-01-25 17:27:54.970523+00
+         3 | 0430566018cc | dce8812d7b6f | 2021-01-25 17:27:54.979727+00
+         4 | 0501ccd1d98c | 0430566018cc | 2021-01-25 17:27:54.987617+00
+         5 | e2d4eecb1841 | 0501ccd1d98c | 2021-01-25 17:27:55.006433+00
+         6 | 432f690fcbda | e2d4eecb1841 | 2021-01-25 17:27:55.015148+00
 (7 rows)
 
 golembic=> \q
@@ -188,12 +189,14 @@ golembic=> \q
 
 ```
 $ docker ps
-CONTAINER ID        IMAGE                  COMMAND                  CREATED             STATUS              PORTS                     NAMES
-58cc44f21752        postgres:10.6-alpine   "docker-entrypoint.s…"   2 minutes ago       Up 2 minutes        0.0.0.0:18426->5432/tcp   dev-postgres-golembic
+CONTAINER ID   IMAGE                  COMMAND                  CREATED         STATUS         PORTS                     NAMES
+5510cfdc52e4   postgres:13.1-alpine   "docker-entrypoint.s…"   4 minutes ago   Up 4 minutes   0.0.0.0:18426->5432/tcp   dev-postgres-golembic
 $ make stop-postgres
 Container dev-postgres-golembic stopped.
+Network dev-network-golembic stopped.
 $ docker ps
-CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
 $ make stop-postgres
 Container dev-postgres-golembic is not currently running.
+Network dev-network-golembic is not currently running.
 ```
