@@ -115,22 +115,24 @@ golembic=> \dt
 (4 rows)
 
 golembic=> \d+ users
-                                           Table "public.users"
- Column  |          Type          | Collation | Nullable | Default | Storage  | Stats target | Description
----------+------------------------+-----------+----------+---------+----------+--------------+-------------
- user_id | integer                |           |          |         | plain    |              |
- name    | character varying(40)  |           |          |         | extended |              |
- email   | character varying(40)  |           |          |         | extended |              |
- city    | character varying(100) |           |          |         | extended |              |
+                                             Table "public.users"
+   Column   |          Type          | Collation | Nullable | Default | Storage  | Stats target | Description
+------------+------------------------+-----------+----------+---------+----------+--------------+-------------
+ id         | integer                |           | not null |         | plain    |              |
+ email      | character varying(40)  |           |          |         | extended |              |
+ first_name | character varying(40)  |           | not null |         | extended |              |
+ last_name  | character varying(40)  |           | not null |         | extended |              |
+ city       | character varying(100) |           |          |         | extended |              |
 Indexes:
+    "users_pkey" PRIMARY KEY, btree (id)
     "uq_users_email" UNIQUE, btree (email)
-    "users_user_id_key" UNIQUE CONSTRAINT, btree (user_id)
+Access method: heap
 
 golembic=> SELECT * FROM users;
- user_id |  name   |        email         | city
----------+---------+----------------------+------
-       1 | dhermes | dhermes@mail.invalid |
-       0 | admin   |                      |
+   id   |        email         | first_name | last_name | city
+--------+----------------------+------------+-----------+------
+  83917 | dhermes@mail.invalid | Danny      | Hermes    |
+ 109203 |                      | admin      |           |
 (2 rows)
 
 golembic=> \d+ books

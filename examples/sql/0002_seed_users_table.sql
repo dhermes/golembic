@@ -1,3 +1,5 @@
-INSERT INTO users (user_id, username, email) VALUES
-  (0, 'root', ''),
-  (1, 'dhermes', 'dhermes@mail.invalid');
+INSERT INTO
+  users (id, email, first_name, last_name)
+VALUES
+  (109203, '',                     'root',  ''),
+  (83917,  'dhermes@mail.invalid', 'Danny', 'Hermes');

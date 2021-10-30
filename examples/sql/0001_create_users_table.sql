@@ -1,5 +1,6 @@
 CREATE TABLE users (
-  user_id  INTEGER UNIQUE,
-  username VARCHAR(40),
-  email    VARCHAR(40)
+  id INTEGER PRIMARY KEY,
+  email VARCHAR(40),
+  first_name VARCHAR(40) NOT NULL,
+  last_name VARCHAR(40) NOT NULL
 );
