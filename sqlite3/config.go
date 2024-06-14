@@ -24,13 +24,13 @@ type Config struct {
 
 	// DriverName specifies the name of SQL driver to be used when creating
 	// a new database connection pool via `sql.Open()`. The default driver
-	// is expected to be registered by importing `github.com/mattn/go-sqlite3`,
+	// is expected to be registered by importing `modernc.org/sqlite`,
 	// though `https://github.com/golang/go/wiki/SQLDrivers` lists (as of
-	// January 9, 2021) four other implementations that all register the
+	// June 13, 2024) four other implementations that all register the
 	// same driver name
 	// - github.com/gwenn/gosqlite
+	// - github.com/mattn/go-sqlite3
 	// - github.com/mxk/go-sqlite
 	// - github.com/rsc/sqlite
-	// - modernc.org/sqlite
 	DriverName string
 }
