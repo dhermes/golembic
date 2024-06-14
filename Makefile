@@ -240,6 +240,7 @@ run-mysql-example: require-mysql
 
 .PHONY: run-sqlite3-example
 run-sqlite3-example:
-	@GOLEMBIC_SQL_DIR=$(GOLEMBIC_SQL_DIR) \
+	@CGO_ENABLED=0 \
+	  GOLEMBIC_SQL_DIR=$(GOLEMBIC_SQL_DIR) \
 	  GOLEMBIC_SQLITE_DB=testing.sqlite3 \
 	  go run ./examples/sqlite3-script/main.go

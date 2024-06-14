@@ -82,6 +82,7 @@ func run() (err error) {
 	dsn := fmt.Sprintf("file:%s?cache=shared", sqliteDBFull)
 	provider, err := sqlite3.New(
 		sqlite3.OptDataSourceName(dsn),
+		sqlite3.OptDriverName("sqlite"),
 	)
 	if err != nil {
 		return

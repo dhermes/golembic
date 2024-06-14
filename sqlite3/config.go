@@ -9,11 +9,11 @@ const (
 	// DefaultDriverName is the default SQL driver to be used when creating
 	// a new database connection pool via `sql.Open()`. This default driver
 	// is expected to be registered by importing one of
-	// - github.com/gwenn/gosqlite
-	// - github.com/mattn/go-sqlite3
-	// - github.com/mxk/go-sqlite
-	// - github.com/rsc/sqlite
-	// - modernc.org/sqlite
+	// - github.com/gwenn/gosqlite ("sqlite3")
+	// - github.com/mattn/go-sqlite3 ("sqlite3")
+	// - github.com/mxk/go-sqlite ("sqlite3")
+	// - github.com/rsc/sqlite ("sqlite3")
+	// - modernc.org/sqlite ("sqlite")
 	DefaultDriverName = "sqlite3"
 )
 
