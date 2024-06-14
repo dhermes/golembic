@@ -42,6 +42,7 @@ Usage:
   golembic [command]
 
 Available Commands:
+  completion  Generate the autocompletion script for the specified shell
   help        Help about any command
   mysql       Manage database migrations for a MySQL database
   postgres    Manage database migrations for a PostgreSQL database
