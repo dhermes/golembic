@@ -402,22 +402,22 @@ SQLite-specific Targets:
 
 ## Resources and Inspiration
 
--   `alembic` [tutorial][1]
--   `goose` [package][2]
--   Blog [post][3]: Move fast and migrate things: how we automated migrations
-    in Postgres (in particular, the notes about lock timeouts)
--   Blog [post][4]: Update your Database Schema Without Downtime
--   Blog [post][5]: Multiple heads in alembic migrations - what to do
--   StackOverflow [answer][7] about setting a [lock timeout][8] and
-    [statement timeout][9] in Postgres
-    ```sql
-    BEGIN;
-    SET LOCAL lock_timeout TO '4s';
-    SET LOCAL statement_timeout TO '5s';
-    SELECT * FROM users;
-    COMMIT;
-    ```
--   Blog [post][10]: When Postgres blocks: 7 tips for dealing with locks
+- `alembic` [tutorial][1]
+- `goose` [package][2]
+- Blog [post][3]: Move fast and migrate things: how we automated migrations
+  in Postgres (in particular, the notes about lock timeouts)
+- Blog [post][4]: Update your Database Schema Without Downtime
+- Blog [post][5]: Multiple heads in alembic migrations - what to do
+- StackOverflow [answer][7] about setting a [lock timeout][8] and
+  [statement timeout][9] in Postgres
+  ```sql
+  BEGIN;
+  SET LOCAL lock_timeout TO '4s';
+  SET LOCAL statement_timeout TO '5s';
+  SELECT * FROM users;
+  COMMIT;
+  ```
+- Blog [post][10]: When Postgres blocks: 7 tips for dealing with locks
 
 ![Multiple Revision Heads][6]
 
