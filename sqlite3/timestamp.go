@@ -9,8 +9,8 @@ import (
 )
 
 // NOTE: Ensure that
-//       * `TimeFromInteger` satisfies `golembic.Column`.
-//       * `TimeFromInteger` satisfies `golembic.TimestampColumn`.
+//   - `TimeFromInteger` satisfies `golembic.Column`.
+//   - `TimeFromInteger` satisfies `golembic.TimestampColumn`.
 var (
 	_ golembic.Column          = (*TimeFromInteger)(nil)
 	_ golembic.TimestampColumn = (*TimeFromInteger)(nil)

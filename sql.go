@@ -8,7 +8,7 @@ import (
 )
 
 // NOTE: Ensure that
-//       * `timeColumnPointer` satisfies `TimestampColumn`.
+//   - `timeColumnPointer` satisfies `TimestampColumn`.
 var (
 	_ TimestampColumn = (*TimeColumnPointer)(nil)
 )
@@ -55,20 +55,20 @@ func migrationFromQuery(previous sql.NullString, revision string, createdAt time
 // previous and created_at -- are being returned for the query (in that order).
 // For example, the query
 //
-//   SELECT revision, previous, created_at FROM golembic_migrations
+//	SELECT revision, previous, created_at FROM golembic_migrations
 //
 // would satisfy this. A more "focused" query would return the latest migration
 // applied
 //
-//   SELECT
-//     revision,
-//     previous,
-//     created_at
-//   FROM
-//     golembic_migrations
-//   ORDER BY
-//     serial_id DESC
-//   LIMIT 1
+//	SELECT
+//	  revision,
+//	  previous,
+//	  created_at
+//	FROM
+//	  golembic_migrations
+//	ORDER BY
+//	  serial_id DESC
+//	LIMIT 1
 func readAllMigration(ctx context.Context, tx *sql.Tx, query string, createdAt TimestampColumn, args ...interface{}) (result []Migration, err error) {
 	var rows *sql.Rows
 	defer func() {

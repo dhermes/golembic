@@ -154,26 +154,26 @@ func (c Config) GetConnectionString() (string, error) {
 // and "d" and the value should be between 0 and 2147483647ms. We explicitly
 // cast to milliseconds but leave validation on the value to PostgreSQL.
 //
-//   golembic=> BEGIN;
-//   BEGIN
-//   golembic=> SET LOCAL lock_timeout TO '4000ms';
-//   SET
-//   golembic=> SHOW lock_timeout;
-//    lock_timeout
-//   --------------
-//    4s
-//   (1 row)
-//   --
-//   golembic=> SET LOCAL lock_timeout TO '4500ms';
-//   SET
-//   golembic=> SHOW lock_timeout;
-//    lock_timeout
-//   --------------
-//    4500ms
-//   (1 row)
-//   --
-//   golembic=> COMMIT;
-//   COMMIT
+//	golembic=> BEGIN;
+//	BEGIN
+//	golembic=> SET LOCAL lock_timeout TO '4000ms';
+//	SET
+//	golembic=> SHOW lock_timeout;
+//	 lock_timeout
+//	--------------
+//	 4s
+//	(1 row)
+//	--
+//	golembic=> SET LOCAL lock_timeout TO '4500ms';
+//	SET
+//	golembic=> SHOW lock_timeout;
+//	 lock_timeout
+//	--------------
+//	 4500ms
+//	(1 row)
+//	--
+//	golembic=> COMMIT;
+//	COMMIT
 //
 // See:
 // - https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-LOCK-TIMEOUT

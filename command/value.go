@@ -10,7 +10,7 @@ import (
 )
 
 // NOTE: Ensure that
-//       * `RoundDuration` satisfies `pflag.Value`.
+//   - `RoundDuration` satisfies `pflag.Value`.
 var (
 	_ pflag.Value = (*RoundDuration)(nil)
 )

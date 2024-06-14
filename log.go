@@ -5,7 +5,7 @@ import (
 )
 
 // NOTE: Ensure that
-//       * `stdoutPrintf` satisfies `PrintfReceiver`.
+//   - `stdoutPrintf` satisfies `PrintfReceiver`.
 var (
 	_ PrintfReceiver = (*stdoutPrintf)(nil)
 )

@@ -8,7 +8,7 @@ import (
 )
 
 // NOTE: Ensure that
-//       * `Manager.sinceOrAll` satisfies `migrationsFilter`.
+//   - `Manager.sinceOrAll` satisfies `migrationsFilter`.
 var (
 	_ migrationsFilter = (*Manager)(nil).sinceOrAll
 )

@@ -70,13 +70,7 @@ GOLEMBIC_SQL_DIR ?= $(shell pwd)/examples/sql
 
 .PHONY: dev-deps
 dev-deps:
-	go get -v -u github.com/go-sql-driver/mysql
-	go get -v -u github.com/lib/pq
-	go get -v -u github.com/lib/pq/oid
-	go get -v -u github.com/lib/pq/scram
-	go get -v -u github.com/mattn/go-sqlite3
-	go get -v -u github.com/spf13/cobra
-	go get -v -u github.com/spf13/pflag
+	go mod download
 
 .PHONY: vet
 vet:
@@ -246,6 +240,7 @@ run-mysql-example: require-mysql
 
 .PHONY: run-sqlite3-example
 run-sqlite3-example:
-	@GOLEMBIC_SQL_DIR=$(GOLEMBIC_SQL_DIR) \
+	@CGO_ENABLED=0 \
+	  GOLEMBIC_SQL_DIR=$(GOLEMBIC_SQL_DIR) \
 	  GOLEMBIC_SQLITE_DB=testing.sqlite3 \
 	  go run ./examples/sqlite3-script/main.go

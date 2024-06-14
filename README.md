@@ -42,6 +42,7 @@ Usage:
   golembic [command]
 
 Available Commands:
+  completion  Generate the autocompletion script for the specified shell
   help        Help about any command
   mysql       Manage database migrations for a MySQL database
   postgres    Manage database migrations for a PostgreSQL database
@@ -250,7 +251,7 @@ Then run **all** of the migrations and check the version
 $ make run-postgres-cmd GOLEMBIC_CMD=up
 ...
 $ make run-postgres-cmd GOLEMBIC_CMD=version
-432f690fcbda: Create movies table (applied 2021-01-25 17:21:25.984724 +0000 UTC)
+432f690fcbda: Create movies table (applied 2024-06-14 02:30:35.121731 +0000 UTC)
 ```
 
 ### `verify`
@@ -271,7 +272,7 @@ $
 $ make run-postgres-cmd GOLEMBIC_CMD=up-one
 Applying c9b52448285b: Create users table
 $ make run-postgres-cmd GOLEMBIC_CMD=verify
-0 | c9b52448285b | Create users table (applied 2021-01-25 17:21:54.717177 +0000 UTC)
+0 | c9b52448285b | Create users table (applied 2024-06-14 02:32:01.255611 +0000 UTC)
 1 | f1be62155239 | Seed data in users table (not yet applied)
 2 | dce8812d7b6f | Add city column to users table (not yet applied)
 3 | 0430566018cc | Rename the root user [MILESTONE] (not yet applied)
@@ -283,8 +284,8 @@ $
 $ make run-postgres-cmd GOLEMBIC_CMD=up-one
 Applying f1be62155239: Seed data in users table
 $ make run-postgres-cmd GOLEMBIC_CMD=verify
-0 | c9b52448285b | Create users table (applied 2021-01-25 17:21:54.717177 +0000 UTC)
-1 | f1be62155239 | Seed data in users table (applied 2021-01-25 17:22:11.223492 +0000 UTC)
+0 | c9b52448285b | Create users table (applied 2024-06-14 02:32:01.255611 +0000 UTC)
+1 | f1be62155239 | Seed data in users table (applied 2024-06-14 02:32:11.797511 +0000 UTC)
 2 | dce8812d7b6f | Add city column to users table (not yet applied)
 3 | 0430566018cc | Rename the root user [MILESTONE] (not yet applied)
 4 | 0501ccd1d98c | Add index on user emails (concurrently) (not yet applied)
@@ -301,13 +302,13 @@ Applying 0501ccd1d98c: Add index on user emails (concurrently)
 Applying e2d4eecb1841: Create books table
 Applying 432f690fcbda: Create movies table
 $ make run-postgres-cmd GOLEMBIC_CMD=verify
-0 | c9b52448285b | Create users table (applied 2021-01-25 17:21:54.717177 +0000 UTC)
-1 | f1be62155239 | Seed data in users table (applied 2021-01-25 17:22:11.223492 +0000 UTC)
-2 | dce8812d7b6f | Add city column to users table (applied 2021-01-25 17:22:37.596732 +0000 UTC)
-3 | 0430566018cc | Rename the root user [MILESTONE] (applied 2021-01-25 17:22:37.606122 +0000 UTC)
-4 | 0501ccd1d98c | Add index on user emails (concurrently) (applied 2021-01-25 17:22:37.629871 +0000 UTC)
-5 | e2d4eecb1841 | Create books table (applied 2021-01-25 17:22:37.658585 +0000 UTC)
-6 | 432f690fcbda | Create movies table (applied 2021-01-25 17:22:37.685571 +0000 UTC)
+0 | c9b52448285b | Create users table (applied 2024-06-14 02:32:01.255611 +0000 UTC)
+1 | f1be62155239 | Seed data in users table (applied 2024-06-14 02:32:11.797511 +0000 UTC)
+2 | dce8812d7b6f | Add city column to users table (applied 2024-06-14 02:32:22.438631 +0000 UTC)
+3 | 0430566018cc | Rename the root user [MILESTONE] (applied 2024-06-14 02:32:22.440512 +0000 UTC)
+4 | 0501ccd1d98c | Add index on user emails (concurrently) (applied 2024-06-14 02:32:22.442373 +0000 UTC)
+5 | e2d4eecb1841 | Create books table (applied 2024-06-14 02:32:22.447998 +0000 UTC)
+6 | 432f690fcbda | Create movies table (applied 2024-06-14 02:32:22.450277 +0000 UTC)
 ```
 
 We can artificially introduce a "new" migration and see failure to verify
@@ -402,22 +403,22 @@ SQLite-specific Targets:
 
 ## Resources and Inspiration
 
--   `alembic` [tutorial][1]
--   `goose` [package][2]
--   Blog [post][3]: Move fast and migrate things: how we automated migrations
-    in Postgres (in particular, the notes about lock timeouts)
--   Blog [post][4]: Update your Database Schema Without Downtime
--   Blog [post][5]: Multiple heads in alembic migrations - what to do
--   StackOverflow [answer][7] about setting a [lock timeout][8] and
-    [statement timeout][9] in Postgres
-    ```sql
-    BEGIN;
-    SET LOCAL lock_timeout TO '4s';
-    SET LOCAL statement_timeout TO '5s';
-    SELECT * FROM users;
-    COMMIT;
-    ```
--   Blog [post][10]: When Postgres blocks: 7 tips for dealing with locks
+- `alembic` [tutorial][1]
+- `goose` [package][2]
+- Blog [post][3]: Move fast and migrate things: how we automated migrations
+  in Postgres (in particular, the notes about lock timeouts)
+- Blog [post][4]: Update your Database Schema Without Downtime
+- Blog [post][5]: Multiple heads in alembic migrations - what to do
+- StackOverflow [answer][7] about setting a [lock timeout][8] and
+  [statement timeout][9] in Postgres
+  ```sql
+  BEGIN;
+  SET LOCAL lock_timeout TO '4s';
+  SET LOCAL statement_timeout TO '5s';
+  SELECT * FROM users;
+  COMMIT;
+  ```
+- Blog [post][10]: When Postgres blocks: 7 tips for dealing with locks
 
 ![Multiple Revision Heads][6]
 
