@@ -12,7 +12,7 @@ import (
 )
 
 // NOTE: Ensure that
-//       * `examples.AllMigrations` satisfies `command.RegisterMigrations`.
+//   - `examples.AllMigrations` satisfies `command.RegisterMigrations`.
 var (
 	_ command.RegisterMigrations = examples.AllMigrations
 )

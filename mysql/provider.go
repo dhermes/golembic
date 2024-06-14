@@ -10,7 +10,7 @@ import (
 )
 
 // NOTE: Ensure that
-//       * `SQLProvider` satisfies `golembic.EngineProvider`.
+//   - `SQLProvider` satisfies `golembic.EngineProvider`.
 var (
 	_ golembic.EngineProvider = (*SQLProvider)(nil)
 )

@@ -6,8 +6,8 @@ import (
 )
 
 // NOTE: Ensure that
-//       * `Migrations.Since` satisfies `migrationsFilter`.
-//       * `Migrations.Until` satisfies `migrationsFilter`.
+//   - `Migrations.Since` satisfies `migrationsFilter`.
+//   - `Migrations.Until` satisfies `migrationsFilter`.
 var (
 	_ migrationsFilter = (*Migrations)(nil).Since
 	_ migrationsFilter = (*Migrations)(nil).Until
@@ -132,9 +132,9 @@ func (m *Migrations) Root() Migration {
 // All produces the migrations in the sequence, in order.
 //
 // NOTE: This does not verify or enforce the invariant that there must be
-//       exactly one migration without a previous migration. This invariant is
-//       enforced by the exported methods such as `Register()` and
-//       `RegisterMany()` and the constructor `NewSequence()`.
+// exactly one migration without a previous migration. This invariant is
+// enforced by the exported methods such as `Register()` and
+// `RegisterMany()` and the constructor `NewSequence()`.
 func (m *Migrations) All() []Migration {
 	root := m.Root()
 
