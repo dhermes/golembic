@@ -70,13 +70,7 @@ GOLEMBIC_SQL_DIR ?= $(shell pwd)/examples/sql
 
 .PHONY: dev-deps
 dev-deps:
-	go get -v -u github.com/go-sql-driver/mysql
-	go get -v -u github.com/lib/pq
-	go get -v -u github.com/lib/pq/oid
-	go get -v -u github.com/lib/pq/scram
-	go get -v -u github.com/mattn/go-sqlite3
-	go get -v -u github.com/spf13/cobra
-	go get -v -u github.com/spf13/pflag
+	go mod download
 
 .PHONY: vet
 vet:
