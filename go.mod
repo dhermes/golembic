@@ -1,6 +1,6 @@
 module github.com/dhermes/golembic
 
-go 1.15
+go 1.22
 
 require (
 	github.com/go-sql-driver/mysql v1.8.1
